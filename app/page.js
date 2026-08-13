@@ -1,42 +1,67 @@
 'use client';
 
 import { useState } from 'react';
-import { AREAS, docsByArea } from '../lib/docs';
+import { AREAS } from '../lib/docs';
 import DocForm from './DocForm';
+import StepPage from './StepPage';
+import HomeGuide from './HomeGuide';
+
+const STEP_IDS = ['open', 'join', 'diverse'];
 
 export default function Home() {
-  const [selected, setSelected] = useState(null);
+  // view: {type:'home'} | {type:'step', areaId} | {type:'doc', doc}
+  const [view, setView] = useState({ type: 'home' });
 
-  if (selected) {
-    return <DocForm doc={selected} onBack={() => setSelected(null)} />;
+  if (view.type === 'doc') {
+    // 문서 작성 후 뒤로가면 그 문서가 속한 단계로 돌아감
+    return <DocForm doc={view.doc} onBack={() => setView({ type: 'step', areaId: view.doc.area })} />;
   }
 
+  if (view.type === 'step') {
+    return (
+      <StepPage
+        areaId={view.areaId}
+        onSelectDoc={(doc) => setView({ type: 'doc', doc })}
+        onGo={(areaId) => { setView({ type: 'step', areaId }); window.scrollTo(0, 0); }}
+        onHome={() => { setView({ type: 'home' }); window.scrollTo(0, 0); }}
+      />
+    );
+  }
+
+  // ── 첫 페이지: 심사기준 안내 ──
   return (
     <div className="wrap">
       <header className="hero">
         <h1>열린어린이집 문서 도우미</h1>
-        <p>평가항목별로 필요한 서류를 <b>빈칸만 채우면</b> AI가 완성해 드립니다.<br />만든 문서는 <b>각각 PDF로 저장</b>하세요.</p>
+        <p>먼저 <b>심사기준</b>을 확인하고, <b>개방성 → 참여성 → 다양성</b> 순서로<br />단계별로 필요한 서류를 만들어 <b>PDF로 저장</b>하세요.</p>
       </header>
 
       <div className="intro">
-        <p>📌 열린어린이집은 <b>총 100점 중 80점 이상</b>이면 선정됩니다. 항목마다 <b>정해진 횟수의 증빙 서류</b>가 필요해요. 아래에서 만들 문서를 고르세요.</p>
+        <p>📌 아래 <b>1 → 2 → 3</b> 순서로 확인하세요. ① 무엇을 몇 번 만들어야 하는지, ② 우리 지역 기준은 어떤지, ③ 최소 선정기준을 넘는지 검토한 뒤, <b>개방성부터 순서대로</b> 문서를 만들면 됩니다.</p>
+        <p className="intro-src">※ 교육부 「열린어린이집 선정·운영 기준」 기반</p>
       </div>
 
-      {AREAS.map((area) => (
-        <section key={area.id} className="area">
-          <h2 className="area-title" style={{ borderColor: area.color, color: area.color }}>{area.label}</h2>
-          <div className="doc-grid">
-            {docsByArea(area.id).map((doc) => (
-              <button key={doc.id} className="doc-card" onClick={() => setSelected(doc)} style={{ '--accent': area.color }}>
-                <span className="doc-card-name">{doc.name}</span>
-                <span className="doc-card-freq">{doc.freq}</span>
-                <span className="doc-card-desc">{doc.desc}</span>
-                <span className="doc-card-go">문서 만들기 →</span>
+      <HomeGuide />
+
+      {/* 시작하기 */}
+      <div className="start-box">
+        <h3>이제 문서를 만들어 볼까요?</h3>
+        <p>1단계 개방성부터 차례로 진행합니다.</p>
+        <button className="start-btn" onClick={() => { setView({ type: 'step', areaId: 'open' }); window.scrollTo(0, 0); }}>
+          1단계 · 개방성부터 시작하기 →
+        </button>
+        <div className="start-jump">
+          바로 이동:
+          {STEP_IDS.map((id, i) => {
+            const a = AREAS.find((x) => x.id === id);
+            return (
+              <button key={id} className="jump-chip" onClick={() => { setView({ type: 'step', areaId: id }); window.scrollTo(0, 0); }} style={{ '--c': a.color }}>
+                {i + 1}. {a.label}
               </button>
-            ))}
-          </div>
-        </section>
-      ))}
+            );
+          })}
+        </div>
+      </div>
 
       <footer className="foot">
         <p>2025 열린어린이집 선정·운영 기준(교육부) 기반 · 만든 서류는 어린이집에서 보관·제출용으로 사용하세요.</p>

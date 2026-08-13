@@ -24,6 +24,104 @@ body {
 
 .intro { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 18px 0 8px; font-size: 15px; }
 .intro b { color: var(--brand); }
+.intro-src { font-size: 12.5px; color: #8a9591; margin-top: 6px; }
+
+/* ── 심사기준 안내 ── */
+.guide { margin-top: 8px; }
+.score-banner { background: linear-gradient(135deg, #2e7d68, #1f6fb2); color: #fff; border-radius: 14px; padding: 18px 20px; text-align: center; margin-bottom: 18px; }
+.score-big { font-size: 18px; }
+.score-big b { font-size: 21px; }
+.score-sub { font-size: 13px; opacity: .92; margin-top: 8px; }
+
+.crit-area { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 4px 0 6px; margin-bottom: 14px; overflow: hidden; }
+.crit-head { display: flex; align-items: center; justify-content: space-between; background: var(--c); color: #fff; padding: 11px 18px; }
+.crit-name { font-family: 'Gowun Batang', serif; font-size: 18px; font-weight: 700; }
+.crit-pt { font-size: 15px; font-weight: 700; background: rgba(255,255,255,.22); padding: 3px 12px; border-radius: 20px; }
+.crit-items { padding: 6px 14px 4px; }
+.crit-item { padding: 12px 4px; border-bottom: 1px dashed #e7ecea; }
+.crit-item:last-child { border-bottom: none; }
+.crit-item-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.crit-item-name { font-size: 15.5px; font-weight: 700; }
+.crit-item-pt { font-size: 13px; color: var(--c); font-weight: 700; white-space: nowrap; }
+.crit-badges { margin-top: 6px; }
+.badge-freq { display: inline-block; background: #fff4e6; color: #b3620a; border: 1px solid #ffe0b8; font-size: 13px; font-weight: 700; padding: 3px 12px; border-radius: 20px; }
+.crit-note { font-size: 13px; color: #6a7571; margin-top: 6px; line-height: 1.5; }
+
+/* ── 홈 가이드 섹션 ① ② ③ ── */
+.gsec { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; margin-bottom: 16px; }
+.gsec-title { font-family: 'Gowun Batang', serif; font-size: 19px; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gsec-title small { font-size: 13px; color: #8a9591; font-weight: 400; font-family: 'Gowun Dodum', sans-serif; }
+.gsec-no { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
+.gsec-lead { font-size: 14px; color: #55625f; margin: 10px 0 12px; line-height: 1.6; }
+.hl-legend { background: #fff3bf; padding: 1px 7px; border-radius: 5px; font-weight: 700; color: #8a6d00; }
+
+.key-table { width: 100%; border-collapse: collapse; }
+.key-table th, .key-table td { border: 1px solid #e2e8e6; padding: 10px 12px; font-size: 14px; text-align: left; vertical-align: middle; }
+.key-table th { background: #f4f7f6; color: #55625f; font-weight: 700; }
+.key-table th:nth-child(2), .key-table td:nth-child(2) { width: 84px; text-align: center; }
+.key-table th:nth-child(3), .key-table td:nth-child(3) { width: 38%; }
+.key-table tr.hot td { background: #fffbeb; }
+.key-table tr.hot td:first-child { box-shadow: inset 4px 0 0 #f5c518; }
+.key-freq { color: #b3620a; font-weight: 700; }
+.area-chip { display: inline-block; color: #fff; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+
+.local-box { background: #f0f6fb; border: 1px solid #d4e6f4; border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.65; }
+.local-box ul { margin: 8px 0 8px 18px; }
+.local-box li { margin: 4px 0; }
+.local-box .local-do { background: #fff; border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+
+.min-banner { background: #eef7f3; border: 1px solid #cfe8de; border-radius: 10px; padding: 12px 14px; font-size: 15px; text-align: center; margin-bottom: 12px; }
+.min-banner b { color: var(--brand); }
+.min-table { width: 100%; border-collapse: collapse; }
+.min-table th, .min-table td { border: 1px solid #e2e8e6; padding: 9px 12px; font-size: 14px; text-align: left; }
+.min-table th { background: #f4f7f6; color: #55625f; font-weight: 700; }
+.min-table th:nth-child(2), .min-table td:nth-child(2), .min-table th:nth-child(3), .min-table td:nth-child(3) { width: 120px; text-align: center; }
+.min-pt { font-weight: 700; color: #55625f; }
+.min-need { font-weight: 700; color: #c0392b; }
+.min-table .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.min-hint { font-size: 12.5px; color: #8a9591; margin-top: 8px; }
+
+.full-details { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 4px 18px; margin-bottom: 16px; }
+.full-details summary { cursor: pointer; padding: 14px 0; font-size: 15px; font-weight: 700; color: var(--brand); }
+.full-details[open] summary { border-bottom: 1px solid var(--line); }
+
+/* ── 시작 박스 ── */
+.start-box { background: #fff; border: 2px solid var(--brand); border-radius: 16px; padding: 22px 20px; text-align: center; margin-top: 24px; }
+.start-box h3 { font-family: 'Gowun Batang', serif; font-size: 20px; color: var(--brand); }
+.start-box p { font-size: 14px; color: #55625f; margin: 8px 0 14px; }
+.start-btn { background: var(--brand); color: #fff; border: none; border-radius: 12px; padding: 15px 26px; font-size: 17px; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 4px 14px rgba(46,125,104,.3); }
+.start-btn:hover { filter: brightness(1.05); }
+.start-jump { margin-top: 16px; font-size: 13px; color: #8a9591; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.jump-chip { background: #fff; border: 1px solid var(--c); color: var(--c); border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+/* ── 단계 화면 ── */
+.stepper { display: flex; align-items: center; gap: 6px; margin: 6px 0 18px; }
+.step-dot { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; border-radius: 12px; cursor: pointer; background: #fff; border: 1px solid var(--line); }
+.step-dot .step-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: #e7ecea; color: #8a9591; }
+.step-dot .step-label { font-size: 13px; color: #8a9591; font-weight: 700; }
+.step-dot.on { border-color: var(--c); background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+.step-dot.on .step-num { background: var(--c); color: #fff; }
+.step-dot.on .step-label { color: var(--c); }
+.step-dot.done .step-num { background: var(--c); color: #fff; opacity: .55; }
+.step-dot.done .step-label { color: var(--c); opacity: .7; }
+
+.step-hero { background: #fff; border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+.step-tag { display: inline-block; background: var(--c); color: #fff; font-size: 13px; font-weight: 700; padding: 3px 12px; border-radius: 20px; margin-bottom: 8px; }
+.step-hero h1 { font-family: 'Gowun Batang', serif; font-size: 24px; color: var(--c); }
+.step-pt { font-size: 15px; }
+.step-hero p { font-size: 14px; color: #55625f; margin-top: 8px; }
+
+.need-table { width: 100%; border-collapse: collapse; }
+.need-table th, .need-table td { border: 1px solid #e2e8e6; padding: 10px 12px; font-size: 14px; text-align: left; vertical-align: top; }
+.need-table th { background: #f4f7f6; font-weight: 700; color: #55625f; }
+.need-table th:nth-child(2), .need-table td:nth-child(2) { width: 60px; text-align: center; }
+.need-table th:nth-child(3), .need-table td:nth-child(3) { width: 40%; }
+.need-note { font-size: 12.5px; color: #6a7571; margin-top: 4px; font-weight: 400; }
+.need-pt { color: #55625f; font-weight: 700; }
+.need-freq { color: #b3620a; font-weight: 700; }
+
+.step-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; }
+.step-nav button { flex: 1; }
 
 .area { margin-top: 30px; }
 .area-title { font-family: 'Gowun Batang', serif; font-size: 20px; padding-bottom: 6px; border-bottom: 3px solid; display: inline-block; margin-bottom: 14px; }
