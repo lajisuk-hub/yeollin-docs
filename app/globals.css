@@ -240,6 +240,15 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .img-del { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.62); color: #fff; border: none; border-radius: 6px; padding: 3px 7px; font-size: 12px; cursor: pointer; font-family: inherit; }
 .img-grid { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
+/* ── 자동 저장 안내 바 ── */
+.save-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: #eef7f3; border: 1px solid #cfe8de; border-radius: 10px; padding: 10px 14px; margin-bottom: 10px; }
+.save-note { font-size: 13px; color: #2f5f52; line-height: 1.5; }
+.save-note b { color: var(--brand); }
+.save-ok { color: #1a8f5a; font-weight: 700; }
+.reset-btn { flex: 0 0 auto; background: #fff; border: 1px solid #d6ddda; color: #8a5a5a; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.reset-btn:hover { border-color: #c0392b; color: #c0392b; }
+.restored-msg { font-size: 13px; color: #b3620a; background: #fff7e9; border: 1px solid #ffe0b8; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
+
 /* ── 폼: 회차 구분선 · 문서 불러오기 ── */
 .form-section { margin: 20px 0 10px; padding: 9px 14px; background: #eef3f1; border-left: 4px solid var(--brand); border-radius: 8px; font-weight: 700; font-size: 15px; color: var(--brand); }
 .form-section:first-child { margin-top: 4px; }

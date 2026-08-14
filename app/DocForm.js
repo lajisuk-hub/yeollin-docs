@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { saveForm, loadForm, clearForm } from '../lib/store';
 
 // 업로드 이미지를 화면/PDF에 알맞게 축소해 dataURL로 변환 (용량·속도 안정화)
 function fileToResizedDataURL(file, maxW = 1200) {
@@ -191,6 +192,50 @@ export default function DocForm({ doc, onBack }) {
   const [aiError, setAiError] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [busy, setBusy] = useState({});
+  const [restored, setRestored] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // ── 자동 저장/복원 (같은 브라우저) ──
+  const loadedRef = useRef(false);
+  const saveTimer = useRef(null);
+
+  useEffect(() => {
+    loadedRef.current = false;
+    setRestored(false);
+    let alive = true;
+    loadForm(doc.id).then((savedData) => {
+      if (!alive) return;
+      if (savedData && savedData.values) {
+        setValues({ ...initial, ...savedData.values });
+        if (savedData.ai) setAi(savedData.ai);
+        setRestored(true);
+      } else {
+        setValues(initial);
+        setAi(null);
+      }
+      loadedRef.current = true;
+    });
+    return () => { alive = false; };
+  }, [doc.id, initial]);
+
+  useEffect(() => {
+    if (!loadedRef.current) return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveForm(doc.id, { values, ai }).then((ok) => { if (ok) { setSaved(true); } });
+    }, 700);
+    return () => clearTimeout(saveTimer.current);
+  }, [values, ai, doc.id]);
+
+  function resetForm() {
+    if (typeof window !== 'undefined' && !window.confirm('작성한 내용과 첨부한 자료를 모두 지우고 새로 시작할까요?')) return;
+    clearForm(doc.id);
+    setValues(initial);
+    setAi(null);
+    setShowPreview(false);
+    setRestored(false);
+    setSaved(false);
+  }
 
   const set = (k, v) => { setValues((p) => ({ ...p, [k]: v })); setShowPreview(false); };
 
@@ -298,6 +343,15 @@ export default function DocForm({ doc, onBack }) {
         <p className="doc-meta"><span className="chip">{doc.item}</span> <span className="chip freq">필요 횟수 · {doc.freq}</span></p>
         <p className="doc-desc">{doc.desc}</p>
       </div>
+
+      <div className="save-bar">
+        <span className="save-note">
+          💾 이 브라우저에 <b>자동 저장</b>돼요. 새로고침하거나 창을 닫아도 <b>작성 내용·첨부파일이 남습니다.</b>
+          {saved && <span className="save-ok"> ✓ 저장됨</span>}
+        </span>
+        <button type="button" className="reset-btn" onClick={resetForm}>🗑 새로 작성(초기화)</button>
+      </div>
+      {restored && <p className="restored-msg">↩︎ 이전에 작성하던 내용을 불러왔어요. 이어서 작성하시면 됩니다.</p>}
 
       <div className="card">
         <h3 className="card-title">1. 빈칸 채우기</h3>
