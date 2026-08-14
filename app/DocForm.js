@@ -151,6 +151,7 @@ function Block({ b }) {
       </div>
     );
   }
+  if (b.type === 'sessionhead') return <h3 className="doc-sessionhead">{b.text}</h3>;
   if (b.type === 'pagebreak') return <div className="doc-pagebreak" />;
   if (b.type === 'kv') {
     return (
