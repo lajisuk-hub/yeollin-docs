@@ -126,12 +126,31 @@ function Block({ b }) {
     if (!items.length) return <p className="doc-img-empty">{b.emptyText || '첨부된 자료가 없습니다.'}</p>;
     return (
       <div className="doc-pages">
+        {b.title && <div className="doc-pages-title">{b.title}</div>}
         {items.map((src, i) => (
           <figure key={i} className="doc-figure"><img src={src} alt="" /></figure>
         ))}
       </div>
     );
   }
+  if (b.type === 'attachrow') {
+    return (
+      <div className="doc-attachrow">
+        {(b.cols || []).map((col, ci) => {
+          const items = (Array.isArray(col.items) ? col.items : []).filter(Boolean);
+          return (
+            <div className="doc-attachcol" key={ci}>
+              <div className="doc-attachcol-title">{col.title}</div>
+              {items.length
+                ? items.map((src, i) => <figure key={i}><img src={src} alt="" /></figure>)
+                : <p className="doc-img-empty">{col.emptyText || '미첨부'}</p>}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  if (b.type === 'pagebreak') return <div className="doc-pagebreak" />;
   if (b.type === 'kv') {
     return (
       <table className="doc-kv">
