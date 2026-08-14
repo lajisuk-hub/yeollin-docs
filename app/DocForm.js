@@ -28,6 +28,69 @@ function fileToResizedDataURL(file, maxW = 1200) {
   });
 }
 
+// PDF 파일 → 페이지별 이미지(dataURL) 배열
+async function pdfToImages(file) {
+  const pdfjs = await import('pdfjs-dist');
+  pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  const imgs = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const base = page.getViewport({ scale: 1 });
+    const scale = Math.min(2, 1240 / base.width);
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport, intent: 'print' }).promise;
+    imgs.push(canvas.toDataURL('image/jpeg', 0.85));
+  }
+  return imgs;
+}
+
+function decodeXml(s) {
+  return s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&amp;/g, '&');
+}
+function tagsToText(xml, closeTag, textTagRe) {
+  return xml.split(closeTag).map((p) => {
+    const m = [...p.matchAll(textTagRe)].map((x) => decodeXml(x[1].replace(/<[^>]+>/g, '')));
+    return m.join('');
+  }).filter((s) => s.trim()).join('\n');
+}
+
+// 업로드한 문서 파일에서 글자만 추출 (txt / pdf / docx / hwpx)
+async function extractTextFromFile(file) {
+  const name = (file.name || '').toLowerCase();
+  if (name.endsWith('.txt') || file.type === 'text/plain') return (await file.text()).trim();
+  if (name.endsWith('.pdf') || file.type === 'application/pdf') {
+    const pdfjs = await import('pdfjs-dist');
+    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+    const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+    let txt = '';
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const c = await (await pdf.getPage(p)).getTextContent();
+      txt += c.items.map((i) => i.str).join(' ') + '\n';
+    }
+    return txt.trim();
+  }
+  const JSZip = (await import('jszip')).default;
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+  if (name.endsWith('.hwpx')) {
+    const names = Object.keys(zip.files).filter((n) => /Contents\/section\d+\.xml$/i.test(n)).sort();
+    let txt = '';
+    for (const n of names) txt += tagsToText(await zip.files[n].async('string'), '</hp:p>', /<hp:t>([\s\S]*?)<\/hp:t>/g) + '\n';
+    return txt.trim();
+  }
+  if (name.endsWith('.docx')) {
+    const f = zip.file('word/document.xml');
+    if (!f) throw new Error('워드 문서를 읽지 못했습니다');
+    return tagsToText(await f.async('string'), '</w:p>', /<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
+  }
+  throw new Error('지원하지 않는 파일 형식입니다 (사진·PDF·한글hwpx·워드docx·txt만 가능)');
+}
+
 // 문서 블록 한 개를 화면/인쇄용으로 렌더
 function Block({ b }) {
   if (b.type === 'title') return <h1 className="doc-title">{b.text}</h1>;
@@ -55,6 +118,17 @@ function Block({ b }) {
           ))}
         </div>
         {b.caption && <div className="doc-photos-cap">{b.caption}</div>}
+      </div>
+    );
+  }
+  if (b.type === 'pages') {
+    const items = (Array.isArray(b.items) ? b.items : []).filter(Boolean);
+    if (!items.length) return <p className="doc-img-empty">{b.emptyText || '첨부된 자료가 없습니다.'}</p>;
+    return (
+      <div className="doc-pages">
+        {items.map((src, i) => (
+          <figure key={i} className="doc-figure"><img src={src} alt="" /></figure>
+        ))}
       </div>
     );
   }
@@ -88,7 +162,7 @@ function Block({ b }) {
 export default function DocForm({ doc, onBack }) {
   const initial = useMemo(() => {
     const o = {};
-    doc.fields.forEach((f) => { o[f.key] = ''; });
+    doc.fields.forEach((f) => { if (f.key) o[f.key] = (f.type === 'attach' || f.type === 'images') ? [] : ''; });
     return o;
   }, [doc]);
 
@@ -97,22 +171,58 @@ export default function DocForm({ doc, onBack }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [busy, setBusy] = useState({});
 
   const set = (k, v) => { setValues((p) => ({ ...p, [k]: v })); setShowPreview(false); };
 
-  async function onPickImage(k, fileList, multiple) {
+  // 사진/PDF 첨부 (image·pdf → 이미지 배열로 누적)
+  async function onPickAttach(k, fileList) {
     const files = Array.from(fileList || []);
     if (!files.length) return;
+    setAiError('');
+    setBusy((b) => ({ ...b, [k]: true }));
     try {
-      const urls = await Promise.all(files.map((f) => fileToResizedDataURL(f)));
-      if (multiple) {
-        setValues((p) => ({ ...p, [k]: [...(Array.isArray(p[k]) ? p[k] : []), ...urls] }));
-      } else {
-        setValues((p) => ({ ...p, [k]: urls[0] }));
+      let urls = [];
+      for (const f of files) {
+        const isPdf = (f.name || '').toLowerCase().endsWith('.pdf') || f.type === 'application/pdf';
+        urls = urls.concat(isPdf ? await pdfToImages(f) : [await fileToResizedDataURL(f)]);
       }
+      setValues((p) => ({ ...p, [k]: [...(Array.isArray(p[k]) ? p[k] : []), ...urls] }));
       setShowPreview(false);
     } catch {
-      setAiError('이미지를 불러오지 못했습니다. 다른 사진으로 시도해 주세요.');
+      setAiError('파일을 불러오지 못했습니다. 사진 또는 PDF로 다시 시도해 주세요.');
+    } finally {
+      setBusy((b) => ({ ...b, [k]: false }));
+    }
+  }
+  // 사진만 (상담 사진)
+  async function onPickPhotos(k, fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    setBusy((b) => ({ ...b, [k]: true }));
+    try {
+      const urls = await Promise.all(files.map((f) => fileToResizedDataURL(f)));
+      setValues((p) => ({ ...p, [k]: [...(Array.isArray(p[k]) ? p[k] : []), ...urls] }));
+      setShowPreview(false);
+    } catch {
+      setAiError('사진을 불러오지 못했습니다. 다른 사진으로 시도해 주세요.');
+    } finally {
+      setBusy((b) => ({ ...b, [k]: false }));
+    }
+  }
+  // 상담 자료 문서 파일 → 글자 추출해 텍스트칸에 채움
+  async function onPickMaterial(k, file) {
+    if (!file) return;
+    setAiError('');
+    setBusy((b) => ({ ...b, [k]: true }));
+    try {
+      const text = await extractTextFromFile(file);
+      setValues((p) => ({ ...p, [k]: (p[k] ? p[k] + '\n' : '') + text }));
+      setShowPreview(false);
+    } catch (e) {
+      setAiError(e.message || '문서를 읽지 못했습니다.');
+    } finally {
+      setBusy((b) => ({ ...b, [k]: false }));
     }
   }
   function removeImage(k, idx) {
@@ -125,7 +235,7 @@ export default function DocForm({ doc, onBack }) {
     setShowPreview(false);
   }
 
-  const requiredMissing = doc.fields.some((f) => f.required && typeof values[f.key] === 'string' && !values[f.key]?.trim() && f.type !== 'image' && f.type !== 'images');
+  const requiredMissing = doc.fields.some((f) => f.required && f.key && typeof values[f.key] === 'string' && !values[f.key]?.trim());
 
   async function runAi() {
     setAiError('');
@@ -134,7 +244,7 @@ export default function DocForm({ doc, onBack }) {
       // 이미지(사진)는 AI 분석에 불필요하고 용량이 커서 제외하고 글자만 보냄
       const textValues = {};
       doc.fields.forEach((f) => {
-        if (f.type !== 'image' && f.type !== 'images') textValues[f.key] = values[f.key];
+        if (f.key && f.type !== 'image' && f.type !== 'images' && f.type !== 'attach') textValues[f.key] = values[f.key];
       });
       const res = await fetch('/api/draft', {
         method: 'POST',
@@ -172,42 +282,40 @@ export default function DocForm({ doc, onBack }) {
 
       <div className="card">
         <h3 className="card-title">1. 빈칸 채우기</h3>
-        {doc.fields.map((f) => (
+        {doc.fields.map((f, fi) => {
+          if (f.type === 'section') return <div className="form-section" key={'sec' + fi}>{f.label}</div>;
+          const arr = Array.isArray(values[f.key]) ? values[f.key] : [];
+          return (
           <div className="field" key={f.key}>
             <label>{f.label}{f.required && <span className="req">*</span>}</label>
             {f.type === 'textarea' ? (
               <textarea rows={4} value={values[f.key]} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
+            ) : f.type === 'material' ? (
+              <div>
+                <textarea rows={5} value={values[f.key]} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
+                <label className="file-btn">
+                  {busy[f.key] ? '문서 읽는 중…' : '📎 문서 파일 불러오기 (한글·워드·PDF·txt)'}
+                  <input type="file" accept=".hwpx,.docx,.pdf,.txt" hidden disabled={busy[f.key]} onChange={(e) => { onPickMaterial(f.key, e.target.files[0]); e.target.value = ''; }} />
+                </label>
+              </div>
             ) : f.type === 'select' ? (
               <select value={values[f.key]} onChange={(e) => set(f.key, e.target.value)}>
                 <option value="">선택하세요</option>
                 {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
-            ) : f.type === 'image' ? (
-              <div className="img-field">
-                {values[f.key] ? (
-                  <div className="img-thumb">
-                    <img src={values[f.key]} alt="" />
-                    <button type="button" className="img-del" onClick={() => removeImage(f.key, null)}>✕ 삭제</button>
-                  </div>
-                ) : (
-                  <label className="img-upload">
-                    📷 사진 선택
-                    <input type="file" accept="image/*" hidden onChange={(e) => onPickImage(f.key, e.target.files, false)} />
-                  </label>
-                )}
-              </div>
-            ) : f.type === 'images' ? (
+            ) : f.type === 'attach' || f.type === 'images' ? (
               <div className="img-field">
                 <div className="img-grid">
-                  {(Array.isArray(values[f.key]) ? values[f.key] : []).map((src, idx) => (
+                  {arr.map((src, idx) => (
                     <div className="img-thumb sm" key={idx}>
                       <img src={src} alt="" />
                       <button type="button" className="img-del" onClick={() => removeImage(f.key, idx)}>✕</button>
                     </div>
                   ))}
-                  <label className="img-upload sm">
-                    ＋ 사진 추가
-                    <input type="file" accept="image/*" multiple hidden onChange={(e) => onPickImage(f.key, e.target.files, true)} />
+                  <label className={`img-upload sm ${busy[f.key] ? 'busy' : ''}`}>
+                    {busy[f.key] ? '불러오는 중…' : (f.type === 'attach' ? '＋ 사진·PDF 추가' : '＋ 사진 추가')}
+                    <input type="file" accept={f.type === 'attach' ? 'image/*,application/pdf' : 'image/*'} multiple hidden disabled={busy[f.key]}
+                      onChange={(e) => { (f.type === 'attach' ? onPickAttach : onPickPhotos)(f.key, e.target.files); e.target.value = ''; }} />
                   </label>
                 </div>
               </div>
@@ -215,7 +323,8 @@ export default function DocForm({ doc, onBack }) {
               <input type={f.type === 'date' ? 'date' : 'text'} value={values[f.key]} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="card">
