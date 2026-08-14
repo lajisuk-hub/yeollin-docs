@@ -229,6 +229,29 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .doc-sign-name { font-size: 17px; font-weight: 700; letter-spacing: 1px; }
 .doc-sign-seal { color: #888; font-weight: 400; font-size: 13px; }
 
+/* ── 이미지 업로드 필드 ── */
+.img-field { margin-top: 2px; }
+.img-upload { display: inline-flex; align-items: center; gap: 6px; background: #eef7f3; border: 1.5px dashed var(--brand); color: var(--brand); border-radius: 10px; padding: 12px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.img-upload:hover { background: #e2f1ea; }
+.img-upload.sm { padding: 10px 14px; font-size: 13px; }
+.img-thumb { position: relative; display: inline-block; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+.img-thumb img { display: block; max-width: 220px; max-height: 180px; object-fit: contain; }
+.img-thumb.sm img { width: 96px; height: 96px; object-fit: cover; }
+.img-del { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,.62); color: #fff; border: none; border-radius: 6px; padding: 3px 7px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.img-grid { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* ── 미리보기: 소제목·이미지 ── */
+.doc-subheading { font-size: 14.5px; font-weight: 700; margin: 14px 0 6px; color: #333; }
+.doc-img-empty { font-size: 13px; color: #999; background: #f7f7f7; border: 1px dashed #cfcfcf; border-radius: 8px; padding: 14px; text-align: center; margin: 6px 0 10px; }
+.doc-figure { margin: 6px 0 12px; text-align: center; break-inside: avoid; }
+.doc-figure img { max-width: 100%; max-height: 150mm; border: 1px solid #ddd; }
+.doc-figure figcaption { font-size: 12.5px; color: #777; margin-top: 4px; }
+.doc-photos-wrap { margin: 6px 0 12px; break-inside: avoid; }
+.doc-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.doc-photo { margin: 0; break-inside: avoid; }
+.doc-photo img { width: 100%; height: 62mm; object-fit: cover; border: 1px solid #ddd; }
+.doc-photos-cap { font-size: 12.5px; color: #777; margin-top: 4px; text-align: center; }
+
 /* ── 인쇄 ── */
 @media print {
   @page { size: A4; margin: 0; }
@@ -238,4 +261,6 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .doc-page { box-shadow: none; width: 210mm; min-height: 297mm; margin: 0; padding: 20mm; }
   .doc-heading { break-inside: avoid; }
   .doc-kv, .doc-sign { break-inside: avoid; }
+  .doc-figure, .doc-photos-wrap, .doc-photo { break-inside: avoid; }
+  .doc-figure img { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
