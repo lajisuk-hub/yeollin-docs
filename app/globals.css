@@ -47,6 +47,24 @@ body {
 .badge-freq { display: inline-block; background: #fff4e6; color: #b3620a; border: 1px solid #ffe0b8; font-size: 13px; font-weight: 700; padding: 3px 12px; border-radius: 20px; }
 .crit-note { font-size: 13px; color: #6a7571; margin-top: 6px; line-height: 1.5; }
 
+/* ── 2026 핵심 포인트 강조 박스 ── */
+.new2026 { background: linear-gradient(180deg, #fffdf5, #fff8e8); border: 2px solid #f5c518; border-radius: 16px; padding: 18px 18px 14px; margin-bottom: 18px; box-shadow: 0 4px 16px rgba(245,197,24,.16); }
+.new2026-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.new2026-badge { flex: 0 0 auto; background: #e8a400; color: #fff; font-weight: 800; font-size: 14px; letter-spacing: .5px; padding: 4px 12px; border-radius: 8px; }
+.new2026-title { font-family: 'Gowun Batang', serif; font-size: 20px; color: #7a5b00; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.new2026-title small { font-size: 13px; color: #a5843a; font-weight: 400; font-family: 'Gowun Dodum', sans-serif; }
+.new2026-lead { font-size: 14px; color: #6b5a2a; margin: 10px 0 12px; line-height: 1.65; }
+.new2026-lead b { color: #7a5b00; }
+.new2026-warn { white-space: nowrap; }
+.new2026-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.new2026-list li { display: flex; gap: 10px; background: #fff; border: 1px solid #f0e2b0; border-radius: 10px; padding: 11px 13px; }
+.new2026-list li.hot { border-color: #f3b6b0; background: #fff6f5; }
+.n2-mark { flex: 0 0 auto; font-size: 15px; line-height: 1.5; }
+.n2-body { display: flex; flex-direction: column; gap: 3px; }
+.n2-t { font-size: 14.5px; color: var(--ink); }
+.new2026-list li.hot .n2-t { color: #b23b30; }
+.n2-d { font-size: 13px; color: #6a7571; line-height: 1.55; }
+
 /* ── 홈 가이드 섹션 ① ② ③ ── */
 .gsec { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; margin-bottom: 16px; }
 .gsec-title { font-family: 'Gowun Batang', serif; font-size: 19px; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

@@ -1,6 +1,6 @@
 'use client';
 
-import { CRITERIA, KEY_SCHEDULE, AREAS } from '../lib/docs';
+import { CRITERIA, KEY_SCHEDULE, KEY_2026, AREAS } from '../lib/docs';
 import CriteriaGuide from './CriteriaGuide';
 
 const areaColor = (id) => AREAS.find((a) => a.id === id)?.color || '#6B7280';
@@ -9,6 +9,26 @@ const areaLabel = (id) => AREAS.find((a) => a.id === id)?.label || '';
 export default function HomeGuide() {
   return (
     <div className="guide">
+      {/* ⓪ 2026년 꼭 확인할 핵심 포인트 (강조) */}
+      <section className="new2026">
+        <div className="new2026-head">
+          <span className="new2026-badge">2026</span>
+          <h2 className="new2026-title">올해 꼭 확인하세요 <small>놓치기 쉬운 핵심 포인트</small></h2>
+        </div>
+        <p className="new2026-lead">배점·구조(총 100점, 영역별 최소점수)는 지난해와 같습니다. 아래는 <b>2026년 기준에서 특히 놓치기 쉬운</b> 세부 규칙이에요. <span className="new2026-warn">⚠️</span> 표시는 <b>점수가 깎이거나 제외될 수 있는</b> 항목입니다.</p>
+        <ul className="new2026-list">
+          {KEY_2026.map((k, i) => (
+            <li key={i} className={k.hot ? 'hot' : ''}>
+              <span className="n2-mark">{k.hot ? '⚠️' : '✓'}</span>
+              <span className="n2-body">
+                <b className="n2-t">{k.t}</b>
+                <span className="n2-d">{k.d}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {/* ① 중요하게 보는 것: 문서종류와 횟수 */}
       <section className="gsec">
         <h2 className="gsec-title"><span className="gsec-no">1</span> 열린어린이집이 중요하게 보는 것 <small>(꼭 만들어야 하는 서류 · 횟수)</small></h2>
