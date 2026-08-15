@@ -38,7 +38,9 @@ export default function CounselWizard({ onBack }) {
       if (!alive) return;
       setBasic(b || {});
       if (saved?.rounds) {
-        setData({ rounds: [ { ...emptyRound(), ...saved.rounds[0] }, { ...emptyRound(), ...saved.rounds[1] } ] });
+        // 아직 아무것도 안 쓴 회차는 지금의 기본값(글자 크기·여백)으로 새로 시작한다
+        const merge = (x) => (roundHasContent(x) ? { ...emptyRound(), ...x } : emptyRound());
+        setData({ rounds: [merge(saved.rounds[0]), merge(saved.rounds[1])] });
         if (typeof saved.step === 'number') setStep(saved.step);
       }
       loadedRef.current = true;
