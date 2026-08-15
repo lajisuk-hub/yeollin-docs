@@ -250,6 +250,65 @@ body {
 }
 .next-doc:hover { filter: brightness(1.07); }
 .hint.center { text-align: center; }
+
+/* ── 운영위원회: 분기 고르기 · 위원 명단 · 참석 체크 ── */
+.wiz-sub { font-size: 16px; font-weight: 700; color: #2b3b37; margin: 4px 0 10px; }
+.wiz-sub-c { font-size: 13px; font-weight: 700; color: #8a9591; margin-left: 6px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+button.ghost.sm { padding: 8px 12px; font-size: 13px; }
+
+.q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.q-card {
+  text-align: left; background: #fff; border: 1.5px solid #e2e8e6; border-radius: 12px;
+  padding: 14px; cursor: pointer; font-family: inherit; transition: .12s;
+}
+.q-card:hover { border-color: var(--brand); }
+.q-card.done { border-color: var(--brand); background: #f3faf7; }
+.q-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.q-top b { font-size: 16px; color: #2b3b37; }
+.q-chip { font-size: 12px; font-weight: 700; color: #8a9591; background: #f0f3f2; border-radius: 999px; padding: 3px 9px; }
+.q-chip.ok { color: #fff; background: var(--brand); }
+.q-when { font-size: 13.5px; color: #55625f; margin-top: 5px; }
+.q-note { font-size: 12.5px; color: #b3620a; font-weight: 700; margin-top: 4px; }
+.q-date { font-size: 13px; color: var(--brand); font-weight: 700; margin-top: 6px; }
+
+.chk-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chk { display: inline-flex; align-items: center; gap: 7px; border: 1.5px solid #e2e8e6; border-radius: 999px; padding: 8px 14px; cursor: pointer; background: #fff; font-size: 14px; transition: .12s; }
+.chk input { display: none; }
+.chk::before { content: ''; width: 18px; height: 18px; border: 2px solid #c3ccc9; border-radius: 5px; flex: 0 0 auto; }
+.chk.on { border-color: var(--brand); background: #f3faf7; }
+.chk.on::before { background: var(--brand); border-color: var(--brand); }
+.chk em { font-style: normal; font-size: 12.5px; color: #7d8985; margin-left: 4px; }
+
+.mem-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.mem-row { display: grid; grid-template-columns: 1fr 150px 38px; gap: 8px; align-items: center; }
+.mem-row input, .mem-row select { width: 100%; }
+.mem-del { background: #fff; border: 1px solid #e2e8e6; border-radius: 8px; color: #a4adaa; font-size: 15px; cursor: pointer; height: 40px; }
+.mem-del:hover { border-color: #d9776a; color: #d9776a; }
+.mem-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* 회의 일정 줄 */
+.sched-row { display: grid; grid-template-columns: 210px 1fr; gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid #eef1f0; }
+.sched-row:first-of-type { border-top: 0; }
+.sched-tag { display: flex; flex-direction: column; gap: 2px; }
+.sched-tag b { font-size: 15px; color: #2b3b37; }
+.sched-tag span { font-size: 13.5px; color: #55625f; }
+.sched-tag em { font-style: normal; font-size: 12.5px; color: #8a9591; }
+.sched-tag i { font-style: normal; font-size: 12.5px; color: #b3620a; font-weight: 700; }
+.sched-inputs { display: grid; grid-template-columns: 150px 120px 1fr; gap: 8px; }
+.sched-inputs input { width: 100%; }
+
+/* 원장님 서식 붙여넣기 */
+.sample-box { margin-bottom: 12px; }
+.sample-toggle { background: #f4f7f6; border: 1px dashed #c8d3cf; border-radius: 9px; padding: 9px 13px; font-size: 13.5px; color: #55625f; cursor: pointer; width: 100%; text-align: left; font-family: inherit; }
+.sample-toggle:hover { border-color: var(--brand); color: var(--brand); }
+.sample-box textarea { width: 100%; margin-top: 8px; }
+
+@media (max-width: 560px) {
+  .q-grid, .field-row { grid-template-columns: 1fr; }
+  .mem-row { grid-template-columns: 1fr 120px 38px; }
+  .sched-row, .sched-inputs { grid-template-columns: 1fr; }
+}
 @media (max-width: 560px) {
   .wiz-2col { grid-template-columns: 1fr; }
   .wiz-nav { flex-direction: column-reverse; }

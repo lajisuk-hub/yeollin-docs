@@ -11,6 +11,7 @@ import BasicInfo from './BasicInfo';
 import NewDocList from './NewDocList';
 import NewDocForm from './NewDocForm';
 import CounselWizard from './CounselWizard';
+import CommitteeWizard from './CommitteeWizard';
 import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
@@ -109,7 +110,9 @@ export default function Home() {
     const back = () => go({ type: 'newlist' });
     // 상담 서류는 한 단계씩 물어보며 만드는 방식
     return view.doc.wizard
-      ? <CounselWizard onBack={back} />
+      ? (view.doc.wizard === 'committee'
+        ? <CommitteeWizard onBack={back} />
+        : <CounselWizard onBack={back} />)
       : <NewDocForm doc={view.doc} onBack={back} />;
   }
 
