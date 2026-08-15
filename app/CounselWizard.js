@@ -638,6 +638,8 @@ export default function CounselWizard({ onBack }) {
               <button className="ghost" onClick={prev}>← 이전</button>
               <button className="ghost" onClick={restart}>처음부터 다시 하기</button>
             </div>
+            <button className="next-doc" onClick={onBack}>📋 목차로 이동 · 다음 문서 만들기 →</button>
+            <p className="hint center">저장을 마치셨으면 여기를 눌러 다음 서류를 만드세요.</p>
           </div>
           <div className="page-outer">
             <div className="print-area">

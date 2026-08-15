@@ -241,6 +241,15 @@ body {
 .wiz-result textarea { width: 100%; border: none; padding: 14px; font-family: inherit; font-size: 14.5px; line-height: 1.85; resize: vertical; }
 .wiz-result textarea:focus { outline: none; }
 .wiz-saves { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+/* 마지막 단계에서 목차(서류 목록)로 크게 돌아가는 버튼 */
+.next-doc {
+  display: block; width: 100%; margin: 18px 0 0; padding: 16px 18px;
+  background: var(--brand); color: #fff; border: 0; border-radius: 12px;
+  font-size: 17px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,.12);
+}
+.next-doc:hover { filter: brightness(1.07); }
+.hint.center { text-align: center; }
 @media (max-width: 560px) {
   .wiz-2col { grid-template-columns: 1fr; }
   .wiz-nav { flex-direction: column-reverse; }
