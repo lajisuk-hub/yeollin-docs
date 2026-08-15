@@ -597,6 +597,9 @@ export default function CommitteeWizard({ onBack }) {
                   <button className="ghost" onClick={() => saveHwpx(q)} disabled={busy}>📄 {info.no}만 한글(hwpx)로 저장</button>
                 </div>
                 {saveMsg && <p className="hint">{saveMsg}</p>}
+                <p className="hint">
+                  PDF는 인쇄 대화상자가 열리면 <b>대상을 「PDF로 저장」</b>으로 고르고 저장 버튼을 누르시면 됩니다.
+                </p>
 
                 <h3 className="wiz-sub">{info.quarter} 운영의 특징</h3>
                 <p className="hint">이 분기 회의가 어떤 점에서 의미 있었는지 한 문단으로 정리합니다.</p>
