@@ -10,6 +10,7 @@ import PathGate from './PathGate';
 import BasicInfo from './BasicInfo';
 import NewDocList from './NewDocList';
 import NewDocForm from './NewDocForm';
+import CounselWizard from './CounselWizard';
 import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
@@ -105,7 +106,11 @@ export default function Home() {
   }
 
   if (view.type === 'newdoc') {
-    return <NewDocForm doc={view.doc} onBack={() => go({ type: 'newlist' })} />;
+    const back = () => go({ type: 'newlist' });
+    // 상담 서류는 한 단계씩 물어보며 만드는 방식
+    return view.doc.wizard
+      ? <CounselWizard onBack={back} />
+      : <NewDocForm doc={view.doc} onBack={back} />;
   }
 
   if (view.type === 'step') {
