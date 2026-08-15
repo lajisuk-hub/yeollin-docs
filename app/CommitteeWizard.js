@@ -6,7 +6,8 @@ import { fileToResizedDataURL } from '../lib/image';
 import {
   MEETINGS, YEARS, MEMBER_ROLES, emptyData, emptyMeeting, suggestMembers,
   whenText, agendaList, meetingHasContent, meetingDone, membersOf, attendText,
-  defaultRulesText, defaultOrder, defaultAgenda, defaultMemo, qLabel, buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
+  defaultRulesText, defaultOrder, defaultAgenda, defaultMemo, qLabel, isFirstOfYear, yearDocAt,
+  buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
 } from '../lib/committeeDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
@@ -588,17 +589,11 @@ export default function CommitteeWizard({ onBack }) {
               <div className="card wiz-card">
                 <p className="wiz-lead">
                   <b>{info.no} ({info.quarter}) 문서 정리본</b>입니다.
-                  아래에 <b>{info.year}년 회칙 · 위원 명단 · 개최 공지문 · 회의록 · 결과 공지문</b>이 한 번에 들어 있습니다.
-                </p>
-                <h3 className="wiz-sub">이 차수만 저장하기</h3>
-                <p className="hint">아래 정리본을 <b>{info.no}만 따로</b> 저장할 수 있습니다. 네 차수를 묶은 전체 문서는 차수 목록에서 저장하세요.</p>
-                <div className="wiz-saves">
-                  <button className="primary" onClick={() => window.print()}>🖨️ {info.no}만 PDF로 저장</button>
-                  <button className="ghost" onClick={() => saveHwpx(q)} disabled={busy}>📄 {info.no}만 한글(hwpx)로 저장</button>
-                </div>
-                {saveMsg && <p className="hint">{saveMsg}</p>}
-                <p className="hint">
-                  PDF는 인쇄 대화상자가 열리면 <b>대상을 「PDF로 저장」</b>으로 고르고 저장 버튼을 누르시면 됩니다.
+                  아래에 {isFirstOfYear(q) && <><b>{info.year}년 구성계획 · 위원 명단 · 회칙</b>과 </>}
+                  <b>개최 공지문 · 회의록 · 결과보고서</b>가 한 번에 들어 있습니다.
+                  {!isFirstOfYear(q) && (
+                    <><br />※ {info.year}년 구성계획·회칙은 <b>{yearDocAt(q).no}({yearDocAt(q).quarter})</b> 문서에 들어 있습니다. (연도별 1회)</>
+                  )}
                 </p>
 
                 <h3 className="wiz-sub">{info.quarter} 운영의 특징</h3>
@@ -622,6 +617,17 @@ export default function CommitteeWizard({ onBack }) {
                     )}
                   </>
                 )}
+                <h3 className="wiz-sub">이 차수만 저장하기</h3>
+                <p className="hint">아래 정리본을 <b>{info.no}만 따로</b> 저장할 수 있습니다. 네 차수를 묶은 전체 문서는 차수 목록에서 저장하세요.</p>
+                <div className="wiz-saves">
+                  <button className="primary" onClick={() => window.print()}>🖨️ {info.no}만 PDF로 저장</button>
+                  <button className="ghost" onClick={() => saveHwpx(q)} disabled={busy}>📄 {info.no}만 한글(hwpx)로 저장</button>
+                </div>
+                {saveMsg && <p className="hint">{saveMsg}</p>}
+                <p className="hint">
+                  PDF는 인쇄 대화상자가 열리면 <b>대상을 「PDF로 저장」</b>으로 고르고 저장 버튼을 누르시면 됩니다.
+                </p>
+
                 {q < 3 ? (
                   <button className="next-doc" onClick={() => go({ v: 'step', q: q + 1, s: 'agenda' })}>
                     ✅ 확인했습니다 · {MEETINGS[q + 1].no} ({MEETINGS[q + 1].quarter}) 이어서 만들기 →
