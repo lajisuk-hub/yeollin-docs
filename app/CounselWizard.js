@@ -118,7 +118,9 @@ export default function CounselWizard({ onBack }) {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'AI 작성에 실패했습니다');
       upd({
+        noticeEyebrow: d.result?.eyebrow || '함께 이야기하고, 함께 성장합니다',
         noticeGreeting: d.result?.greeting || '',
+        noticeQuestions: (d.result?.questions || []).join('\n'),
         noticeNotes: (d.result?.notes || []).join('\n'),
         noticeItems: round.noticeItems?.trim() || defaultNoticeItems(round),
         noticeFeedback: '',
@@ -284,16 +286,24 @@ export default function CounselWizard({ onBack }) {
             {round.noticeGreeting && (
               <>
                 <div className="field" style={{ marginTop: 16 }}>
-                  <label>인사말</label>
-                  <textarea rows={3} value={round.noticeGreeting} onChange={(e) => upd({ noticeGreeting: e.target.value })} />
+                  <label>맨 위 한 줄 문구</label>
+                  <input type="text" value={round.noticeEyebrow} onChange={(e) => upd({ noticeEyebrow: e.target.value })} placeholder="예) 함께 이야기하고, 함께 성장합니다" />
                 </div>
                 <div className="field">
-                  <label>안내 항목 <span className="fhint">(한 줄에 하나씩 · ▶로 시작하면 화살표로 표시돼요)</span></label>
+                  <label>인사말</label>
+                  <textarea rows={4} value={round.noticeGreeting} onChange={(e) => upd({ noticeGreeting: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>상담 안내 <span className="fhint">(한 줄에 하나씩 · <b>제목 : 내용</b> 형태로 쓰면 아이콘이 붙어요)</span></label>
                   <textarea rows={5} value={round.noticeItems} onChange={(e) => upd({ noticeItems: e.target.value })} />
                 </div>
                 <div className="field">
-                  <label>참고사항 <span className="fhint">(한 줄에 하나씩 · 번호는 자동)</span></label>
-                  <textarea rows={4} value={round.noticeNotes} onChange={(e) => upd({ noticeNotes: e.target.value })} />
+                  <label>상담 전 생각해 올 질문 <span className="fhint">(한 줄에 하나씩 · 번호는 자동)</span></label>
+                  <textarea rows={4} value={round.noticeQuestions} onChange={(e) => upd({ noticeQuestions: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>부탁 말씀 <span className="fhint">(한 줄에 하나씩 · ※ 표시로 들어갑니다)</span></label>
+                  <textarea rows={2} value={round.noticeNotes} onChange={(e) => upd({ noticeNotes: e.target.value })} />
                 </div>
                 <div className="field">
                   <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
