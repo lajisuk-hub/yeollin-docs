@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
-import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, DEFAULT_BG, DEFAULT_APPLY_BG } from '../lib/counselDoc';
+import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, DEFAULT_BG, DEFAULT_BG_PLAIN, DEFAULT_APPLY_BG } from '../lib/counselDoc';
 import Block from './NewBlocks';
 
 const KEY = 'counsel-wizard';
@@ -19,8 +19,11 @@ const STEPS = [
   { id: 'save' },
 ];
 
+// 회차별 기본 서식 (2회차는 학기 표시가 없는 그림)
+const freshRound = (i) => ({ ...emptyRound(), noticeBg: i === 1 ? DEFAULT_BG_PLAIN : DEFAULT_BG });
+
 export default function CounselWizard({ onBack }) {
-  const [data, setData] = useState({ rounds: [emptyRound(), emptyRound()] });
+  const [data, setData] = useState({ rounds: [freshRound(0), freshRound(1)] });
   const [step, setStep] = useState(0);
   const [basic, setBasic] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -39,8 +42,8 @@ export default function CounselWizard({ onBack }) {
       setBasic(b || {});
       if (saved?.rounds) {
         // 아직 아무것도 안 쓴 회차는 지금의 기본값(글자 크기·여백)으로 새로 시작한다
-        const merge = (x) => (roundHasContent(x) ? { ...emptyRound(), ...x } : emptyRound());
-        setData({ rounds: [merge(saved.rounds[0]), merge(saved.rounds[1])] });
+        const merge = (x, i) => (roundHasContent(x) ? { ...freshRound(i), ...x } : freshRound(i));
+        setData({ rounds: [merge(saved.rounds[0], 0), merge(saved.rounds[1], 1)] });
         if (typeof saved.step === 'number') setStep(saved.step);
       }
       loadedRef.current = true;
@@ -382,6 +385,7 @@ export default function CounselWizard({ onBack }) {
                     <input type="file" accept="image/*" hidden onChange={(e) => { pickBg(e.target.files[0]); e.target.value = ''; }} />
                   </label>
                   <button className="bg-btn" onClick={() => upd({ noticeBg: DEFAULT_BG })}>기본 서식</button>
+                  <button className="bg-btn" onClick={() => upd({ noticeBg: DEFAULT_BG_PLAIN })}>학기 표시 없음</button>
                   <button className="bg-btn" onClick={() => upd({ noticeBg: '' })}>그림 없이</button>
                 </div>
                 {round.noticeBg && (
