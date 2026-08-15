@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
-import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, defaultNoticeItems } from '../lib/counselDoc';
+import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, defaultNoticeItems, DEFAULT_BG } from '../lib/counselDoc';
 import Block from './NewBlocks';
 
 const KEY = 'counsel-wizard';
@@ -127,6 +127,20 @@ export default function CounselWizard({ onBack }) {
       });
     } catch (e) {
       setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 안내문 배경(서식) 그림 올리기
+  async function pickBg(file) {
+    if (!file) return;
+    setBusy(true);
+    setErr('');
+    try {
+      upd({ noticeBg: await fileToResizedDataURL(file, 1400) });
+    } catch {
+      setErr('그림을 불러오지 못했습니다. 다른 그림으로 시도해 주세요.');
     } finally {
       setBusy(false);
     }
@@ -325,6 +339,35 @@ export default function CounselWizard({ onBack }) {
           {round.noticeGreeting && (
             <div className="card wiz-card">
               <h3 className="card-title">이렇게 나옵니다 — 그대로 인쇄해서 나눠주세요</h3>
+
+              <div className="bg-tools">
+                <div className="bg-row">
+                  <span className="bg-label">서식 그림</span>
+                  <label className="file-btn sm">
+                    🖼️ 내 그림 올리기
+                    <input type="file" accept="image/*" hidden onChange={(e) => { pickBg(e.target.files[0]); e.target.value = ''; }} />
+                  </label>
+                  <button className="bg-btn" onClick={() => upd({ noticeBg: DEFAULT_BG })}>기본 서식</button>
+                  <button className="bg-btn" onClick={() => upd({ noticeBg: '' })}>그림 없이</button>
+                </div>
+                {round.noticeBg && (
+                  <div className="bg-row sliders">
+                    <label>글 시작 위치
+                      <input type="range" min="20" max="55" value={round.noticeTop ?? 33} onChange={(e) => upd({ noticeTop: Number(e.target.value) })} />
+                      <b>{round.noticeTop ?? 33}%</b>
+                    </label>
+                    <label>아래 여백
+                      <input type="range" min="8" max="35" value={round.noticeBottom ?? 17} onChange={(e) => upd({ noticeBottom: Number(e.target.value) })} />
+                      <b>{round.noticeBottom ?? 17}%</b>
+                    </label>
+                    <label>글자 크기
+                      <input type="range" min="0.7" max="1.3" step="0.05" value={round.noticeScale ?? 1} onChange={(e) => upd({ noticeScale: Number(e.target.value) })} />
+                      <b>{Math.round((round.noticeScale ?? 1) * 100)}%</b>
+                    </label>
+                  </div>
+                )}
+              </div>
+
               <div ref={posterRef} className="poster-hold">
                 <Block b={noticeBlock(round, r, center || '○○어린이집')} />
               </div>

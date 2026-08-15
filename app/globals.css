@@ -246,6 +246,39 @@ body {
   .wiz-nav { flex-direction: column-reverse; }
 }
 
+/* 안내문 서식 그림 조절 도구 */
+.bg-tools { background: #f7faf9; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+.bg-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.bg-row + .bg-row { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; }
+.bg-label { font-size: 13.5px; font-weight: 700; color: #55625f; }
+.bg-btn { background: #fff; border: 1px solid #c6d5d0; color: #55625f; border-radius: 8px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.bg-btn:hover { border-color: var(--brand); color: var(--brand); }
+.file-btn.sm { display: inline-block; background: #fff; border: 1px solid var(--brand); color: var(--brand); border-radius: 8px; padding: 7px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; margin: 0; width: auto; }
+.bg-row.sliders { gap: 16px; }
+.bg-row.sliders label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #55625f; }
+.bg-row.sliders input[type=range] { width: 108px; accent-color: var(--brand); }
+.bg-row.sliders b { color: var(--brand); min-width: 34px; }
+
+/* 배경 그림 위에 글을 얹는 안내문 */
+.nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.7; word-break: keep-all; }
+.nb-img { display: block; width: 100%; height: auto; }
+.nb-area { position: absolute; left: 11%; right: 11%; overflow: hidden; display: flex; flex-direction: column; color: #4a5240; }
+.nb-to { align-self: center; font-weight: 700; font-size: 1.05em; color: #5f7a3f; border-bottom: 0.09em solid #b9d49a; padding-bottom: 0.15em; margin-bottom: 0.9em; letter-spacing: 0.05em; }
+.nb-greet { text-align: center; font-size: 0.95em; }
+.nb-greet p + p { margin-top: 0.45em; }
+.nb-items { list-style: none; margin: 1.1em 0 0; display: flex; flex-direction: column; gap: 0.5em; }
+.nb-items li { display: flex; gap: 0.5em; align-items: baseline; font-size: 0.95em; }
+.nb-items li::before { content: '·'; color: #7cb342; font-weight: 800; }
+.nb-items b { flex: 0 0 auto; color: #5f7a3f; }
+.nb-items b::after { content: ' :'; }
+.nb-ask { margin-top: 1.1em; background: rgba(255,255,255,.65); border: 0.07em solid #cfe3b4; border-radius: 0.7em; padding: 0.7em 0.9em; }
+.nb-ask-title { font-weight: 700; font-size: 0.9em; color: #5f9c3c; margin-bottom: 0.4em; }
+.nb-ask ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 0.3em; }
+.nb-ask li { font-size: 0.87em; line-height: 1.6; }
+.nb-notes { margin-top: 0.9em; display: flex; flex-direction: column; gap: 0.25em; }
+.nb-notes p { font-size: 0.82em; color: #7b8271; }
+.nb-center { margin-top: auto; padding-top: 0.8em; text-align: center; font-family: 'Gowun Batang', serif; font-size: 1.15em; font-weight: 700; color: #5f9c3c; letter-spacing: 0.25em; }
+
 /* 가정통신문 모양 안내문 */
 .notice-poster { background: #fbfdf7; border: 1px solid #dcead0; border-radius: 14px; overflow: hidden; margin: 10px 0 16px; color: #3c463a; word-break: keep-all; overflow-wrap: break-word; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 .np-band { height: 12px; background: #7cb342; border-radius: 0 0 10px 10px; }
@@ -527,7 +560,8 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 제목·소제목이 페이지 끝에 홀로 남지 않고 다음 내용과 붙게 */
   .doc-heading, .doc-subheading, .doc-sessionhead { break-after: avoid; }
   .doc-kv { break-inside: avoid; }
-  .notice-poster { break-inside: avoid; }
+  .notice-poster, .nb-wrap { break-inside: avoid; }
+  .nb-img { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .doc-table { break-inside: auto; }
   .doc-table tr, .doc-blank { break-inside: avoid; }
   .doc-table thead { display: table-header-group; }

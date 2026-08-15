@@ -1,5 +1,72 @@
 'use client';
 
+import { useLayoutEffect, useRef } from 'react';
+
+// 배경 그림 위에 글을 얹는 안내문
+// (원장님이 만든 서식 그림을 그대로 쓰고, 빈 곳에 글자만 넣는다. 글이 길면 글자가 자동으로 작아진다)
+function NoticeOnImage({ b }) {
+  const wrapRef = useRef(null);
+  const areaRef = useRef(null);
+  const greetLines = String(b.greeting || '').split(/\n+/).map((t) => t.trim()).filter(Boolean);
+  const items = b.items || [];
+  const notes = b.notes || [];
+  const questions = b.questions || [];
+
+  // 글이 빈 칸을 넘치면 넘치지 않을 때까지 글자를 줄인다
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const area = areaRef.current;
+    if (!wrap || !area) return;
+    const fit = () => {
+      const w = wrap.clientWidth || 780;
+      let size = w * 0.031 * (b.textScale || 1);
+      area.style.fontSize = `${size}px`;
+      let guard = 0;
+      while (area.scrollHeight > area.clientHeight + 1 && size > 5 && guard < 60) {
+        size *= 0.96;
+        area.style.fontSize = `${size}px`;
+        guard += 1;
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(wrap);
+    const img = wrap.querySelector('img');
+    if (img && !img.complete) img.addEventListener('load', fit, { once: true });
+    return () => ro.disconnect();
+  }, [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale]);
+
+  return (
+    <div className="nb-wrap" ref={wrapRef}>
+      <img className="nb-img" src={b.bg} alt="" />
+      <div className="nb-area" ref={areaRef} style={{ top: `${b.top}%`, bottom: `${b.bottom}%` }}>
+        <div className="nb-to">(　　　　　　　　) 부모님께</div>
+        <div className="nb-greet">{greetLines.map((t, i) => <p key={i}>{t}</p>)}</div>
+        {!!items.length && (
+          <ul className="nb-items">
+            {items.map((it, i) => (
+              <li key={i}>
+                {it.label && <b>{it.label}</b>}
+                <span>{it.value}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!!questions.length && (
+          <div className="nb-ask">
+            <div className="nb-ask-title">상담 전, 이런 점을 생각해 오시면 좋아요</div>
+            <ol>{questions.map((q, i) => <li key={i}>{q}</li>)}</ol>
+          </div>
+        )}
+        {!!notes.length && (
+          <div className="nb-notes">{notes.map((n, i) => <p key={i}>※ {n}</p>)}</div>
+        )}
+        <div className="nb-center">{b.center}</div>
+      </div>
+    </div>
+  );
+}
+
 // 안내문에 쓰는 작은 선 아이콘들
 const ICONS = {
   calendar: <><rect x="3" y="4.5" width="14" height="12.5" rx="2" /><path d="M3 8h14M7 2.5v3M13 2.5v3" /></>,
@@ -141,7 +208,7 @@ export default function Block({ b }) {
     );
   }
   // 가정통신문 모양 안내문 (인쇄해서 그대로 나눠줄 수 있는 형태)
-  if (b.type === 'notice') return <NoticePoster b={b} />;
+  if (b.type === 'notice') return b.bg ? <NoticeOnImage b={b} /> : <NoticePoster b={b} />;
   if (b.type === 'kv') {
     return (
       <table className="doc-kv">
