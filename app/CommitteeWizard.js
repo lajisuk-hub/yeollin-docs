@@ -95,7 +95,7 @@ export default function CommitteeWizard({ onBack }) {
         body: JSON.stringify({
           kind,
           center,
-          quarter: `${info.no} (${info.quarter})`,
+          quarter: `${info.no} · ${qLabel(q)} (회계연도 ${info.year}년도)`,
           when: whenText(meeting),
           place: meeting.place,
           attend: attendText(members, meeting),
@@ -242,7 +242,7 @@ export default function CommitteeWizard({ onBack }) {
                 <div className="sched-inputs">
                   <input type="date" value={data.meetings[i].date}
                     onChange={(e) => updMeeting(i, { date: e.target.value })} />
-                  <input type="text" value={data.meetings[i].time} placeholder="예) 오후 5시"
+                  <input type="text" value={data.meetings[i].time} placeholder="예) 오전 10:30 ~ 12:30"
                     onChange={(e) => updMeeting(i, { time: e.target.value })} />
                   <input type="text" value={data.meetings[i].place} placeholder="장소"
                     onChange={(e) => updMeeting(i, { place: e.target.value })} />
