@@ -591,6 +591,8 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .doc-note { font-size: 13px; color: #555; background: #f4f7f6; border-radius: 8px; padding: 10px 12px; margin-top: 16px; white-space: pre-wrap; }
 .doc-kv { width: 100%; border-collapse: collapse; margin: 6px 0 8px; }
 .doc-kv th, .doc-kv td { border: 1px solid #b9c2bf; padding: 9px 11px; font-size: 14px; text-align: left; vertical-align: top; }
+/* 참석현황·안건처럼 여러 줄인 값은 줄바꿈을 그대로 살린다 */
+.doc-kv td { white-space: pre-wrap; }
 .doc-kv th { background: #eef3f1; width: 130px; font-weight: 700; white-space: nowrap; }
 .doc-sign { text-align: center; margin-top: 40px; }
 .doc-sign-date { font-size: 15px; margin-bottom: 14px; }
