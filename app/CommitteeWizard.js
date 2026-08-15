@@ -6,7 +6,7 @@ import { fileToResizedDataURL } from '../lib/image';
 import {
   MEETINGS, YEARS, MEMBER_ROLES, emptyData, emptyMeeting, suggestMembers,
   whenText, agendaList, meetingHasContent, meetingDone, membersOf, attendText,
-  defaultRulesText, defaultOrder, qLabel, buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
+  defaultRulesText, defaultOrder, defaultAgenda, qLabel, buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
 } from '../lib/committeeDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
@@ -77,6 +77,15 @@ export default function CommitteeWizard({ onBack }) {
   }));
   const setMembers = (year, list) => setData((d) => ({ ...d, members: { ...d.members, [year]: list } }));
   const setRules = (year, patch) => setData((d) => ({ ...d, rules: { ...d.rules, [year]: { ...d.rules[year], ...patch } } }));
+
+  // 안건 화면에 들어오면 그 분기에 흔한 안건을 미리 채워 준다 (비어 있을 때만)
+  useEffect(() => {
+    if (!loadedRef.current) return;
+    if (view.v !== 'step' || view.s !== 'agenda') return;
+    if (data.meetings[q]?.agenda?.trim()) return;
+    upd({ agenda: defaultAgenda(q) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.v, view.s, q]);
 
   const go = (v) => { setErr(''); setView(v); window.scrollTo(0, 0); };
   const stepIdx = STEPS.indexOf(view.s);
@@ -281,7 +290,7 @@ export default function CommitteeWizard({ onBack }) {
             <div className="card wiz-card" key={y}>
               <h2 className="wiz-sub">{y}년 회칙</h2>
               <div className="wiz-result">
-                <div className="wiz-result-top">회칙 전문 <span>— 직접 고쳐도 됩니다</span></div>
+                <div className="wiz-result-top">회칙 전문 <span>✏️ 직접 고쳐도 됩니다</span></div>
                 <textarea rows={16}
                   value={data.rules[y]?.text || defaultRulesText(y, center || '○○어린이집')}
                   onChange={(e) => setRules(y, { text: e.target.value })} />
@@ -386,9 +395,11 @@ export default function CommitteeWizard({ onBack }) {
                 </div>
               </div>
               <div className="field">
-                <label>안건</label>
-                <textarea rows={6} value={meeting.agenda} onChange={(e) => upd({ agenda: e.target.value })}
-                  placeholder={'예)\n2026학년도 보육과정 운영 계획\n급식·간식 식단 운영과 위생 관리\n어린이집 안전관리 및 등하원 차량 점검\n부모참여 행사 연간 일정'} />
+                <label>안건 <span className="edit-badge">✏️ 샘플을 넣어두었습니다 · 직접 고치거나 추가해서 작성하세요</span></label>
+                <textarea rows={8} value={meeting.agenda} onChange={(e) => upd({ agenda: e.target.value })} />
+                <button type="button" className="ghost sm" onClick={() => upd({ agenda: defaultAgenda(q) })}>
+                  샘플 안건 다시 넣기
+                </button>
               </div>
               <div className="wiz-nav">
                 <button className="ghost" onClick={() => go({ v: 'pick' })}>← 차수 목록</button>
@@ -430,11 +441,11 @@ export default function CommitteeWizard({ onBack }) {
               {meeting.discussion && (
                 <>
                   <div className="wiz-result">
-                    <div className="wiz-result-top">회의순서 <span>— 직접 고쳐도 됩니다</span></div>
+                    <div className="wiz-result-top">회의순서 <span>✏️ 직접 고쳐도 됩니다</span></div>
                     <textarea rows={7} value={meeting.order} onChange={(e) => upd({ order: e.target.value })} />
                   </div>
                   <div className="wiz-result">
-                    <div className="wiz-result-top">토의 및 의결사항 <span>— 직접 고쳐도 됩니다</span></div>
+                    <div className="wiz-result-top">토의 및 의결사항 <span>✏️ 직접 고쳐도 됩니다</span></div>
                     <textarea rows={14} value={meeting.discussion} onChange={(e) => upd({ discussion: e.target.value })} />
                   </div>
                   <div className="field">
@@ -514,7 +525,7 @@ export default function CommitteeWizard({ onBack }) {
                 {meeting.feature && (
                   <>
                     <div className="wiz-result">
-                      <div className="wiz-result-top">{info.quarter} 운영의 특징 <span>— 직접 고쳐도 됩니다</span></div>
+                      <div className="wiz-result-top">{info.quarter} 운영의 특징 <span>✏️ 직접 고쳐도 됩니다</span></div>
                       <textarea rows={6} value={meeting.feature} onChange={(e) => upd({ feature: e.target.value })} />
                     </div>
                     <div className="field">
@@ -659,7 +670,7 @@ function AiStep({ lead, sampleLabel, sample, onSample, value, onChange, feedback
       {value && (
         <>
           <div className="wiz-result">
-            <div className="wiz-result-top">만들어진 글 <span>— 직접 고쳐도 됩니다</span></div>
+            <div className="wiz-result-top">만들어진 글 <span>✏️ 직접 고쳐도 됩니다</span></div>
             <textarea rows={14} value={value} onChange={(e) => onChange(e.target.value)} />
           </div>
           <div className="field">

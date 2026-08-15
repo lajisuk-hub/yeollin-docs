@@ -541,7 +541,7 @@ export default function CounselWizard({ onBack }) {
           {round.summary && (
             <>
               <div className="wiz-result">
-                <div className="wiz-result-top">AI가 정리한 내용 <span>— 직접 고쳐도 됩니다</span></div>
+                <div className="wiz-result-top">AI가 정리한 내용 <span>✏️ 직접 고쳐도 됩니다</span></div>
                 <textarea rows={12} value={round.summary} onChange={(e) => upd({ summary: e.target.value })} />
               </div>
               <div className="field">
@@ -668,7 +668,7 @@ function AiStep({ lead, value, onChange, feedback, onFeedback, onMake, busy, err
       {value && (
         <>
           <div className="wiz-result">
-            <div className="wiz-result-top">만들어진 글 <span>— 직접 고쳐도 됩니다</span></div>
+            <div className="wiz-result-top">만들어진 글 <span>✏️ 직접 고쳐도 됩니다</span></div>
             <textarea rows={12} value={value} onChange={(e) => onChange(e.target.value)} />
           </div>
           <div className="field">

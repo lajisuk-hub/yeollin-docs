@@ -237,7 +237,13 @@ body {
 .wiz-next { width: 100%; }
 .wiz-result { margin: 16px 0 6px; border: 2px solid #cfe4dc; border-radius: 12px; overflow: hidden; }
 .wiz-result-top { background: #eef7f3; padding: 9px 13px; font-size: 13.5px; font-weight: 700; color: var(--brand); }
-.wiz-result-top span { font-weight: 400; color: #6a7571; }
+/* "직접 고쳐도 됩니다" — 눈에 잘 띄게 주황 배지로 */
+.wiz-result-top span,
+.edit-badge {
+  display: inline-block; margin-left: 8px; padding: 3px 10px;
+  background: #fff3df; border: 1px solid #f0c98a; border-radius: 999px;
+  font-weight: 700; font-size: 12.5px; color: #b3620a;
+}
 .wiz-result textarea { width: 100%; border: none; padding: 14px; font-family: inherit; font-size: 14.5px; line-height: 1.85; resize: vertical; }
 .wiz-result textarea:focus { outline: none; }
 .wiz-saves { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
