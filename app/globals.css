@@ -707,6 +707,9 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .doc-sheet-bot { height: 14mm; }
   .doc-heading { break-inside: avoid; }
   .doc-kv, .doc-sign { break-inside: avoid; }
+  /* 문서 상자 안의 정보표는 줄 단위로 쪼개져도 되게 (통째로 밀려 앞 쪽이 비는 것 방지) */
+  .box-kv { break-inside: auto; }
+  .box-kv tr { break-inside: avoid; }
   .doc-figure, .doc-photos-wrap, .doc-photo { break-inside: avoid; }
   .doc-attachrow, .doc-attachcol figure { break-inside: avoid; }
   .doc-figure img, .doc-attachcol img { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -723,8 +726,8 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 회의록·결과보고서처럼 한 칸이 긴 표는 쪽을 넘겨 이어지게 (앞 쪽이 텅 비는 것 방지) */
   .flow-table, .flow-table tr, .flow-table td, .flow-table th, .flow-table tbody { break-inside: auto; }
   .flow-table thead { display: table-header-group; }
-  /* 제목 띠와 정보표가 본문과 떨어져 홀로 남지 않게 */
-  .docbox-head, .box-kv { break-after: avoid; }
+  /* 제목 띠가 본문과 떨어져 홀로 남지 않게 */
+  .docbox-head { break-after: avoid; }
   .doc-table thead { display: table-header-group; }
   /* 회차 사진·2회차는 새 페이지에서 시작 */
   .doc-pagebreak { break-before: page; border: none; margin: 0; height: 0; }
