@@ -25,7 +25,7 @@ function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps) {
       if (nameRef?.current) {
         const n = nameRef.current;
         n.style.fontSize = `${w * 0.034}px`;
-        n.style.bottom = `${Math.max(6, h * (bottom / 100) - n.offsetHeight - h * 0.012)}px`;
+        n.style.bottom = `${Math.max(6, h * (bottom / 100) - n.offsetHeight - h * 0.026)}px`;
       }
       const put = (s) => { area.style.fontSize = `${s}px`; };
       const over = () => area.scrollHeight > area.clientHeight + 1;
