@@ -204,14 +204,18 @@ export default function DocForm({ doc, onBack }) {
     loadedRef.current = false;
     setRestored(false);
     let alive = true;
-    loadForm(doc.id).then((savedData) => {
+    // 기본사항에 등록해 둔 어린이집 이름은 비어 있을 때 자동으로 채워준다
+    Promise.all([loadForm(doc.id), loadForm('basic-info')]).then(([savedData, basic]) => {
       if (!alive) return;
+      const centerName = basic?.centerName?.trim() || '';
       if (savedData && savedData.values) {
-        setValues({ ...initial, ...savedData.values });
+        const v = { ...initial, ...savedData.values };
+        if (!v.centerName && centerName && 'centerName' in initial) v.centerName = centerName;
+        setValues(v);
         if (savedData.ai) setAi(savedData.ai);
         setRestored(true);
       } else {
-        setValues(initial);
+        setValues(centerName && 'centerName' in initial ? { ...initial, centerName } : initial);
         setAi(null);
       }
       loadedRef.current = true;

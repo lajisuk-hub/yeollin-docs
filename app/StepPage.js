@@ -5,7 +5,7 @@ import { CRITERIA, docsByArea, AREAS } from '../lib/docs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
 
-export default function StepPage({ areaId, onSelectDoc, onGo, onHome }) {
+export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) {
   const stepIndex = STEP_IDS.indexOf(areaId);
   const area = AREAS.find((a) => a.id === areaId);
   const crit = CRITERIA.find((c) => c.id === areaId);
@@ -72,6 +72,13 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome }) {
       ) : (
         /* ── 일반: 챙길 것 표 + 문서 만들기 ── */
         <>
+          {onGate && (
+            <div className="gate-back">
+              <span>지금은 <b>기존 서류를 분석·정리</b>하는 화면이에요.</span>
+              <button onClick={onGate}>서류 만드는 방식 다시 고르기 →</button>
+            </div>
+          )}
+
           <div className="card">
             <h3 className="card-title" style={{ color }}>✅ 꼭 챙겨야 할 것 (항목별 필요 횟수)</h3>
             <table className="need-table">

@@ -5,25 +5,59 @@ import { AREAS } from '../lib/docs';
 import DocForm from './DocForm';
 import StepPage from './StepPage';
 import HomeGuide from './HomeGuide';
+import PathGate from './PathGate';
+import BasicInfo from './BasicInfo';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
 
 export default function Home() {
-  // view: {type:'home'} | {type:'step', areaId} | {type:'doc', doc}
+  // view: {type:'home'} | {type:'step', areaId} | {type:'gate'} | {type:'basic'} | {type:'doc', doc}
   const [view, setView] = useState({ type: 'home' });
+  // 참여성에 처음 들어갈 때 한 번 '서류 만드는 방식'을 고르게 한다
+  const [pathChosen, setPathChosen] = useState(false);
+
+  const go = (next) => { setView(next); window.scrollTo(0, 0); };
+  const goHome = () => go({ type: 'home' });
+  const goGate = () => go({ type: 'gate' });
+  // 참여성부터는 서류 단계 → 방식을 아직 안 골랐으면 갈림길 화면부터
+  const goStep = (areaId) => {
+    if (areaId === 'join' && !pathChosen) return goGate();
+    go({ type: 'step', areaId });
+  };
 
   if (view.type === 'doc') {
     // 문서 작성 후 뒤로가면 그 문서가 속한 단계로 돌아감
-    return <DocForm doc={view.doc} onBack={() => setView({ type: 'step', areaId: view.doc.area })} />;
+    return <DocForm doc={view.doc} onBack={() => go({ type: 'step', areaId: view.doc.area })} />;
+  }
+
+  if (view.type === 'gate') {
+    return (
+      <PathGate
+        onNew={() => { setPathChosen(true); go({ type: 'basic' }); }}
+        onExisting={() => { setPathChosen(true); go({ type: 'step', areaId: 'join' }); }}
+        onHome={goHome}
+      />
+    );
+  }
+
+  if (view.type === 'basic') {
+    return (
+      <BasicInfo
+        onBack={goGate}
+        onHome={goHome}
+        onGoDocs={() => go({ type: 'step', areaId: 'join' })}
+      />
+    );
   }
 
   if (view.type === 'step') {
     return (
       <StepPage
         areaId={view.areaId}
-        onSelectDoc={(doc) => setView({ type: 'doc', doc })}
-        onGo={(areaId) => { setView({ type: 'step', areaId }); window.scrollTo(0, 0); }}
-        onHome={() => { setView({ type: 'home' }); window.scrollTo(0, 0); }}
+        onSelectDoc={(doc) => go({ type: 'doc', doc })}
+        onGo={goStep}
+        onHome={goHome}
+        onGate={goGate}
       />
     );
   }
@@ -73,7 +107,7 @@ export default function Home() {
       <div className="start-box">
         <h3>이제 문서를 만들어 볼까요?</h3>
         <p>1단계 개방성부터 차례로 진행합니다.</p>
-        <button className="start-btn" onClick={() => { setView({ type: 'step', areaId: 'open' }); window.scrollTo(0, 0); }}>
+        <button className="start-btn" onClick={() => go({ type: 'step', areaId: 'open' })}>
           1단계 · 개방성부터 시작하기 →
         </button>
         <div className="start-jump">
@@ -81,7 +115,7 @@ export default function Home() {
           {STEP_IDS.map((id, i) => {
             const a = AREAS.find((x) => x.id === id);
             return (
-              <button key={id} className="jump-chip" onClick={() => { setView({ type: 'step', areaId: id }); window.scrollTo(0, 0); }} style={{ '--c': a.color }}>
+              <button key={id} className="jump-chip" onClick={() => goStep(id)} style={{ '--c': a.color }}>
                 {i + 1}. {a.label}
               </button>
             );
