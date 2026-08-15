@@ -282,6 +282,8 @@ body {
 /* 배경 그림 위 신청서 */
 .ap-area { gap: 0.8em; }
 .ap-intro { font-size: 0.93em; text-align: center; line-height: 1.7; }
+.ap-intro p + p { margin-top: 0.15em; }
+.nb-gap { display: block; height: 0.6em; }
 .ap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45em 1.4em; }
 .ap-line { display: flex; align-items: baseline; gap: 0.4em; }
 .ap-line.wide { grid-column: 1 / -1; }

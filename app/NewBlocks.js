@@ -2,6 +2,16 @@
 
 import { useLayoutEffect, useRef } from 'react';
 
+// 원장님이 입력한 줄바꿈을 그대로 살려서 보여준다 (빈 줄은 한 칸 띄우기)
+function Lines({ text }) {
+  const lines = String(text || '').split(/\r?\n/);
+  return (
+    <>
+      {lines.map((t, i) => (t.trim() ? <p key={i}>{t}</p> : <span key={i} className="nb-gap" />))}
+    </>
+  );
+}
+
 // 배경 그림 안 빈 칸에 글자가 꽉 차도록 크기를 맞춘다 (짧으면 키우고, 길면 줄인다)
 function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps) {
   useLayoutEffect(() => {
@@ -63,7 +73,7 @@ function ApplyOnImage({ b }) {
     <div className="nb-wrap" ref={wrapRef}>
       <img className="nb-img" src={b.bg} alt="" />
       <div className="nb-area ap-area" ref={areaRef} style={{ top: `${b.top}%`, bottom: `${b.bottom}%` }}>
-        {b.intro && <p className="ap-intro">{b.intro}</p>}
+        {b.intro && <div className="ap-intro"><Lines text={b.intro} /></div>}
 
         <div className="ap-grid">
           <Line label="반 이름" />
@@ -109,7 +119,6 @@ function NoticeOnImage({ b }) {
   const wrapRef = useRef(null);
   const areaRef = useRef(null);
   const nameRef = useRef(null);
-  const greetLines = String(b.greeting || '').split(/\n+/).map((t) => t.trim()).filter(Boolean);
   const items = b.items || [];
   const notes = b.notes || [];
   const questions = b.questions || [];
@@ -120,7 +129,7 @@ function NoticeOnImage({ b }) {
     <div className="nb-wrap" ref={wrapRef}>
       <img className="nb-img" src={b.bg} alt="" />
       <div className="nb-area" ref={areaRef} style={{ top: `${b.top}%`, bottom: `${b.bottom}%` }}>
-        <div className="nb-greet">{greetLines.map((t, i) => <p key={i}>{t}</p>)}</div>
+        <div className="nb-greet"><Lines text={b.greeting} /></div>
         {!!items.length && (
           <ul className="nb-items">
             {items.map((it, i) => (
@@ -170,7 +179,6 @@ function Leaf({ flip }) {
 }
 
 function NoticePoster({ b }) {
-  const greetLines = String(b.greeting || '').split(/\n+/).map((t) => t.trim()).filter(Boolean);
   return (
     <div className="notice-poster">
       <div className="np-band" />
@@ -182,9 +190,7 @@ function NoticePoster({ b }) {
           <span className="np-main">부모 개별상담 <em>안내</em></span>
         </h2>
 
-        <div className="np-greet">
-          {greetLines.map((t, i) => <p key={i}>{t}</p>)}
-        </div>
+        <div className="np-greet"><Lines text={b.greeting} /></div>
 
         <div className="np-cols">
           <section className="np-card info">
