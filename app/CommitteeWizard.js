@@ -6,7 +6,7 @@ import { fileToResizedDataURL } from '../lib/image';
 import {
   MEETINGS, YEARS, MEMBER_ROLES, emptyData, emptyMeeting, suggestMembers,
   whenText, agendaList, meetingHasContent, meetingDone, membersOf, attendText,
-  defaultRulesText, defaultOrder, defaultAgenda, qLabel, buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
+  defaultRulesText, defaultOrder, defaultAgenda, defaultMemo, qLabel, buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
 } from '../lib/committeeDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
@@ -78,12 +78,12 @@ export default function CommitteeWizard({ onBack }) {
   const setMembers = (year, list) => setData((d) => ({ ...d, members: { ...d.members, [year]: list } }));
   const setRules = (year, patch) => setData((d) => ({ ...d, rules: { ...d.rules, [year]: { ...d.rules[year], ...patch } } }));
 
-  // 안건 화면에 들어오면 그 분기에 흔한 안건을 미리 채워 준다 (비어 있을 때만)
+  // 안건·회의 메모 화면에 들어오면 그 분기에 흔한 내용을 미리 채워 준다 (비어 있을 때만)
   useEffect(() => {
-    if (!loadedRef.current) return;
-    if (view.v !== 'step' || view.s !== 'agenda') return;
-    if (data.meetings[q]?.agenda?.trim()) return;
-    upd({ agenda: defaultAgenda(q) });
+    if (!loadedRef.current || view.v !== 'step') return;
+    const m = data.meetings[q];
+    if (view.s === 'agenda' && !m?.agenda?.trim()) upd({ agenda: defaultAgenda(q) });
+    if (view.s === 'minutes' && !m?.memo?.trim()) upd({ memo: defaultMemo(q) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.v, view.s, q]);
 
@@ -429,9 +429,11 @@ export default function CommitteeWizard({ onBack }) {
               <Sample label="가지고 계신 회의록 서식이 있으면 붙여넣어 주세요 (선택)"
                 value={data.samples.minutes} onChange={(v) => setData((d) => ({ ...d, samples: { ...d.samples, minutes: v } }))} />
               <div className="field">
-                <label>논의·결정 메모</label>
-                <textarea rows={8} value={meeting.memo} onChange={(e) => upd({ memo: e.target.value })}
-                  placeholder={'예)\n급식 - 여름철 식중독 걱정된다는 의견. 조리실 위생점검 매주 하기로 함\n안전 - 등하원 차량 안전벨트 확인 철저히. 부모에게도 안내하기로\n행사 - 부모참여수업 6월 셋째 주 토요일로 정함'} />
+                <label>논의·결정 메모 <span className="edit-badge">✏️ 샘플을 넣어두었습니다 · 우리 원 이야기로 고쳐 주세요</span></label>
+                <textarea rows={12} value={meeting.memo} onChange={(e) => upd({ memo: e.target.value })} />
+                <button type="button" className="ghost sm" onClick={() => upd({ memo: defaultMemo(q) })}>
+                  샘플 메모 다시 넣기
+                </button>
               </div>
               <button className="primary" onClick={makeMinutes} disabled={busy}>
                 {busy ? 'AI가 정리 중입니다…' : `✍️ ${meeting.discussion ? '다시 ' : ''}회의록으로 정리하기`}
