@@ -200,6 +200,36 @@ body {
 .save-band-reset { flex: 0 0 auto; background: #fff; border: 1px solid #c6d5d0; color: #6a7571; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
 .save-band-reset:hover { border-color: #e0a49b; color: #c62d16; }
 
+/* ── 서류 새로 만들기: 목록·작성 ── */
+.newbase { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #eef3f7; border: 1px solid #d4e2ee; border-radius: 12px; padding: 11px 15px; margin: 14px 0; font-size: 13.5px; color: #3c4a47; }
+.newbase.warn { background: #fff6f4; border-color: #f3c6bd; color: #8c2b1c; }
+.newbase-ok { color: #1F6FB2; font-weight: 700; }
+.newbase button { margin-left: auto; background: #fff; border: 1px solid #b9cddc; color: #1F6FB2; border-radius: 8px; padding: 7px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.newdoc-grid { display: flex; flex-direction: column; gap: 12px; }
+.newdoc-card { border: 2px solid #dbe6ef; border-left: 5px solid #1F6FB2; border-radius: 12px; padding: 15px 16px; background: #fff; }
+.newdoc-card.soon { border-color: #e6eae9; border-left-color: #c9d2d0; background: #fbfcfc; }
+.newdoc-top { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.newdoc-name { font-family: 'Gowun Batang', serif; font-size: 17.5px; color: var(--ink); }
+.newdoc-badge { font-size: 11.5px; font-weight: 700; color: #fff; background: #1F6FB2; border-radius: 20px; padding: 3px 10px; vertical-align: middle; }
+.newdoc-badge.soon { background: #b7c4c0; }
+.newdoc-meta { font-size: 12.5px; color: #6a7571; margin-top: 5px; }
+.newdoc-desc { font-size: 13.5px; color: #55625f; line-height: 1.7; margin-top: 8px; }
+.newdoc-makes { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 10px 0 12px; }
+.newdoc-makes li { font-size: 12.5px; background: #eef3f7; color: #24445e; border-radius: 20px; padding: 4px 11px; }
+.form-section { font-weight: 700; font-size: 14.5px; color: #1F6FB2; border-top: 1px dashed var(--line); margin: 18px 0 10px; padding-top: 14px; }
+.form-check { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; font-size: 14px; cursor: pointer; background: #fff; }
+.form-check.on { border-color: #1F6FB2; background: #f4f9fd; }
+.form-check input { width: 17px; height: 17px; accent-color: #1F6FB2; }
+
+/* 새로 만든 서류 미리보기용 블록 */
+.doc-lead { text-align: center; font-size: 14px; color: #555; margin: -6px 0 14px; }
+.doc-table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 13.5px; }
+.doc-table th, .doc-table td { border: 1px solid #999; padding: 7px 8px; text-align: center; vertical-align: middle; }
+.doc-table th { background: #f2f2f2; font-weight: 700; }
+.doc-table td { height: 30px; }
+.doc-blank { margin: 6px 0 16px; }
+.doc-blank span { display: block; border-bottom: 1px solid #bbb; height: 26px; }
+
 /* ── 서류 단계 갈림길 (참여성 진입) ── */
 .gate-hero { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px 20px; text-align: center; }
 .gate-tag { display: inline-block; background: #1F6FB2; color: #fff; font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
@@ -409,6 +439,9 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 제목·소제목이 페이지 끝에 홀로 남지 않고 다음 내용과 붙게 */
   .doc-heading, .doc-subheading, .doc-sessionhead { break-after: avoid; }
   .doc-kv { break-inside: avoid; }
+  .doc-table { break-inside: auto; }
+  .doc-table tr, .doc-blank { break-inside: avoid; }
+  .doc-table thead { display: table-header-group; }
   /* 회차 사진·2회차는 새 페이지에서 시작 */
   .doc-pagebreak { break-before: page; border: none; margin: 0; height: 0; }
 }

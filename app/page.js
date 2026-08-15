@@ -8,6 +8,9 @@ import StepPage from './StepPage';
 import HomeGuide from './HomeGuide';
 import PathGate from './PathGate';
 import BasicInfo from './BasicInfo';
+import NewDocList from './NewDocList';
+import NewDocForm from './NewDocForm';
+import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
 
@@ -29,7 +32,10 @@ export default function Home() {
         if (d) setView({ type: 'doc', doc: d });
       } else if (v?.type === 'step' && v.areaId) {
         setView({ type: 'step', areaId: v.areaId });
-      } else if (v?.type === 'gate' || v?.type === 'basic') {
+      } else if (v?.type === 'newdoc' && v.docId) {
+        const d = getNewDoc(v.docId);
+        if (d) setView({ type: 'newdoc', doc: d });
+      } else if (v?.type === 'gate' || v?.type === 'basic' || v?.type === 'newlist') {
         setView({ type: v.type });
       }
     }
@@ -38,7 +44,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!ready) return;
-    const v = view.type === 'doc' ? { type: 'doc', docId: view.doc.id } : view;
+    const v = (view.type === 'doc' || view.type === 'newdoc') ? { type: view.type, docId: view.doc.id } : view;
     saveLocal('ui', { view: v, pathChosen });
   }, [view, pathChosen, ready]);
 
@@ -81,9 +87,25 @@ export default function Home() {
       <BasicInfo
         onBack={goGate}
         onHome={goHome}
-        onGoDocs={() => go({ type: 'step', areaId: 'join' })}
+        onGoDocs={() => go({ type: 'newlist' })}
       />
     );
+  }
+
+  // ── 서류 새로 만들기 (기존 분석·정리와 별개 흐름) ──
+  if (view.type === 'newlist') {
+    return (
+      <NewDocList
+        onSelect={(d) => go({ type: 'newdoc', doc: d })}
+        onBasic={() => go({ type: 'basic' })}
+        onGate={goGate}
+        onHome={goHome}
+      />
+    );
+  }
+
+  if (view.type === 'newdoc') {
+    return <NewDocForm doc={view.doc} onBack={() => go({ type: 'newlist' })} />;
   }
 
   if (view.type === 'step') {

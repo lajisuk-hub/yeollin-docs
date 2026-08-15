@@ -222,12 +222,12 @@ export default function BasicInfo({ onBack, onHome, onGoDocs }) {
             : '어린이집 이름과 교직원 이름을 넣으면 저장됩니다. (입력하는 대로 자동 저장돼요)'}
         </p>
         <p className="basic-next">
-          👉 다음 작업 : 여기 등록한 기본사항으로 <b>서류를 한 장씩 만드는 화면</b>은 다음 단계에서 이어집니다.
-          지금은 <b>기존 서류 분석·정리</b> 쪽에서 문서를 만들 수 있어요.
+          👉 다음 단계 : 여기 등록한 <b>어린이집·교직원·반·원아 정보로 서류를 만듭니다.</b>
+          가진 자료가 없어도 안내문·명단표·기록지까지 한 번에 만들어져요.
         </p>
         <div className="basic-btns">
           <button className="ghost" onClick={resetAll}>기본사항 초기화</button>
-          <button className="primary" onClick={onGoDocs}>참여성 서류 목록으로 →</button>
+          <button className="primary" onClick={onGoDocs}>다음 · 서류 만들기 →</button>
         </div>
         <button className="linklike" onClick={onHome}>첫 화면으로</button>
       </div>
