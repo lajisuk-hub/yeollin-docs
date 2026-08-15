@@ -125,9 +125,9 @@ export default function CommitteeWizard({ onBack }) {
   }
 
   async function makeNotice() {
-    const j = await ask('notice', meeting.notice && meeting.noticeFeedback
-      ? { previous: meeting.notice, feedback: meeting.noticeFeedback } : {});
-    if (j?.text) upd({ notice: j.text, noticeFeedback: '' });
+    const j = await ask('notice', meeting.noticeGreeting && meeting.noticeFeedback
+      ? { previous: `${meeting.noticeGreeting}\n\n${meeting.noticeClosing}`, feedback: meeting.noticeFeedback } : {});
+    if (j?.result) upd({ noticeGreeting: j.result.greeting || '', noticeClosing: j.result.closing || '', noticeFeedback: '' });
   }
 
   async function makeMinutes() {
@@ -141,12 +141,19 @@ export default function CommitteeWizard({ onBack }) {
   }
 
   async function makeResult() {
+    const prev = (meeting.resultItems || []).map((x) => `${x.title}\n${x.body}`).join('\n\n');
     const j = await ask('result', {
       memo: meeting.memo, decisions: meeting.discussion,
-      ...(meeting.result && meeting.resultFeedback
-        ? { previous: meeting.result, feedback: meeting.resultFeedback } : {}),
+      ...(prev && meeting.resultFeedback ? { previous: prev, feedback: meeting.resultFeedback } : {}),
     });
-    if (j?.text) upd({ result: j.text, resultFeedback: '' });
+    if (j?.result) {
+      upd({
+        resultIntro: j.result.intro || '',
+        resultItems: Array.isArray(j.result.items) ? j.result.items : [],
+        resultClosing: j.result.closing || '',
+        resultFeedback: '',
+      });
+    }
   }
 
   async function makeFeature() {
@@ -410,16 +417,42 @@ export default function CommitteeWizard({ onBack }) {
 
           {/* 개최 공지문 */}
           {view.s === 'notice' && (
-            <AiStep
-              lead={<>회의 <b>전에</b> 부모님께 알리는 <b>개최 공지문</b>을 만들어 드릴게요. 일시·장소·안건이 그대로 들어갑니다.</>}
-              sampleLabel="가지고 계신 개최 공지문 서식이 있으면 붙여넣어 주세요 (선택 · 한 번만 넣으면 네 차수 모두 이 틀로 만듭니다)"
-              sample={data.samples.notice} onSample={(v) => setData((d) => ({ ...d, samples: { ...d.samples, notice: v } }))}
-              value={meeting.notice} onChange={(v) => upd({ notice: v })}
-              feedback={meeting.noticeFeedback} onFeedback={(v) => upd({ noticeFeedback: v })}
-              onMake={makeNotice} busy={busy} err={err}
-              makeLabel="개최 공지문 만들기" nextLabel="회의록 만들기 →"
-              onPrev={prev} onNext={next}
-            />
+            <div className="card wiz-card">
+              <p className="wiz-lead">
+                회의 <b>전에</b> 부모님께 알리는 <b>개최 공지문</b>을 만들어 드릴게요.<br />
+                일시·장소·안건은 <b>표로 자동</b>으로 들어가고, <b>인사말과 맺음말</b>만 AI가 씁니다.
+              </p>
+              <Sample label="가지고 계신 개최 공지문 서식이 있으면 붙여넣어 주세요 (선택 · 한 번만 넣으면 네 차수 모두 이 틀로 만듭니다)"
+                value={data.samples.notice} onChange={(v) => setData((d) => ({ ...d, samples: { ...d.samples, notice: v } }))} />
+              <button className="primary" onClick={makeNotice} disabled={busy}>
+                {busy ? 'AI가 작성 중입니다…' : `✍️ ${meeting.noticeGreeting ? '다시 ' : ''}개최 공지문 만들기`}
+              </button>
+              {err && <p className="error">⚠️ {err}</p>}
+              {meeting.noticeGreeting && (
+                <>
+                  <div className="wiz-result">
+                    <div className="wiz-result-top">인사말 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                    <textarea rows={5} value={meeting.noticeGreeting} onChange={(e) => upd({ noticeGreeting: e.target.value })} />
+                  </div>
+                  <div className="wiz-result">
+                    <div className="wiz-result-top">맺음말 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                    <textarea rows={4} value={meeting.noticeClosing} onChange={(e) => upd({ noticeClosing: e.target.value })} />
+                  </div>
+                  <div className="field">
+                    <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
+                    <input type="text" value={meeting.noticeFeedback} onChange={(e) => upd({ noticeFeedback: e.target.value })}
+                      placeholder="예) 좀 더 짧게, 부모 의견을 꼭 보내달라는 말을 넣어주세요" />
+                  </div>
+                  {meeting.noticeFeedback?.trim() && (
+                    <button className="ghost" onClick={makeNotice} disabled={busy}>🔁 고친 내용으로 다시 만들기</button>
+                  )}
+                </>
+              )}
+              <div className="wiz-nav">
+                <button className="ghost" onClick={prev}>← 이전</button>
+                <button className="primary" onClick={next} disabled={!meeting.noticeGreeting}>회의록 만들기 →</button>
+              </div>
+            </div>
           )}
 
           {/* 회의록 */}
@@ -468,18 +501,52 @@ export default function CommitteeWizard({ onBack }) {
             </div>
           )}
 
-          {/* 결과 공지문 */}
+          {/* 결과 보고서 */}
           {view.s === 'result' && (
-            <AiStep
-              lead={<>회의 <b>후에</b> 부모님께 알리는 <b>회의결과 공지문</b>을 만들어 드릴게요. 결정 사항이 그대로 들어갑니다.</>}
-              sampleLabel="가지고 계신 결과 공지문 서식이 있으면 붙여넣어 주세요 (선택)"
-              sample={data.samples.result} onSample={(v) => setData((d) => ({ ...d, samples: { ...d.samples, result: v } }))}
-              value={meeting.result} onChange={(v) => upd({ result: v })}
-              feedback={meeting.resultFeedback} onFeedback={(v) => upd({ resultFeedback: v })}
-              onMake={makeResult} busy={busy} err={err}
-              makeLabel="결과 공지문 만들기" nextLabel="사진 넣기 →"
-              onPrev={prev} onNext={next}
-            />
+            <div className="card wiz-card">
+              <p className="wiz-lead">
+                회의 <b>후에</b> 부모님께 알리는 <b>회의결과 보고서</b>를 만들어 드릴게요.
+                안건마다 한 줄씩 <b>표</b>로 정리됩니다.
+              </p>
+              <Sample label="가지고 계신 결과 안내문 서식이 있으면 붙여넣어 주세요 (선택)"
+                value={data.samples.result} onChange={(v) => setData((d) => ({ ...d, samples: { ...d.samples, result: v } }))} />
+              <button className="primary" onClick={makeResult} disabled={busy}>
+                {busy ? 'AI가 작성 중입니다…' : `✍️ ${(meeting.resultItems || []).length ? '다시 ' : ''}결과 보고서 만들기`}
+              </button>
+              {err && <p className="error">⚠️ {err}</p>}
+              {!!(meeting.resultItems || []).length && (
+                <>
+                  <div className="wiz-result">
+                    <div className="wiz-result-top">머리말 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                    <textarea rows={3} value={meeting.resultIntro} onChange={(e) => upd({ resultIntro: e.target.value })} />
+                  </div>
+                  {meeting.resultItems.map((it, n) => (
+                    <div className="wiz-result" key={n}>
+                      <div className="wiz-result-top">{n + 1}번 안건 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                      <input className="item-title" type="text" value={it.title}
+                        onChange={(e) => upd({ resultItems: meeting.resultItems.map((x, i) => (i === n ? { ...x, title: e.target.value } : x)) })} />
+                      <textarea rows={6} value={it.body}
+                        onChange={(e) => upd({ resultItems: meeting.resultItems.map((x, i) => (i === n ? { ...x, body: e.target.value } : x)) })} />
+                    </div>
+                  ))}
+                  <div className="wiz-result">
+                    <div className="wiz-result-top">맺음말 (★) <span>✏️ 직접 고쳐도 됩니다</span></div>
+                    <textarea rows={4} value={meeting.resultClosing} onChange={(e) => upd({ resultClosing: e.target.value })} />
+                  </div>
+                  <div className="field">
+                    <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
+                    <input type="text" value={meeting.resultFeedback} onChange={(e) => upd({ resultFeedback: e.target.value })} />
+                  </div>
+                  {meeting.resultFeedback?.trim() && (
+                    <button className="ghost" onClick={makeResult} disabled={busy}>🔁 고친 내용으로 다시 만들기</button>
+                  )}
+                </>
+              )}
+              <div className="wiz-nav">
+                <button className="ghost" onClick={prev}>← 이전</button>
+                <button className="primary" onClick={next} disabled={!(meeting.resultItems || []).length}>사진 넣기 →</button>
+              </div>
+            </div>
           )}
 
           {/* 사진 */}

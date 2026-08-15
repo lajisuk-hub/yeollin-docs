@@ -652,6 +652,42 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .doc-attachcol img { max-width: 100%; max-height: 88mm; border: 1px solid #ddd; }
 .doc-attachcol .doc-img-empty { margin: 4px 0; }
 
+/* ── 회칙: 장 → 조 → 항 → 호 단계마다 글씨 크기를 달리 ── */
+.rules-doc { margin: 8px 0 14px; }
+.rd-title { font-size: 17px; font-weight: 700; text-align: center; margin: 4px 0 2px; }
+.rd-date { font-size: 12.5px; color: #6a7571; text-align: center; margin-bottom: 12px; }
+.rd-chapter {
+  font-size: 15.5px; font-weight: 700; text-align: center; color: #2b3b37;
+  margin: 16px 0 8px; padding: 5px 0; background: #f1f5f4; border-radius: 6px; letter-spacing: 2px;
+}
+.rd-article { font-size: 14px; margin: 9px 0 3px; line-height: 1.75; }
+.rd-article b { font-size: 14.5px; color: #1f4d3f; }
+.rd-clause { font-size: 13.5px; margin: 2px 0 2px 14px; line-height: 1.7; color: #2c3532; }
+.rd-item { font-size: 13px; margin: 1px 0 1px 26px; line-height: 1.65; color: #3c4a47; }
+.rd-body { font-size: 13.5px; margin: 3px 0; line-height: 1.7; }
+.rd-gap { height: 5px; }
+
+/* ── 공지문·회의록·결과보고서: 테두리 있는 한 덩어리 문서 ── */
+.docbox { border: 1.5px solid #7b8d87; border-radius: 4px; margin: 8px 0 16px; break-inside: auto; }
+.docbox-head {
+  background: #eef3f1; border-bottom: 1.5px solid #7b8d87; padding: 9px 12px;
+  font-size: 14.5px; font-weight: 700; text-align: center; color: #1f4d3f;
+}
+.docbox-body { padding: 12px 14px; }
+.docbox-body > .doc-para { font-size: 13.5px; margin-bottom: 4px; }
+.docbox-body > .doc-kv, .docbox-body > .doc-table { margin: 10px 0; }
+.docbox-sign { text-align: right; font-size: 14px; font-weight: 700; margin-top: 10px; letter-spacing: 2px; }
+.docbox-star { font-size: 13.5px; line-height: 1.8; background: #fbfaf3; border: 1px dashed #d8cfa8; border-radius: 8px; padding: 10px 12px; margin-top: 10px; white-space: pre-wrap; }
+.box-kv th { width: 100px; }
+.box-table th, .box-table td { text-align: left; vertical-align: top; }
+.box-table td { white-space: pre-wrap; line-height: 1.7; }
+.box-table thead th { text-align: center; }
+.minutes-table td { padding: 9px 10px; }
+
+/* 결과보고서 안건 제목 입력칸 */
+.item-title { width: 100%; border: none; border-bottom: 1px solid #dfe6e4; padding: 10px 14px; font-family: inherit; font-size: 14.5px; font-weight: 700; }
+.item-title:focus { outline: none; background: #fbfdfc; }
+
 /* 회차 구분 페이지 나눔 */
 .doc-pagebreak { height: 0; border-top: 2px dashed #cdd6d3; margin: 22px 0; }
 /* 회차 사이 구분선 (쪽은 나누지 않고 이어서) */
@@ -678,6 +714,9 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .doc-heading, .doc-subheading, .doc-sessionhead { break-after: avoid; }
   .doc-kv { break-inside: avoid; }
   .notice-poster, .nb-wrap, .doc-pair { break-inside: avoid; }
+  .docbox-head, .rd-chapter, .rd-article { break-after: avoid; }
+  .rd-chapter { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .docbox-head { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .nb-img { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .doc-table { break-inside: auto; }
   .doc-table tr, .doc-blank { break-inside: avoid; }

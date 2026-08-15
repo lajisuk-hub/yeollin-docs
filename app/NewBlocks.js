@@ -266,8 +266,115 @@ function NoticePoster({ b }) {
 }
 
 // '서류 새로 만들기' 쪽 미리보기 블록 렌더러 (기존 분석·정리 화면과 별개)
+// ── 회칙: 장 → 조 → 항 → 호 단계마다 글씨 크기를 달리해 읽기 쉽게 ──
+function RulesDoc({ text }) {
+  const lines = String(text || '').split('\n');
+  return (
+    <div className="rules-doc">
+      {lines.map((raw, i) => {
+        const t = raw.trim();
+        if (!t) return <div className="rd-gap" key={i} />;
+        if (/^제\s*\d+\s*장/.test(t) || t === '부칙') return <h4 className="rd-chapter" key={i}>{t}</h4>;
+        if (/^제\s*\d+\s*조/.test(t)) {
+          const m = t.match(/^(제\s*\d+\s*조\s*\([^)]*\))\s*([\s\S]*)$/);
+          return (
+            <p className="rd-article" key={i}>
+              <b>{m ? m[1] : t}</b>{m && m[2] ? <span> {m[2]}</span> : null}
+            </p>
+          );
+        }
+        if (/^[①-⑳]/.test(t)) return <p className="rd-clause" key={i}>{t}</p>;
+        if (/^\d+\./.test(t)) return <p className="rd-item" key={i}>{t}</p>;
+        // 맨 위 제목줄과 제정일
+        if (i === 0) return <p className="rd-title" key={i}>{t}</p>;
+        if (/^제정/.test(t)) return <p className="rd-date" key={i}>{t}</p>;
+        return <p className="rd-body" key={i}>{t}</p>;
+      })}
+    </div>
+  );
+}
+
+// ── 공지문·회의록·결과보고서를 테두리 있는 한 덩어리 문서로 ──
+function DocBox({ title, children }) {
+  return (
+    <div className="docbox">
+      <div className="docbox-head">{title}</div>
+      <div className="docbox-body">{children}</div>
+    </div>
+  );
+}
+
+const InfoTable = ({ rows }) => (
+  <table className="doc-kv box-kv">
+    <tbody>
+      {(rows || []).filter(([, v]) => v !== undefined).map(([k, v], i) => (
+        <tr key={i}><th>{k}</th><td>{v}</td></tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+const Paras = ({ text, cls = 'doc-para' }) =>
+  String(text || '').split(/\n+/).filter(Boolean).map((t, i) => <p className={cls} key={i}>{t}</p>);
+
 export default function Block({ b }) {
   if (b.type === 'title') return <h1 className="doc-title">{b.text}</h1>;
+  if (b.type === 'rulesdoc') return <RulesDoc text={b.text} />;
+
+  // 개최 공지문 — 인사말 / 안내 표 / 맺음말
+  if (b.type === 'noticedoc') {
+    return (
+      <DocBox title={b.title}>
+        <Paras text={b.greeting} />
+        <InfoTable rows={b.rows} />
+        <Paras text={b.closing} />
+        {b.center && <p className="docbox-sign">{b.center}</p>}
+      </DocBox>
+    );
+  }
+
+  // 회의록 — 표(일시·장소·간사·참석) + 회의순서/토의 및 의결사항 표 + 서명란
+  if (b.type === 'minutesdoc') {
+    return (
+      <DocBox title={b.title}>
+        <InfoTable rows={b.info} />
+        <table className="doc-table box-table minutes-table">
+          <thead><tr><th style={{ width: '22%' }}>구분</th><th>회 의 내 용</th></tr></thead>
+          <tbody>
+            {b.order && <tr><th>회의순서</th><td>{b.order}</td></tr>}
+            <tr><th>토의 및<br />의결사항</th><td>{b.discussion}</td></tr>
+          </tbody>
+        </table>
+        {b.closing && <p className="doc-para">{b.closing}</p>}
+        {!!(b.signRows || []).length && (
+          <table className="doc-table box-table">
+            <thead><tr><th>구분</th><th>성명</th><th>서명</th></tr></thead>
+            <tbody>{b.signRows.map((r, i) => <tr key={i}>{r.map((c, n) => <td key={n}>{c}</td>)}</tr>)}</tbody>
+          </table>
+        )}
+      </DocBox>
+    );
+  }
+
+  // 회의결과 보고서 — 안건별 표
+  if (b.type === 'resultdoc') {
+    return (
+      <DocBox title={b.title}>
+        <Paras text={b.intro} />
+        <table className="doc-table box-table">
+          <thead><tr><th style={{ width: '28%' }}>안건</th><th>논의·결정 내용</th></tr></thead>
+          <tbody>
+            {(b.items || []).map((it, i) => (
+              <tr key={i}><th>{i + 1}) {it.title}</th><td>{it.body}</td></tr>
+            ))}
+          </tbody>
+        </table>
+        {b.closing && <p className="docbox-star">{b.closing}</p>}
+        {b.center && <p className="docbox-sign">{b.center}</p>}
+      </DocBox>
+    );
+  }
+
   if (b.type === 'lead') return <p className="doc-lead">{b.text}</p>;
   if (b.type === 'heading') return <h2 className="doc-heading">{b.text}</h2>;
   if (b.type === 'subheading') return <h3 className="doc-subheading">{b.text}</h3>;
