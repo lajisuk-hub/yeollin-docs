@@ -22,6 +22,22 @@ body {
 .hero h1 { font-family: 'Gowun Batang', serif; font-size: 30px; color: var(--brand); letter-spacing: -0.5px; }
 .hero p { margin-top: 12px; color: #55625f; font-size: 15px; }
 
+/* 첫 화면 필독 안내 */
+.notice { background: linear-gradient(180deg, #0f4a3f, #14584a); border-radius: 16px; padding: 20px 20px 16px; margin: 18px 0 14px; box-shadow: 0 6px 20px rgba(15,74,63,.22); color: #fff; }
+.notice-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.notice-badge { flex: 0 0 auto; background: #ffd84d; color: #4a3600; font-weight: 800; font-size: 14px; letter-spacing: 1px; padding: 4px 12px; border-radius: 8px; }
+.notice-head h2 { font-family: 'Gowun Batang', serif; font-size: 21px; color: #fff; }
+.notice-body { margin-top: 14px; background: rgba(255,255,255,.1); border-radius: 12px; padding: 14px 16px; }
+.notice-maker { font-size: 15.5px; }
+.notice-maker b { color: #ffe58a; }
+.notice-use { font-size: 15px; margin-top: 8px; line-height: 1.75; color: #eaf5f1; }
+.notice-use b { color: #fff; border-bottom: 2px solid #ffd84d; padding-bottom: 1px; }
+.notice-alert { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; background: #fff4f2; border: 2px solid #ff8f7d; border-radius: 12px; padding: 13px 15px; color: #8c2b1c; font-size: 15px; line-height: 1.65; }
+.notice-alert b { color: #c62d16; }
+.notice-alert.period { background: #fffaf0; border-color: #f2c14e; color: #6d4d05; }
+.notice-alert.period b { color: #9a6a00; }
+.notice-ico { flex: 0 0 auto; font-size: 17px; line-height: 1.5; }
+
 .intro { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 18px 0 8px; font-size: 15px; }
 .intro b { color: var(--brand); }
 .intro-src { font-size: 12.5px; color: #8a9591; margin-top: 6px; }
