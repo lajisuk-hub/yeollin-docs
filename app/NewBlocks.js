@@ -270,6 +270,7 @@ export default function Block({ b }) {
   if (b.type === 'title') return <h1 className="doc-title">{b.text}</h1>;
   if (b.type === 'lead') return <p className="doc-lead">{b.text}</p>;
   if (b.type === 'heading') return <h2 className="doc-heading">{b.text}</h2>;
+  if (b.type === 'subheading') return <h3 className="doc-subheading">{b.text}</h3>;
   if (b.type === 'sessionhead') return <h3 className="doc-sessionhead">{b.text}</h3>;
   if (b.type === 'para') {
     const lines = String(b.text || ' ').split(/\n+/);
@@ -299,6 +300,19 @@ export default function Block({ b }) {
   // 가정통신문 모양 안내문 (인쇄해서 그대로 나눠줄 수 있는 형태)
   if (b.type === 'notice') return b.bg ? <NoticeOnImage b={b} /> : <NoticePoster b={b} />;
   if (b.type === 'apply') return <ApplyOnImage b={b} />;
+  // 서식 두 장을 나란히 (문서에 넣을 때는 크게 볼 필요가 없음)
+  if (b.type === 'pair') {
+    return (
+      <div className="doc-pair">
+        {(b.items || []).map((it, i) => (
+          <div key={i}>
+            {b.labels?.[i] && <div className="doc-pair-cap">{b.labels[i]}</div>}
+            <Block b={it} />
+          </div>
+        ))}
+      </div>
+    );
+  }
   if (b.type === 'kv') {
     return (
       <table className="doc-kv">

@@ -261,6 +261,11 @@ body {
 .bg-check { cursor: pointer; }
 .bg-check input { width: 16px; height: 16px; accent-color: var(--brand); }
 
+/* 서식 두 장 나란히 */
+.doc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; margin: 8px 0 14px; }
+.doc-pair .nb-wrap { margin: 0; }
+.doc-pair-cap { text-align: center; font-size: 13px; font-weight: 700; color: #444; margin-bottom: 5px; }
+
 /* 배경 그림 위에 글을 얹는 안내문 */
 .nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.62; word-break: keep-all; }
 .nb-img { display: block; width: 100%; height: auto; }
@@ -584,7 +589,7 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 제목·소제목이 페이지 끝에 홀로 남지 않고 다음 내용과 붙게 */
   .doc-heading, .doc-subheading, .doc-sessionhead { break-after: avoid; }
   .doc-kv { break-inside: avoid; }
-  .notice-poster, .nb-wrap { break-inside: avoid; }
+  .notice-poster, .nb-wrap, .doc-pair { break-inside: avoid; }
   .nb-img { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .doc-table { break-inside: auto; }
   .doc-table tr, .doc-blank { break-inside: avoid; }
