@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CRITERIA, docsByArea, AREAS } from '../lib/docs';
+import { saveLocal, loadLocal } from '../lib/store';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
 
@@ -13,8 +14,19 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) 
   const color = area.color;
   const selfCheck = !!area.selfCheck;
 
-  const [checked, setChecked] = useState({});
-  const toggle = (i) => setChecked((p) => ({ ...p, [i]: !p[i] }));
+  // 체크 표시도 이 브라우저에 저장 (새로고침해도 남음)
+  // 영역별 체크를 한 덩어리로 보관해, 단계를 옮겨도 서로 덮어쓰지 않게 한다
+  const [checkMap, setCheckMap] = useState(null); // null = 아직 불러오기 전
+  const checked = (checkMap && checkMap[areaId]) || {};
+
+  useEffect(() => { setCheckMap(loadLocal('checks') || {}); }, []);
+  useEffect(() => { if (checkMap) saveLocal('checks', checkMap); }, [checkMap]);
+
+  const toggle = (i) =>
+    setCheckMap((p) => {
+      const cur = (p && p[areaId]) || {};
+      return { ...(p || {}), [areaId]: { ...cur, [i]: !cur[i] } };
+    });
   const doneCount = crit.items.filter((_, i) => checked[i]).length;
   const allDone = doneCount === crit.items.length;
 

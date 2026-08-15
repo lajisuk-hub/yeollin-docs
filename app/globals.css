@@ -193,6 +193,13 @@ body {
 
 .foot { margin-top: 40px; text-align: center; font-size: 12.5px; color: #8a9591; }
 
+/* 저장 안내 띠 (첫 화면) */
+.save-band { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #eef7f3; border: 1px solid #cfe4dc; border-radius: 12px; padding: 12px 15px; margin: 16px 0 8px; }
+.save-band p { font-size: 13.5px; color: #33574c; line-height: 1.7; flex: 1 1 320px; }
+.save-band b { color: #1f5f4f; }
+.save-band-reset { flex: 0 0 auto; background: #fff; border: 1px solid #c6d5d0; color: #6a7571; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.save-band-reset:hover { border-color: #e0a49b; color: #c62d16; }
+
 /* ── 서류 단계 갈림길 (참여성 진입) ── */
 .gate-hero { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px 20px; text-align: center; }
 .gate-tag { display: inline-block; background: #1F6FB2; color: #fff; font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
