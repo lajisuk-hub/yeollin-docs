@@ -3,26 +3,40 @@
 import { useLayoutEffect, useRef } from 'react';
 
 // 배경 그림 안 빈 칸에 글자가 꽉 차도록 크기를 맞춘다 (짧으면 키우고, 길면 줄인다)
-function useFitText(wrapRef, areaRef, nameRef, scale, deps) {
+function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps) {
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
     const area = areaRef.current;
     if (!wrap || !area) return;
     const fit = () => {
       const w = wrap.clientWidth || 780;
-      if (nameRef?.current) nameRef.current.style.fontSize = `${w * 0.034}px`;
+      const h = wrap.clientHeight || 1040;
+      // 어린이집 이름은 글 칸 바로 아래에 놓아 절대 겹치지 않게 한다
+      if (nameRef?.current) {
+        const n = nameRef.current;
+        n.style.fontSize = `${w * 0.034}px`;
+        n.style.bottom = `${Math.max(6, h * (bottom / 100) - n.offsetHeight - h * 0.012)}px`;
+      }
       const put = (s) => { area.style.fontSize = `${s}px`; };
+      const over = () => area.scrollHeight > area.clientHeight + 1;
+      let topPct = top;
+      area.style.top = `${topPct}%`;
       let size = w * 0.030;
       put(size);
+      // ① 자리가 남으면 키운다
       let guard = 0;
-      while (area.scrollHeight <= area.clientHeight && size < w * 0.06 && guard < 80) {
-        size *= 1.03; put(size); guard += 1;
-      }
+      while (!over() && size < w * 0.06 && guard < 80) { size *= 1.03; put(size); guard += 1; }
+      // ② 넘치면 줄인다
       guard = 0;
-      while (area.scrollHeight > area.clientHeight && size > w * 0.012 && guard < 120) {
-        size *= 0.975; put(size); guard += 1;
-      }
-      put(size * (scale || 1));
+      while (over() && size > w * 0.012 && guard < 120) { size *= 0.975; put(size); guard += 1; }
+      // ③ 원장님이 정한 배율을 적용하고, 넘치면 글 칸을 위로 늘린다
+      size *= (scale || 1);
+      put(size);
+      guard = 0;
+      while (over() && topPct > 16 && guard < 40) { topPct -= 1; area.style.top = `${topPct}%`; guard += 1; }
+      // ④ 그래도 넘치면 이름을 침범하지 않도록 다시 줄인다
+      guard = 0;
+      while (over() && size > w * 0.012 && guard < 120) { size *= 0.98; put(size); guard += 1; }
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -39,7 +53,7 @@ function ApplyOnImage({ b }) {
   const wrapRef = useRef(null);
   const areaRef = useRef(null);
   const nameRef = useRef(null);
-  useFitText(wrapRef, areaRef, nameRef, b.textScale, [b.intro, b.topics, b.bg, b.top, b.bottom, b.textScale, b.period]);
+  useFitText(wrapRef, areaRef, nameRef, b.textScale, b.top, b.bottom, [b.intro, b.topics, b.bg, b.top, b.bottom, b.textScale, b.period]);
 
   const Line = ({ label, wide }) => (
     <div className={`ap-line ${wide ? 'wide' : ''}`}><span className="ap-label">{label}</span><span className="ap-blank" /></div>
@@ -84,7 +98,7 @@ function ApplyOnImage({ b }) {
           <span /><span />
         </div>
       </div>
-      <div className="nb-name" ref={nameRef} style={{ bottom: `${Math.max(4, (b.bottom || 15) - 7)}%` }}>{b.center}</div>
+      <div className="nb-name" ref={nameRef}>{b.center}</div>
     </div>
   );
 }
@@ -100,7 +114,7 @@ function NoticeOnImage({ b }) {
   const notes = b.notes || [];
   const questions = b.questions || [];
 
-  useFitText(wrapRef, areaRef, nameRef, b.textScale, [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale]);
+  useFitText(wrapRef, areaRef, nameRef, b.textScale, b.top, b.bottom, [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale]);
 
   return (
     <div className="nb-wrap" ref={wrapRef}>
@@ -127,7 +141,7 @@ function NoticeOnImage({ b }) {
           <div className="nb-notes">{notes.map((n, i) => <p key={i}>※ {n}</p>)}</div>
         )}
       </div>
-      <div className="nb-name" ref={nameRef} style={{ bottom: `${Math.max(5, (b.bottom || 21) - 8)}%` }}>{b.center}</div>
+      <div className="nb-name" ref={nameRef}>{b.center}</div>
     </div>
   );
 }

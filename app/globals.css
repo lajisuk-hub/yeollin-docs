@@ -264,7 +264,7 @@ body {
 /* 배경 그림 위에 글을 얹는 안내문 */
 .nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.62; word-break: keep-all; }
 .nb-img { display: block; width: 100%; height: auto; }
-.nb-area { position: absolute; left: 8%; right: 8%; display: flex; flex-direction: column; justify-content: space-between; color: #4a5240; }
+.nb-area { position: absolute; left: 8%; right: 8%; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; color: #4a5240; }
 .nb-to { align-self: center; font-weight: 700; font-size: 1.05em; color: #5f7a3f; border-bottom: 0.09em solid #b9d49a; padding-bottom: 0.12em; letter-spacing: 0.05em; }
 .nb-greet { text-align: center; font-size: 0.97em; margin-bottom: 1.1em; }
 .nb-greet p + p { margin-top: 0.35em; }
