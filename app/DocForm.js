@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
+import PrintSheet from './PrintSheet';
 
 // 업로드 이미지를 화면/PDF에 알맞게 축소해 dataURL로 변환 (용량·속도 안정화)
 function fileToResizedDataURL(file, maxW = 1200) {
@@ -438,9 +439,9 @@ export default function DocForm({ doc, onBack }) {
 
           <div className="page-outer">
             <div className="print-area">
-              <div className="doc-page">
+              <PrintSheet>
                 {blocks.map((b, i) => <Block key={i} b={b} />)}
-              </div>
+              </PrintSheet>
             </div>
           </div>
         </>

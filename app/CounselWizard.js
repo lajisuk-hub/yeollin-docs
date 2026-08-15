@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
-import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, DEFAULT_BG, DEFAULT_BG_PLAIN, DEFAULT_APPLY_BG } from '../lib/counselDoc';
+import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, DEFAULT_BG, DEFAULT_APPLY_BG } from '../lib/counselDoc';
 import Block from './NewBlocks';
+import PrintSheet from './PrintSheet';
 
 const KEY = 'counsel-wizard';
 const MAX_PHOTOS = 4;
@@ -19,8 +20,8 @@ const STEPS = [
   { id: 'save' },
 ];
 
-// 회차별 기본 서식 (2회차는 학기 표시가 없는 그림)
-const freshRound = (i) => ({ ...emptyRound(), noticeBg: i === 1 ? DEFAULT_BG_PLAIN : DEFAULT_BG });
+// 회차 기본 서식 (1·2회차 같은 그림 — 학기 표시가 없어 두 회차 모두 쓸 수 있음)
+const freshRound = () => ({ ...emptyRound(), noticeBg: DEFAULT_BG });
 
 export default function CounselWizard({ onBack }) {
   const [data, setData] = useState({ rounds: [freshRound(0), freshRound(1)] });
@@ -385,7 +386,6 @@ export default function CounselWizard({ onBack }) {
                     <input type="file" accept="image/*" hidden onChange={(e) => { pickBg(e.target.files[0]); e.target.value = ''; }} />
                   </label>
                   <button className="bg-btn" onClick={() => upd({ noticeBg: DEFAULT_BG })}>기본 서식</button>
-                  <button className="bg-btn" onClick={() => upd({ noticeBg: DEFAULT_BG_PLAIN })}>학기 표시 없음</button>
                   <button className="bg-btn" onClick={() => upd({ noticeBg: '' })}>그림 없이</button>
                 </div>
                 {round.noticeBg && (
@@ -593,9 +593,9 @@ export default function CounselWizard({ onBack }) {
           </div>
           <div className="page-outer">
             <div className="print-area">
-              <div className="doc-page">
+              <PrintSheet>
                 {roundBlocksOnly.map((b, i) => <Block key={i} b={b} />)}
-              </div>
+              </PrintSheet>
             </div>
           </div>
         </>
@@ -626,9 +626,9 @@ export default function CounselWizard({ onBack }) {
           </div>
           <div className="page-outer">
             <div className="print-area">
-              <div className="doc-page">
+              <PrintSheet>
                 {blocks.map((b, i) => <Block key={i} b={b} />)}
-              </div>
+              </PrintSheet>
             </div>
           </div>
         </>

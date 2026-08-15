@@ -507,6 +507,10 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   padding: 22mm 20mm; box-shadow: 0 4px 24px rgba(0,0,0,.12);
   font-family: 'Gowun Batang', serif; color: #1a1a1a;
 }
+/* 인쇄 여백용 틀 (화면에서는 그냥 폭 100% 표) */
+.doc-sheet { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.doc-sheet > thead > tr > td, .doc-sheet > tbody > tr > td, .doc-sheet > tfoot > tr > td { padding: 0; border: 0; vertical-align: top; }
+.doc-sheet-top, .doc-sheet-bot { height: 0; }
 .doc-title { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 2.5px solid #333; }
 .doc-heading { font-size: 16.5px; font-weight: 700; margin: 20px 0 8px; padding-left: 10px; border-left: 4px solid var(--brand); }
 .doc-para { font-size: 15px; margin-bottom: 6px; white-space: pre-wrap; line-height: 1.85; }
@@ -579,12 +583,16 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 
 /* ── 인쇄 ── */
 @media print {
-  /* 여백을 쪽(@page)에 주어야 둘째 쪽부터도 위아래 공백이 똑같이 생긴다 */
-  @page { size: A4; margin: 20mm; }
+  /* 쪽 여백을 0으로 두어야 브라우저가 날짜·주소 같은 머리글/바닥글을 넣지 않는다.
+     대신 위아래 여백은 아래의 표 머리글/바닥글 흉내로 모든 쪽에 넣는다. */
+  @page { size: A4; margin: 0; }
   body { background: #fff; }
   .wrap > *:not(.page-outer) { display: none !important; }
   .page-outer { display: block; }
-  .doc-page { box-shadow: none; width: auto; min-height: 0; margin: 0; padding: 0; }
+  .doc-page { box-shadow: none; width: auto; min-height: 0; margin: 0; padding: 0 18mm; }
+  /* 표의 머리글·바닥글은 쪽마다 반복되므로 모든 쪽에 같은 위아래 공백이 생긴다 */
+  .doc-sheet-top { height: 18mm; }
+  .doc-sheet-bot { height: 14mm; }
   .doc-heading { break-inside: avoid; }
   .doc-kv, .doc-sign { break-inside: avoid; }
   .doc-figure, .doc-photos-wrap, .doc-photo { break-inside: avoid; }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
+import PrintSheet from './PrintSheet';
 
 // '서류 새로 만들기' 전용 작성 화면 (기존 분석·정리 화면과 별개)
 // 기본사항(어린이집·교직원·반·원아)을 재료로 서류 묶음을 한 번에 만든다.
@@ -230,9 +231,9 @@ export default function NewDocForm({ doc, onBack }) {
 
           <div className="page-outer">
             <div className="print-area">
-              <div className="doc-page">
+              <PrintSheet>
                 {blocks.map((b, i) => <Block key={i} b={b} />)}
-              </div>
+              </PrintSheet>
             </div>
           </div>
         </>
