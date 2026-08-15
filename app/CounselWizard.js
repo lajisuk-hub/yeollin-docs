@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
-import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, noticeBgFor, applyBgFor, noticeBottomFor, applyBottomFor } from '../lib/counselDoc';
+import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, DEFAULT_BG, DEFAULT_BG_PLAIN, DEFAULT_APPLY_BG, noticeBgFor, applyBgFor, noticeBottomFor, applyBottomFor } from '../lib/counselDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
 
@@ -27,6 +27,17 @@ const freshRound = (i) => ({
   noticeBottom: noticeBottomFor(i), applyBottom: applyBottomFor(i),
 });
 
+// 예전에 저장해 둔 2회차는 1회차와 똑같은 서식이었다 → 새 2회차 서식으로 자동 교체.
+// (원장님이 직접 올린 그림은 그대로 둔다)
+const OLD_NOTICE_BGS = [DEFAULT_BG, DEFAULT_BG_PLAIN];
+function upgradeBg(x, i) {
+  if (i !== 1 || !x) return x;
+  const y = { ...x };
+  if (OLD_NOTICE_BGS.includes(y.noticeBg)) { y.noticeBg = noticeBgFor(1); y.noticeBottom = noticeBottomFor(1); }
+  if (y.applyBg === DEFAULT_APPLY_BG) { y.applyBg = applyBgFor(1); y.applyBottom = applyBottomFor(1); }
+  return y;
+}
+
 export default function CounselWizard({ onBack }) {
   const [data, setData] = useState({ rounds: [freshRound(0), freshRound(1)] });
   const [step, setStep] = useState(0);
@@ -47,7 +58,7 @@ export default function CounselWizard({ onBack }) {
       setBasic(b || {});
       if (saved?.rounds) {
         // 아직 아무것도 안 쓴 회차는 지금의 기본값(글자 크기·여백)으로 새로 시작한다
-        const merge = (x, i) => (roundHasContent(x) ? { ...freshRound(i), ...x } : freshRound(i));
+        const merge = (x, i) => upgradeBg(roundHasContent(x) ? { ...freshRound(i), ...x } : freshRound(i), i);
         setData({ rounds: [merge(saved.rounds[0], 0), merge(saved.rounds[1], 1)] });
         if (typeof saved.step === 'number') setStep(saved.step);
       }
