@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
-import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent } from '../lib/counselDoc';
+import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, defaultNoticeItems } from '../lib/counselDoc';
 import Block from './NewBlocks';
 
 const KEY = 'counsel-wizard';
@@ -28,6 +28,7 @@ export default function CounselWizard({ onBack }) {
   const [saveMsg, setSaveMsg] = useState('');
   const loadedRef = useRef(false);
   const timer = useRef(null);
+  const posterRef = useRef(null);
 
   // ── 불러오기 / 자동 저장 ──
   useEffect(() => {
@@ -92,6 +93,60 @@ export default function CounselWizard({ onBack }) {
       upd({ [field]: d.text, [feedbackField]: '' });
     } catch (e) {
       setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 안내문(가정통신문) 만들기 — 인사말·참고사항은 AI, 안내 항목은 상담 정보로 자동
+  async function makeNotice() {
+    setErr('');
+    setBusy(true);
+    try {
+      const feedback = round.noticeFeedback?.trim();
+      const res = await fetch('/api/counsel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'notice', center, classes: classText,
+          round: `${r + 1}회차`, period: periodText(round),
+          method: round.method, place: round.place,
+          previous: feedback ? `${round.noticeGreeting}\n${round.noticeNotes}` : '',
+          feedback: feedback || '',
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'AI 작성에 실패했습니다');
+      upd({
+        noticeGreeting: d.result?.greeting || '',
+        noticeNotes: (d.result?.notes || []).join('\n'),
+        noticeItems: round.noticeItems?.trim() || defaultNoticeItems(round),
+        noticeFeedback: '',
+      });
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 안내문을 그림 파일로 저장 (밴드·카톡에 올리거나 한글에 붙여넣기 좋게)
+  async function saveNoticeImage() {
+    setBusy(true);
+    setErr('');
+    setSaveMsg('그림으로 만드는 중입니다…');
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const el = posterRef.current?.firstChild;
+      if (!el) throw new Error('안내문을 찾지 못했습니다');
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const { downloadBlob } = await import('../lib/hwpx');
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.9));
+      downloadBlob(blob, `${center || '어린이집'}_${r + 1}회차_상담안내문.jpg`);
+      setSaveMsg('그림 파일을 내려받았습니다. (다운로드 폴더를 확인하세요)');
+    } catch (e) {
+      setErr(e.message || '그림으로 만들지 못했습니다');
+      setSaveMsg('');
     } finally {
       setBusy(false);
     }
@@ -216,22 +271,61 @@ export default function CounselWizard({ onBack }) {
         </div>
       )}
 
-      {/* 2. 공지문 */}
+      {/* 2. 공지문 (가정통신문 형태) */}
       {cur.id === 'notice' && (
-        <AiStep
-          lead={<>어린이집 이름과 상담 기간으로 <b>부모님께 보내는 상담 공지문</b>을 만들어 드릴게요.</>}
-          value={round.notice}
-          onChange={(v) => upd({ notice: v })}
-          feedback={round.noticeFeedback}
-          onFeedback={(v) => upd({ noticeFeedback: v })}
-          onMake={() => askAi('notice', 'notice', 'noticeFeedback')}
-          busy={busy}
-          err={err}
-          makeLabel="공지문 만들기"
-          nextLabel="확인 · 신청서 만들기 →"
-          onPrev={prev}
-          onNext={next}
-        />
+        <>
+          <div className="card wiz-card">
+            <p className="wiz-lead">어린이집 이름과 상담 기간으로 <b>부모님께 나눠드릴 가정통신문</b>을 만들어 드릴게요.</p>
+            <button className="primary" onClick={makeNotice} disabled={busy}>
+              {busy ? 'AI가 작성 중입니다…' : `✍️ ${round.noticeGreeting ? '다시 ' : ''}안내문 만들기`}
+            </button>
+            {err && <p className="error">⚠️ {err}</p>}
+
+            {round.noticeGreeting && (
+              <>
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label>인사말</label>
+                  <textarea rows={3} value={round.noticeGreeting} onChange={(e) => upd({ noticeGreeting: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>안내 항목 <span className="fhint">(한 줄에 하나씩 · ▶로 시작하면 화살표로 표시돼요)</span></label>
+                  <textarea rows={5} value={round.noticeItems} onChange={(e) => upd({ noticeItems: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>참고사항 <span className="fhint">(한 줄에 하나씩 · 번호는 자동)</span></label>
+                  <textarea rows={4} value={round.noticeNotes} onChange={(e) => upd({ noticeNotes: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
+                  <input type="text" value={round.noticeFeedback} onChange={(e) => upd({ noticeFeedback: e.target.value })}
+                    placeholder="예) 상담 시간이 20분이라는 것과 전화상담도 된다는 것을 넣어주세요" />
+                </div>
+                {round.noticeFeedback?.trim() && (
+                  <button className="ghost" onClick={makeNotice} disabled={busy}>🔁 고친 내용으로 다시 만들기</button>
+                )}
+              </>
+            )}
+
+            <div className="wiz-nav">
+              <button className="ghost" onClick={prev}>← 이전</button>
+              <button className="primary" onClick={next} disabled={!round.noticeGreeting}>확인 · 신청서 만들기 →</button>
+            </div>
+          </div>
+
+          {round.noticeGreeting && (
+            <div className="card wiz-card">
+              <h3 className="card-title">이렇게 나옵니다 — 그대로 인쇄해서 나눠주세요</h3>
+              <div ref={posterRef} className="poster-hold">
+                <Block b={noticeBlock(round, r, center || '○○어린이집')} />
+              </div>
+              <button className="ghost" onClick={saveNoticeImage} disabled={busy} style={{ marginTop: 12 }}>
+                🖼️ 이 안내문 그림(JPG)으로 저장
+              </button>
+              <p className="hint">그림으로 저장하면 밴드·카카오톡에 그대로 올리거나 한글 문서에 붙여 넣을 수 있어요.</p>
+              {saveMsg && <p className="hint">{saveMsg}</p>}
+            </div>
+          )}
+        </>
       )}
 
       {/* 3. 신청서 */}

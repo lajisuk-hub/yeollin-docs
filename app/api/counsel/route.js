@@ -4,15 +4,57 @@
 
 export const maxDuration = 60;
 
+// AI가 준 JSON에서 따옴표/줄바꿈 문제를 보정해 파싱 (wmentor-journal 검증 패턴)
+function parseAiJson(raw) {
+  const m = raw.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('AI 응답에서 결과를 찾지 못했습니다');
+  try { return JSON.parse(m[0]); } catch (e) { /* 보정 후 재시도 */ }
+  return JSON.parse(repairAiJson(m[0]));
+}
+
+function repairAiJson(s) {
+  let out = '';
+  let inStr = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (!inStr) {
+      if (c === '"') inStr = true;
+      out += c;
+      continue;
+    }
+    if (c === '\\') { out += c + (s[i + 1] || ''); i++; continue; }
+    if (c === '\n') { out += '\\n'; continue; }
+    if (c === '\r') { out += '\\r'; continue; }
+    if (c === '\t') { out += '\\t'; continue; }
+    if (c === '"') {
+      let j = i + 1;
+      while (j < s.length && /\s/.test(s[j])) j++;
+      const n = s[j];
+      if (n === ',' || n === '}' || n === ']' || n === ':' || j >= s.length) { inStr = false; out += c; }
+      else out += '\\"';
+      continue;
+    }
+    out += c;
+  }
+  return out;
+}
+
 const BASE_RULE =
   '당신은 어린이집 원장을 돕는 보육행정 문서 전문가입니다. 따뜻하고 정중한 존댓말, 공문서다운 담백한 문체로 씁니다. ' +
   '큰따옴표(")는 쓰지 않습니다. 확인되지 않은 숫자나 성과는 지어내지 않습니다. ' +
   '설명이나 머리말 없이 문서에 들어갈 본문만 출력합니다. 제목은 넣지 않습니다.';
 
 const KINDS = {
+  // 안내문(포스터)에 들어갈 조각들 — JSON으로 받는다
   notice: {
-    system: `${BASE_RULE} 지금 쓸 것은 어린이집이 전체 학부모에게 보내는 부모 개별상담 안내문 본문입니다. ` +
-      '인사 - 상담의 취지 - 상담 기간과 방법 - 신청 방법 - 협조 부탁 순서로 6~8문장으로 씁니다. 문단은 2~3개로 나눕니다.',
+    json: true,
+    system:
+      '당신은 어린이집 원장을 돕는 보육행정 문서 전문가입니다. 어린이집이 학부모에게 나눠주는 부모 개별상담 안내문(가정통신문)의 문구를 씁니다. ' +
+      '따뜻하고 정중한 존댓말, 짧고 읽기 쉬운 문장으로 씁니다. 큰따옴표(")는 쓰지 않습니다. 확인되지 않은 숫자는 지어내지 않습니다. ' +
+      '아래 JSON 하나만 출력합니다. greeting은 안내문 맨 위 인사말 2~3문장(한 문장씩 줄바꿈). ' +
+      'notes는 참고사항 3~4개(각 1~2문장, 번호 없이 문장만)인데, 상담 기간·방법·장소는 안내문 위쪽에 이미 표시되므로 절대 반복하지 말고 ' +
+      '상담 준비 방법, 시간 지키기, 형제자매 동반이나 사전 메모처럼 부모가 알아두면 좋은 안내만 씁니다. ' +
+      '{"greeting":"인사말","notes":["참고사항1","참고사항2","참고사항3"]}',
   },
   apply: {
     system: `${BASE_RULE} 지금 쓸 것은 부모가 작성하는 부모 개별상담 신청서의 안내 문구입니다. ` +
@@ -75,6 +117,7 @@ export async function POST(request) {
     }
     const text = (data.content || []).map((b) => b.text || '').join('\n').trim();
     if (!text) return Response.json({ error: 'AI가 빈 답을 보냈습니다. 다시 시도해 주세요.' }, { status: 502 });
+    if (spec.json) return Response.json({ result: parseAiJson(text) });
     return Response.json({ text });
   } catch (err) {
     return Response.json({ error: err.message || '알 수 없는 오류' }, { status: 500 });

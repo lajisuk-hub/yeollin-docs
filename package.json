@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
     "next": "^14.2.5",
     "pdfjs-dist": "^4.7.76",

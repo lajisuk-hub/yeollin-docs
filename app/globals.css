@@ -246,6 +246,27 @@ body {
   .wiz-nav { flex-direction: column-reverse; }
 }
 
+/* 가정통신문 모양 안내문 */
+.notice-poster { background: #fffdf3; border: 1px solid #f0e2b0; border-radius: 6px; overflow: hidden; margin: 10px 0 16px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.np-band { height: 20px; background: #ffd84d; }
+.np-inner { padding: 20px 24px 18px; }
+.np-titlewrap { text-align: center; margin: 4px 0 20px; }
+.np-title { font-family: 'Gowun Batang', serif; font-size: 21px; color: #4a3600; background: #fdeec2; border-radius: 10px; padding: 9px 18px; display: inline-block; }
+.np-to { font-size: 14.5px; font-weight: 700; border-bottom: 1px solid #ded4b4; display: inline-block; padding-bottom: 2px; margin-bottom: 10px; }
+.np-greet { font-size: 14.5px; line-height: 1.85; color: #3a3a34; }
+.np-items { list-style: none; margin: 16px 0 6px; display: flex; flex-direction: column; gap: 7px; }
+.np-items li { font-size: 15px; color: #2f2f2a; display: flex; gap: 7px; align-items: flex-start; line-height: 1.7; }
+.np-mark { color: #c79a12; flex: 0 0 auto; }
+.np-notes { margin-top: 18px; background: #fff9e6; border: 1px dashed #e6d191; border-radius: 8px; padding: 12px 14px; }
+.np-notes-title { font-size: 13.5px; font-weight: 700; color: #7a5b00; margin-bottom: 6px; }
+.np-notes ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.np-notes li { font-size: 13.5px; color: #4a4a42; line-height: 1.7; }
+.np-foot { margin-top: 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.np-center { font-family: 'Gowun Batang', serif; font-size: 17px; color: #3a3a34; letter-spacing: 2px; }
+.np-kids { width: 120px; height: 44px; flex: 0 0 auto; }
+.poster-hold { background: #fff; }
+.fhint { font-weight: 400; font-size: 12.5px; color: #8a9591; }
+
 /* 새로 만든 서류 미리보기용 블록 */
 .doc-lead { text-align: center; font-size: 14px; color: #555; margin: -6px 0 14px; }
 .doc-table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 13.5px; }
@@ -464,6 +485,7 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 제목·소제목이 페이지 끝에 홀로 남지 않고 다음 내용과 붙게 */
   .doc-heading, .doc-subheading, .doc-sessionhead { break-after: avoid; }
   .doc-kv { break-inside: avoid; }
+  .notice-poster { break-inside: avoid; }
   .doc-table { break-inside: auto; }
   .doc-table tr, .doc-blank { break-inside: avoid; }
   .doc-table thead { display: table-header-group; }

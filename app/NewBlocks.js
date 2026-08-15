@@ -31,6 +31,53 @@ export default function Block({ b }) {
       </div>
     );
   }
+  // 가정통신문 모양 안내문 (글이 아니라 인쇄해서 그대로 나눠줄 수 있는 형태)
+  if (b.type === 'notice') {
+    return (
+      <div className="notice-poster">
+        <div className="np-band" />
+        <div className="np-inner">
+          <div className="np-titlewrap"><h2 className="np-title">{b.title}</h2></div>
+          <div className="np-to">(                    ) 부모님께</div>
+          {String(b.greeting || '').split(/\n+/).map((t, i) => t.trim() && <p className="np-greet" key={i}>{t}</p>)}
+          <ul className="np-items">
+            {(b.items || []).map((it, i) => (
+              <li key={i}><span className="np-mark">{it.mark || '◈'}</span>{it.text}</li>
+            ))}
+          </ul>
+          {!!(b.notes || []).length && (
+            <div className="np-notes">
+              <div className="np-notes-title">&lt;참고사항&gt;</div>
+              <ol>
+                {b.notes.map((n, i) => <li key={i}>{n}</li>)}
+              </ol>
+            </div>
+          )}
+          <div className="np-foot">
+            <div className="np-center">{b.center}</div>
+            <svg className="np-kids" viewBox="0 0 120 44" aria-hidden>
+              {[['#e2574c', 8], ['#f2c14e', 46], ['#4a7fc1', 84]].map(([c, x], i) => (
+                <g key={i} stroke={c} strokeWidth="2" fill="none" strokeLinecap="round">
+                  <circle cx={x + 12} cy="13" r="8" />
+                  <circle cx={x + 9} cy="12" r="1" fill={c} />
+                  <circle cx={x + 15} cy="12" r="1" fill={c} />
+                  <path d={`M${x + 9} 16 q3 3 6 0`} />
+                  {[0, 1, 2, 3, 4].map((k) => (
+                    <line key={k} x1={x + 12 + 8 * Math.cos((k * 36 + 200) * Math.PI / 180)} y1={13 + 8 * Math.sin((k * 36 + 200) * Math.PI / 180)}
+                      x2={x + 12 + 12 * Math.cos((k * 36 + 200) * Math.PI / 180)} y2={13 + 12 * Math.sin((k * 36 + 200) * Math.PI / 180)} />
+                  ))}
+                  <line x1={x + 12} y1="21" x2={x + 12} y2="34" />
+                  <line x1={x + 4} y1="26" x2={x + 20} y2="26" />
+                  <line x1={x + 12} y1="34" x2={x + 6} y2="42" />
+                  <line x1={x + 12} y1="34" x2={x + 18} y2="42" />
+                </g>
+              ))}
+            </svg>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (b.type === 'kv') {
     return (
       <table className="doc-kv">
