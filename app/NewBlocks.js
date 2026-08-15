@@ -338,7 +338,7 @@ export default function Block({ b }) {
     return (
       <DocBox title={b.title}>
         <InfoTable rows={b.info} />
-        <table className="doc-table box-table minutes-table">
+        <table className="doc-table box-table flow-table minutes-table">
           <thead><tr><th style={{ width: '22%' }}>구분</th><th>회 의 내 용</th></tr></thead>
           <tbody>
             {b.order && <tr><th>회의순서</th><td>{b.order}</td></tr>}
@@ -361,7 +361,7 @@ export default function Block({ b }) {
     return (
       <DocBox title={b.title}>
         <Paras text={b.intro} />
-        <table className="doc-table box-table">
+        <table className="doc-table box-table flow-table">
           <thead><tr><th style={{ width: '28%' }}>안건</th><th>논의·결정 내용</th></tr></thead>
           <tbody>
             {(b.items || []).map((it, i) => (

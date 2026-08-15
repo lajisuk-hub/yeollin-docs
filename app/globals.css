@@ -720,6 +720,11 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .nb-img { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .doc-table { break-inside: auto; }
   .doc-table tr, .doc-blank { break-inside: avoid; }
+  /* 회의록·결과보고서처럼 한 칸이 긴 표는 쪽을 넘겨 이어지게 (앞 쪽이 텅 비는 것 방지) */
+  .flow-table, .flow-table tr, .flow-table td, .flow-table th, .flow-table tbody { break-inside: auto; }
+  .flow-table thead { display: table-header-group; }
+  /* 제목 띠와 정보표가 본문과 떨어져 홀로 남지 않게 */
+  .docbox-head, .box-kv { break-after: avoid; }
   .doc-table thead { display: table-header-group; }
   /* 회차 사진·2회차는 새 페이지에서 시작 */
   .doc-pagebreak { break-before: page; border: none; margin: 0; height: 0; }
