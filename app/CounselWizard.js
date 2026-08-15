@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
-import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, DEFAULT_BG, DEFAULT_APPLY_BG } from '../lib/counselDoc';
+import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, noticeBgFor, applyBgFor, noticeBottomFor, applyBottomFor } from '../lib/counselDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
 
@@ -20,8 +20,12 @@ const STEPS = [
   { id: 'save' },
 ];
 
-// 회차 기본 서식 (1·2회차 같은 그림 — 학기 표시가 없어 두 회차 모두 쓸 수 있음)
-const freshRound = () => ({ ...emptyRound(), noticeBg: DEFAULT_BG });
+// 회차 기본 서식 (2회차는 1회차와 구분되도록 다른 색 서식)
+const freshRound = (i) => ({
+  ...emptyRound(),
+  noticeBg: noticeBgFor(i), applyBg: applyBgFor(i),
+  noticeBottom: noticeBottomFor(i), applyBottom: applyBottomFor(i),
+});
 
 export default function CounselWizard({ onBack }) {
   const [data, setData] = useState({ rounds: [freshRound(0), freshRound(1)] });
@@ -385,7 +389,7 @@ export default function CounselWizard({ onBack }) {
                     🖼️ 내 그림 올리기
                     <input type="file" accept="image/*" hidden onChange={(e) => { pickBg(e.target.files[0]); e.target.value = ''; }} />
                   </label>
-                  <button className="bg-btn" onClick={() => upd({ noticeBg: DEFAULT_BG })}>기본 서식</button>
+                  <button className="bg-btn" onClick={() => upd({ noticeBg: noticeBgFor(r), noticeBottom: noticeBottomFor(r) })}>기본 서식</button>
                   <button className="bg-btn" onClick={() => upd({ noticeBg: '' })}>그림 없이</button>
                 </div>
                 {round.noticeBg && (
@@ -472,7 +476,7 @@ export default function CounselWizard({ onBack }) {
                     🖼️ 내 그림 올리기
                     <input type="file" accept="image/*" hidden onChange={(e) => { pickBg(e.target.files[0], 'applyBg'); e.target.value = ''; }} />
                   </label>
-                  <button className="bg-btn" onClick={() => upd({ applyBg: DEFAULT_APPLY_BG })}>기본 서식</button>
+                  <button className="bg-btn" onClick={() => upd({ applyBg: applyBgFor(r), applyBottom: applyBottomFor(r) })}>기본 서식</button>
                 </div>
                 <div className="bg-row sliders">
                   <label>글 시작 위치
