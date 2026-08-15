@@ -278,6 +278,7 @@ export default function Block({ b }) {
   }
   if (b.type === 'note') return <p className="doc-note">{b.text}</p>;
   if (b.type === 'pagebreak') return <div className="doc-pagebreak" />;
+  if (b.type === 'divider') return <div className="doc-divider" />;
   if (b.type === 'blank') {
     return (
       <div className="doc-blank">
@@ -290,10 +291,10 @@ export default function Block({ b }) {
     if (!items.length) return null;
     return (
       <div className="doc-photos-wrap">
+        {b.caption && <div className="doc-photos-cap">{b.caption}</div>}
         <div className="doc-photos">
           {items.map((src, i) => <figure key={i} className="doc-photo"><img src={src} alt="" /></figure>)}
         </div>
-        {b.caption && <div className="doc-photos-cap">{b.caption}</div>}
       </div>
     );
   }

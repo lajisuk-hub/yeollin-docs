@@ -558,8 +558,9 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .doc-photo img { width: 100%; height: auto; max-height: 100mm; object-fit: contain; border: 1px solid #ddd; background: #fafafa; }
 /* 회차 시작 제목 (상단 여백 확보) */
 .doc-sessionhead { font-family: 'Gowun Batang', serif; font-size: 16px; font-weight: 700; color: #2b2b2b; padding-top: 4mm; margin-bottom: 8px; }
-/* 새 페이지에서 시작하는 회차·사진 제목은 위 공간을 넉넉히 */
-.doc-pagebreak + .doc-sessionhead { padding-top: 12mm; }
+/* 새 페이지·구분선 다음 회차 제목은 위 공간을 넉넉히 */
+.doc-pagebreak + .doc-sessionhead,
+.doc-divider + .doc-sessionhead { padding-top: 10mm; }
 .doc-photos-cap { font-size: 12.5px; color: #777; margin-top: 4px; text-align: center; }
 .doc-pages-title { text-align: center; font-weight: 700; font-size: 13.5px; margin: 8px 0 4px; }
 
@@ -573,14 +574,17 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 
 /* 회차 구분 페이지 나눔 */
 .doc-pagebreak { height: 0; border-top: 2px dashed #cdd6d3; margin: 22px 0; }
+/* 회차 사이 구분선 (쪽은 나누지 않고 이어서) */
+.doc-divider { height: 0; border-top: 2px dashed #cdd6d3; margin: 20px 0 4px; }
 
 /* ── 인쇄 ── */
 @media print {
-  @page { size: A4; margin: 0; }
+  /* 여백을 쪽(@page)에 주어야 둘째 쪽부터도 위아래 공백이 똑같이 생긴다 */
+  @page { size: A4; margin: 20mm; }
   body { background: #fff; }
   .wrap > *:not(.page-outer) { display: none !important; }
   .page-outer { display: block; }
-  .doc-page { box-shadow: none; width: 210mm; min-height: 297mm; margin: 0; padding: 20mm; }
+  .doc-page { box-shadow: none; width: auto; min-height: 0; margin: 0; padding: 0; }
   .doc-heading { break-inside: avoid; }
   .doc-kv, .doc-sign { break-inside: avoid; }
   .doc-figure, .doc-photos-wrap, .doc-photo { break-inside: avoid; }
@@ -596,4 +600,7 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .doc-table thead { display: table-header-group; }
   /* 회차 사진·2회차는 새 페이지에서 시작 */
   .doc-pagebreak { break-before: page; border: none; margin: 0; height: 0; }
+  /* 구분선이 쪽 끝에 홀로 남지 않게 */
+  .doc-divider { break-after: avoid; }
+  .doc-photos-cap { break-after: avoid; }
 }
