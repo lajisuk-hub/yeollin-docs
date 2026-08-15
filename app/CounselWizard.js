@@ -393,8 +393,8 @@ export default function CounselWizard({ onBack }) {
                       <b>{round.noticeBottom ?? 17}%</b>
                     </label>
                     <label>글자 크기
-                      <input type="range" min="0.7" max="1.3" step="0.05" value={round.noticeScale ?? 1} onChange={(e) => upd({ noticeScale: Number(e.target.value) })} />
-                      <b>{Math.round((round.noticeScale ?? 1) * 100)}%</b>
+                      <input type="range" min="0.7" max="2" step="0.05" value={round.noticeScale ?? 1.15} onChange={(e) => upd({ noticeScale: Number(e.target.value) })} />
+                      <b>{Math.round((round.noticeScale ?? 1.15) * 100)}%</b>
                     </label>
                     <label className="bg-check">
                       <input type="checkbox" checked={round.noticeAsk !== false} onChange={(e) => upd({ noticeAsk: e.target.checked })} />
@@ -478,8 +478,8 @@ export default function CounselWizard({ onBack }) {
                     <b>{round.applyBottom ?? 15}%</b>
                   </label>
                   <label>글자 크기
-                    <input type="range" min="0.7" max="1.3" step="0.05" value={round.applyScale ?? 1} onChange={(e) => upd({ applyScale: Number(e.target.value) })} />
-                    <b>{Math.round((round.applyScale ?? 1) * 100)}%</b>
+                    <input type="range" min="0.7" max="2" step="0.05" value={round.applyScale ?? 1.15} onChange={(e) => upd({ applyScale: Number(e.target.value) })} />
+                    <b>{Math.round((round.applyScale ?? 1.15) * 100)}%</b>
                   </label>
                 </div>
               </div>

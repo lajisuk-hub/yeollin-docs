@@ -33,7 +33,7 @@ function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps) {
       put(size);
       // ① 자리가 남으면 키운다
       let guard = 0;
-      while (!over() && size < w * 0.06 && guard < 80) { size *= 1.03; put(size); guard += 1; }
+      while (!over() && size < w * 0.09 && guard < 90) { size *= 1.03; put(size); guard += 1; }
       // ② 넘치면 줄인다
       guard = 0;
       while (over() && size > w * 0.012 && guard < 120) { size *= 0.975; put(size); guard += 1; }
@@ -42,7 +42,7 @@ function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps) {
       put(size);
       // ④ 넘치면 글 칸을 아래로 늘린다 (시작 위치는 그대로)
       guard = 0;
-      while (over() && bottomPct > 11 && guard < 40) {
+      while (over() && bottomPct > 8 && guard < 40) {
         bottomPct -= 1; area.style.bottom = `${bottomPct}%`; guard += 1;
       }
       // ⑤ 그래도 넘치면 이름을 침범하지 않도록 조금 줄인다
