@@ -86,8 +86,12 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) 
         <>
           {onGate && (
             <div className="gate-back">
-              <span>지금은 <b>기존 서류를 분석·정리</b>하는 화면이에요.</span>
-              <button onClick={onGate}>서류 만드는 방식 다시 고르기 →</button>
+              <span className="gate-back-ico">🔀</span>
+              <span className="gate-back-txt">
+                지금은 <b>기존 서류를 분석·정리</b>하는 화면이에요.<br />
+                <em>서류를 <b>아예 새로 만들고</b> 싶으시면 여기서 방식을 다시 고르세요.</em>
+              </span>
+              <button onClick={onGate}>서류 만드는 방식<br />다시 고르기 →</button>
             </div>
           )}
 

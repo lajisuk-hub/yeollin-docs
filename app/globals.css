@@ -224,8 +224,16 @@ body {
 .gate-go { margin-top: 6px; font-size: 14px; font-weight: 700; }
 .gate-card.new .gate-go { color: #1F6FB2; }
 .gate-card.keep .gate-go { color: #2e7d68; }
-.gate-back { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: #eef3f7; border: 1px solid #d4e2ee; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 13.5px; color: #3c4a47; }
-.gate-back button { background: none; border: none; color: #1F6FB2; font-weight: 700; font-size: 13.5px; cursor: pointer; font-family: inherit; }
+.gate-back { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: #fff; border: 2px solid #1F6FB2; border-radius: 14px; padding: 15px 18px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(31,111,178,.14); }
+.gate-back-ico { flex: 0 0 auto; font-size: 22px; }
+.gate-back-txt { flex: 1 1 240px; font-size: 14.5px; color: #2b3a44; line-height: 1.7; }
+.gate-back-txt b { color: #1F6FB2; }
+.gate-back-txt em { display: inline-block; margin-top: 3px; font-style: normal; font-size: 13.5px; color: #55625f; }
+.gate-back button { flex: 0 0 auto; background: #1F6FB2; border: none; color: #fff; font-weight: 700; font-size: 14px; line-height: 1.45; cursor: pointer; font-family: inherit; border-radius: 10px; padding: 11px 18px; box-shadow: 0 2px 8px rgba(31,111,178,.3); }
+.gate-back button:hover { background: #185a92; }
+@media (max-width: 560px) {
+  .gate-back button { width: 100%; }
+}
 
 /* ── 기본사항 등록 (어린이집→교직원→반→원아) ── */
 .basic-hero { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; text-align: center; }
