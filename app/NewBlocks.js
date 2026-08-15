@@ -2,6 +2,93 @@
 
 import { useLayoutEffect, useRef } from 'react';
 
+// 배경 그림 안 빈 칸에 글자가 꽉 차도록 크기를 맞춘다 (짧으면 키우고, 길면 줄인다)
+function useFitText(wrapRef, areaRef, nameRef, scale, deps) {
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const area = areaRef.current;
+    if (!wrap || !area) return;
+    const fit = () => {
+      const w = wrap.clientWidth || 780;
+      if (nameRef?.current) nameRef.current.style.fontSize = `${w * 0.034}px`;
+      const put = (s) => { area.style.fontSize = `${s}px`; };
+      let size = w * 0.030;
+      put(size);
+      let guard = 0;
+      while (area.scrollHeight <= area.clientHeight && size < w * 0.06 && guard < 80) {
+        size *= 1.03; put(size); guard += 1;
+      }
+      guard = 0;
+      while (area.scrollHeight > area.clientHeight && size > w * 0.012 && guard < 120) {
+        size *= 0.975; put(size); guard += 1;
+      }
+      put(size * (scale || 1));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(wrap);
+    const img = wrap.querySelector('img');
+    if (img && !img.complete) img.addEventListener('load', fit, { once: true });
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+}
+
+// 배경 그림 위에 얹는 부모상담 신청서 (부모가 손으로 적는 서식)
+function ApplyOnImage({ b }) {
+  const wrapRef = useRef(null);
+  const areaRef = useRef(null);
+  const nameRef = useRef(null);
+  useFitText(wrapRef, areaRef, nameRef, b.textScale, [b.intro, b.topics, b.bg, b.top, b.bottom, b.textScale, b.period]);
+
+  const Line = ({ label, wide }) => (
+    <div className={`ap-line ${wide ? 'wide' : ''}`}><span className="ap-label">{label}</span><span className="ap-blank" /></div>
+  );
+
+  return (
+    <div className="nb-wrap" ref={wrapRef}>
+      <img className="nb-img" src={b.bg} alt="" />
+      <div className="nb-area ap-area" ref={areaRef} style={{ top: `${b.top}%`, bottom: `${b.bottom}%` }}>
+        {b.intro && <p className="ap-intro">{b.intro}</p>}
+
+        <div className="ap-grid">
+          <Line label="반 이름" />
+          <Line label="영유아 이름" />
+          <Line label="보호자 성함 (관계)" />
+          <Line label="연락처" />
+        </div>
+
+        <div className="ap-box">
+          <div className="ap-box-title">상담 희망 일시</div>
+          <div className="ap-when">
+            <span>1지망</span><b>　　월　　일　　시　　분</b>
+            <span>2지망</span><b>　　월　　일　　시　　분</b>
+          </div>
+          <div className="ap-method">
+            <span className="ap-box-title">희망 상담 방법</span>
+            <label>□ 대면 상담</label>
+            <label>□ 전화 상담</label>
+          </div>
+          {b.period && <div className="ap-period">※ 상담 기간 : {b.period}{b.place ? ` / ${b.place}` : ''}</div>}
+        </div>
+
+        <div className="ap-box">
+          <div className="ap-box-title">상담에서 나누고 싶은 내용 <em>(해당하는 곳에 ∨ 표시해 주세요)</em></div>
+          <ul className="ap-topics">
+            {(b.topics || []).map((t, i) => <li key={i}>□ {t}</li>)}
+          </ul>
+        </div>
+
+        <div className="ap-free">
+          <div className="ap-box-title">더 하고 싶은 이야기</div>
+          <span /><span />
+        </div>
+      </div>
+      <div className="nb-name" ref={nameRef} style={{ bottom: `${Math.max(4, (b.bottom || 15) - 7)}%` }}>{b.center}</div>
+    </div>
+  );
+}
+
 // 배경 그림 위에 글을 얹는 안내문
 // (원장님이 만든 서식 그림을 그대로 쓰고, 빈 곳에 글자만 넣는다. 글이 길면 글자가 자동으로 작아진다)
 function NoticeOnImage({ b }) {
@@ -13,41 +100,7 @@ function NoticeOnImage({ b }) {
   const notes = b.notes || [];
   const questions = b.questions || [];
 
-  // 빈 칸을 꽉 채우도록 글자 크기를 맞춘다 (짧으면 키우고, 길면 줄인다)
-  useLayoutEffect(() => {
-    const wrap = wrapRef.current;
-    const area = areaRef.current;
-    if (!wrap || !area) return;
-    const fit = () => {
-      const w = wrap.clientWidth || 780;
-      if (nameRef.current) nameRef.current.style.fontSize = `${w * 0.034}px`;
-      const put = (s) => { area.style.fontSize = `${s}px`; };
-      let size = w * 0.030;
-      put(size);
-      // ① 칸을 꽉 채울 때까지 키운다
-      let guard = 0;
-      while (area.scrollHeight <= area.clientHeight && size < w * 0.06 && guard < 80) {
-        size *= 1.03;
-        put(size);
-        guard += 1;
-      }
-      // ② 넘치면 들어갈 때까지 줄인다
-      guard = 0;
-      while (area.scrollHeight > area.clientHeight && size > w * 0.012 && guard < 120) {
-        size *= 0.975;
-        put(size);
-        guard += 1;
-      }
-      // ③ 원장님이 정한 글자 크기(%)를 마지막에 적용한다
-      put(size * (b.textScale || 1));
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    ro.observe(wrap);
-    const img = wrap.querySelector('img');
-    if (img && !img.complete) img.addEventListener('load', fit, { once: true });
-    return () => ro.disconnect();
-  }, [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale]);
+  useFitText(wrapRef, areaRef, nameRef, b.textScale, [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale]);
 
   return (
     <div className="nb-wrap" ref={wrapRef}>
@@ -219,6 +272,7 @@ export default function Block({ b }) {
   }
   // 가정통신문 모양 안내문 (인쇄해서 그대로 나눠줄 수 있는 형태)
   if (b.type === 'notice') return b.bg ? <NoticeOnImage b={b} /> : <NoticePoster b={b} />;
+  if (b.type === 'apply') return <ApplyOnImage b={b} />;
   if (b.type === 'kv') {
     return (
       <table className="doc-kv">

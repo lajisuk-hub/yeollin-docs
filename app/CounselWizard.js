@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
-import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, defaultNoticeItems, DEFAULT_BG } from '../lib/counselDoc';
+import { buildCounselDoc, toHwpxBlocks, emptyRound, periodText, roundHasContent, noticeBlock, applyBlock, defaultNoticeItems, DEFAULT_BG, DEFAULT_APPLY_BG } from '../lib/counselDoc';
 import Block from './NewBlocks';
 
 const KEY = 'counsel-wizard';
@@ -29,6 +29,7 @@ export default function CounselWizard({ onBack }) {
   const loadedRef = useRef(false);
   const timer = useRef(null);
   const posterRef = useRef(null);
+  const applyRef = useRef(null);
 
   // ── 불러오기 / 자동 저장 ──
   useEffect(() => {
@@ -132,13 +133,44 @@ export default function CounselWizard({ onBack }) {
     }
   }
 
-  // 안내문 배경(서식) 그림 올리기
-  async function pickBg(file) {
+  // 신청서 문구·항목 만들기
+  async function makeApply() {
+    setErr('');
+    setBusy(true);
+    try {
+      const feedback = round.applyFeedback?.trim();
+      const res = await fetch('/api/counsel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'apply', center, classes: classText,
+          round: `${r + 1}회차`, period: periodText(round),
+          method: round.method, place: round.place,
+          previous: feedback ? `${round.applyIntro}\n${round.applyTopics}` : '',
+          feedback: feedback || '',
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'AI 작성에 실패했습니다');
+      upd({
+        applyIntro: d.result?.intro || '',
+        applyTopics: (d.result?.topics || []).join('\n'),
+        applyFeedback: '',
+      });
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 서식 그림 올리기 (안내문 noticeBg / 신청서 applyBg)
+  async function pickBg(file, key = 'noticeBg') {
     if (!file) return;
     setBusy(true);
     setErr('');
     try {
-      upd({ noticeBg: await fileToResizedDataURL(file, 1400) });
+      upd({ [key]: await fileToResizedDataURL(file, 1400) });
     } catch {
       setErr('그림을 불러오지 못했습니다. 다른 그림으로 시도해 주세요.');
     } finally {
@@ -146,19 +178,19 @@ export default function CounselWizard({ onBack }) {
     }
   }
 
-  // 안내문을 그림 파일로 저장 (밴드·카톡에 올리거나 한글에 붙여넣기 좋게)
-  async function saveNoticeImage() {
+  // 화면에 보이는 서식을 그림 파일로 저장 (밴드·카톡에 올리거나 한글에 붙여넣기 좋게)
+  async function saveImage(ref, name) {
     setBusy(true);
     setErr('');
     setSaveMsg('그림으로 만드는 중입니다…');
     try {
       const html2canvas = (await import('html2canvas')).default;
-      const el = posterRef.current?.firstChild;
-      if (!el) throw new Error('안내문을 찾지 못했습니다');
+      const el = ref.current?.firstChild;
+      if (!el) throw new Error('서식을 찾지 못했습니다');
       const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
       const { downloadBlob } = await import('../lib/hwpx');
       const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.9));
-      downloadBlob(blob, `${center || '어린이집'}_${r + 1}회차_상담안내문.jpg`);
+      downloadBlob(blob, `${center || '어린이집'}_${name}.jpg`);
       setSaveMsg('그림 파일을 내려받았습니다. (다운로드 폴더를 확인하세요)');
     } catch (e) {
       setErr(e.message || '그림으로 만들지 못했습니다');
@@ -375,7 +407,7 @@ export default function CounselWizard({ onBack }) {
               <div ref={posterRef} className="poster-hold">
                 <Block b={noticeBlock(round, r, center || '○○어린이집')} />
               </div>
-              <button className="ghost" onClick={saveNoticeImage} disabled={busy} style={{ marginTop: 12 }}>
+              <button className="ghost" onClick={() => saveImage(posterRef, `${r + 1}회차_상담안내문`)} disabled={busy} style={{ marginTop: 12 }}>
                 🖼️ 이 안내문 그림(JPG)으로 저장
               </button>
               <p className="hint">그림으로 저장하면 밴드·카카오톡에 그대로 올리거나 한글 문서에 붙여 넣을 수 있어요.</p>
@@ -385,23 +417,84 @@ export default function CounselWizard({ onBack }) {
         </>
       )}
 
-      {/* 3. 신청서 */}
+      {/* 3. 신청서 (서식 그림 위에) */}
       {cur.id === 'apply' && (
-        <AiStep
-          lead={<>이 내용으로 <b>부모상담 신청서</b>를 만들겠습니다. 아래 안내 문구가 신청서 맨 위에 들어갑니다.</>}
-          value={round.apply}
-          onChange={(v) => upd({ apply: v })}
-          feedback={round.applyFeedback}
-          onFeedback={(v) => upd({ applyFeedback: v })}
-          onMake={() => askAi('apply', 'apply', 'applyFeedback')}
-          busy={busy}
-          err={err}
-          makeLabel="신청서 문구 만들기"
-          nextLabel="확인 · 상담 내용 정리 →"
-          onPrev={prev}
-          onNext={next}
-          extra={<p className="hint">※ 이름·희망 일시를 적는 <b>표는 자동으로 붙습니다.</b> 여기서는 안내 문구만 보시면 돼요.</p>}
-        />
+        <>
+          <div className="card wiz-card">
+            <p className="wiz-lead">이 내용으로 <b>부모님이 작성할 상담 신청서</b>를 만들겠습니다.</p>
+            <p className="hint">※ 이름·희망 일시·상담 방법을 적는 <b>칸은 자동으로 붙습니다.</b> 여기서는 안내 문구와 고를 항목만 정하시면 돼요.</p>
+            <button className="primary" onClick={makeApply} disabled={busy}>
+              {busy ? 'AI가 작성 중입니다…' : `✍️ ${round.applyIntro ? '다시 ' : ''}신청서 만들기`}
+            </button>
+            {err && <p className="error">⚠️ {err}</p>}
+
+            {round.applyIntro && (
+              <>
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label>맨 위 안내 문구</label>
+                  <textarea rows={3} value={round.applyIntro} onChange={(e) => upd({ applyIntro: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>부모님이 고를 상담 주제 <span className="fhint">(한 줄에 하나씩 · □ 표시는 자동)</span></label>
+                  <textarea rows={5} value={round.applyTopics} onChange={(e) => upd({ applyTopics: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
+                  <input type="text" value={round.applyFeedback} onChange={(e) => upd({ applyFeedback: e.target.value })}
+                    placeholder="예) 형제자매 관련 이야기 항목을 넣어주세요" />
+                </div>
+                {round.applyFeedback?.trim() && (
+                  <button className="ghost" onClick={makeApply} disabled={busy}>🔁 고친 내용으로 다시 만들기</button>
+                )}
+              </>
+            )}
+
+            <div className="wiz-nav">
+              <button className="ghost" onClick={prev}>← 이전</button>
+              <button className="primary" onClick={next} disabled={!round.applyIntro}>확인 · 상담 내용 정리 →</button>
+            </div>
+          </div>
+
+          {round.applyIntro && (
+            <div className="card wiz-card">
+              <h3 className="card-title">이렇게 나옵니다 — 인쇄해서 부모님께 나눠주세요</h3>
+
+              <div className="bg-tools">
+                <div className="bg-row">
+                  <span className="bg-label">서식 그림</span>
+                  <label className="file-btn sm">
+                    🖼️ 내 그림 올리기
+                    <input type="file" accept="image/*" hidden onChange={(e) => { pickBg(e.target.files[0], 'applyBg'); e.target.value = ''; }} />
+                  </label>
+                  <button className="bg-btn" onClick={() => upd({ applyBg: DEFAULT_APPLY_BG })}>기본 서식</button>
+                </div>
+                <div className="bg-row sliders">
+                  <label>글 시작 위치
+                    <input type="range" min="18" max="50" value={round.applyTop ?? 27} onChange={(e) => upd({ applyTop: Number(e.target.value) })} />
+                    <b>{round.applyTop ?? 27}%</b>
+                  </label>
+                  <label>아래 여백
+                    <input type="range" min="8" max="35" value={round.applyBottom ?? 15} onChange={(e) => upd({ applyBottom: Number(e.target.value) })} />
+                    <b>{round.applyBottom ?? 15}%</b>
+                  </label>
+                  <label>글자 크기
+                    <input type="range" min="0.7" max="1.3" step="0.05" value={round.applyScale ?? 1} onChange={(e) => upd({ applyScale: Number(e.target.value) })} />
+                    <b>{Math.round((round.applyScale ?? 1) * 100)}%</b>
+                  </label>
+                </div>
+              </div>
+
+              <div ref={applyRef} className="poster-hold">
+                <Block b={applyBlock(round, r, center || '○○어린이집')} />
+              </div>
+              <button className="ghost" onClick={() => saveImage(applyRef, `${r + 1}회차_상담신청서`)} disabled={busy} style={{ marginTop: 12 }}>
+                🖼️ 이 신청서 그림(JPG)으로 저장
+              </button>
+              <p className="hint">인쇄해서 나눠주시거나, 밴드·카카오톡에 그림으로 올리셔도 됩니다.</p>
+              {saveMsg && <p className="hint">{saveMsg}</p>}
+            </div>
+          )}
+        </>
       )}
 
       {/* 4. 상담 실시 내용 */}
