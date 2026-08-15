@@ -68,17 +68,6 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome }) {
           {allDone
             ? <p className="check-ok">👍 모든 항목을 확인했어요. 다음 단계로 넘어가세요.</p>
             : <p className="hint">각 항목이 갖춰져 있으면 체크하세요. (체크 안 해도 다음으로 넘어갈 수 있어요)</p>}
-
-          {docs.length > 0 && (
-            <div className="opt-doc">
-              <p className="opt-doc-title">참고 · 온라인 소통창구는 <b>월 1회 이상 게시글</b>이 필요해요. 필요하면 여기서 만들 수 있어요 (선택)</p>
-              {docs.map((doc) => (
-                <button key={doc.id} className="opt-doc-btn" onClick={() => onSelectDoc(doc)} style={{ '--c': color }}>
-                  📝 {doc.name} 만들기 →
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       ) : (
         /* ── 일반: 챙길 것 표 + 문서 만들기 ── */
