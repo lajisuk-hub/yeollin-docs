@@ -258,26 +258,28 @@ body {
 .bg-row.sliders label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #55625f; }
 .bg-row.sliders input[type=range] { width: 108px; accent-color: var(--brand); }
 .bg-row.sliders b { color: var(--brand); min-width: 34px; }
+.bg-check { cursor: pointer; }
+.bg-check input { width: 16px; height: 16px; accent-color: var(--brand); }
 
 /* 배경 그림 위에 글을 얹는 안내문 */
-.nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.7; word-break: keep-all; }
+.nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.62; word-break: keep-all; }
 .nb-img { display: block; width: 100%; height: auto; }
-.nb-area { position: absolute; left: 11%; right: 11%; overflow: hidden; display: flex; flex-direction: column; color: #4a5240; }
-.nb-to { align-self: center; font-weight: 700; font-size: 1.05em; color: #5f7a3f; border-bottom: 0.09em solid #b9d49a; padding-bottom: 0.15em; margin-bottom: 0.9em; letter-spacing: 0.05em; }
-.nb-greet { text-align: center; font-size: 0.95em; }
-.nb-greet p + p { margin-top: 0.45em; }
-.nb-items { list-style: none; margin: 1.1em 0 0; display: flex; flex-direction: column; gap: 0.5em; }
-.nb-items li { display: flex; gap: 0.5em; align-items: baseline; font-size: 0.95em; }
+.nb-area { position: absolute; left: 8%; right: 8%; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; color: #4a5240; }
+.nb-to { align-self: center; font-weight: 700; font-size: 1.05em; color: #5f7a3f; border-bottom: 0.09em solid #b9d49a; padding-bottom: 0.12em; letter-spacing: 0.05em; }
+.nb-greet { text-align: center; font-size: 0.97em; }
+.nb-greet p + p { margin-top: 0.35em; }
+.nb-items { list-style: none; display: flex; flex-direction: column; gap: 0.38em; }
+.nb-items li { display: flex; gap: 0.45em; align-items: baseline; font-size: 0.97em; }
 .nb-items li::before { content: '·'; color: #7cb342; font-weight: 800; }
 .nb-items b { flex: 0 0 auto; color: #5f7a3f; }
 .nb-items b::after { content: ' :'; }
-.nb-ask { margin-top: 1.1em; background: rgba(255,255,255,.65); border: 0.07em solid #cfe3b4; border-radius: 0.7em; padding: 0.7em 0.9em; }
-.nb-ask-title { font-weight: 700; font-size: 0.9em; color: #5f9c3c; margin-bottom: 0.4em; }
-.nb-ask ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 0.3em; }
-.nb-ask li { font-size: 0.87em; line-height: 1.6; }
-.nb-notes { margin-top: 0.9em; display: flex; flex-direction: column; gap: 0.25em; }
-.nb-notes p { font-size: 0.82em; color: #7b8271; }
-.nb-center { margin-top: auto; padding-top: 0.8em; text-align: center; font-family: 'Gowun Batang', serif; font-size: 1.15em; font-weight: 700; color: #5f9c3c; letter-spacing: 0.25em; }
+.nb-ask { background: rgba(255,255,255,.65); border: 0.07em solid #cfe3b4; border-radius: 0.7em; padding: 0.6em 0.85em; }
+.nb-ask-title { font-weight: 700; font-size: 0.94em; color: #5f9c3c; margin-bottom: 0.3em; }
+.nb-ask ol { margin: 0; padding-left: 1.25em; display: flex; flex-direction: column; gap: 0.22em; }
+.nb-ask li { font-size: 0.9em; line-height: 1.55; }
+.nb-notes { display: flex; flex-direction: column; gap: 0.2em; }
+.nb-notes p { font-size: 0.85em; color: #7b8271; }
+.nb-name { position: absolute; left: 0; right: 0; text-align: center; font-family: 'Gowun Batang', serif; font-weight: 700; color: #5f9c3c; letter-spacing: 0.25em; }
 
 /* 가정통신문 모양 안내문 */
 .notice-poster { background: #fbfdf7; border: 1px solid #dcead0; border-radius: 14px; overflow: hidden; margin: 10px 0 16px; color: #3c463a; word-break: keep-all; overflow-wrap: break-word; print-color-adjust: exact; -webkit-print-color-adjust: exact; }

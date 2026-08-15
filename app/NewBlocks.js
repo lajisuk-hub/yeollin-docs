@@ -7,24 +7,38 @@ import { useLayoutEffect, useRef } from 'react';
 function NoticeOnImage({ b }) {
   const wrapRef = useRef(null);
   const areaRef = useRef(null);
+  const nameRef = useRef(null);
   const greetLines = String(b.greeting || '').split(/\n+/).map((t) => t.trim()).filter(Boolean);
   const items = b.items || [];
   const notes = b.notes || [];
   const questions = b.questions || [];
 
-  // 글이 빈 칸을 넘치면 넘치지 않을 때까지 글자를 줄인다
+  // 빈 칸을 꽉 채우도록 글자 크기를 맞춘다 (짧으면 키우고, 길면 줄인다)
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
     const area = areaRef.current;
     if (!wrap || !area) return;
     const fit = () => {
       const w = wrap.clientWidth || 780;
-      let size = w * 0.031 * (b.textScale || 1);
-      area.style.fontSize = `${size}px`;
+      if (nameRef.current) nameRef.current.style.fontSize = `${w * 0.034}px`;
+      const scale = b.textScale || 1;
+      const max = w * 0.055 * scale;
+      const min = w * 0.012;
+      let size = w * 0.030 * scale;
+      const put = (s) => { area.style.fontSize = `${s}px`; };
+      put(size);
+      // ① 남는 자리가 있으면 키운다
       let guard = 0;
-      while (area.scrollHeight > area.clientHeight + 1 && size > 5 && guard < 60) {
-        size *= 0.96;
-        area.style.fontSize = `${size}px`;
+      while (area.scrollHeight <= area.clientHeight && size < max && guard < 80) {
+        size *= 1.03;
+        put(size);
+        guard += 1;
+      }
+      // ② 넘치면 들어갈 때까지 줄인다
+      guard = 0;
+      while (area.scrollHeight > area.clientHeight && size > min && guard < 120) {
+        size *= 0.975;
+        put(size);
         guard += 1;
       }
     };
@@ -61,8 +75,8 @@ function NoticeOnImage({ b }) {
         {!!notes.length && (
           <div className="nb-notes">{notes.map((n, i) => <p key={i}>※ {n}</p>)}</div>
         )}
-        <div className="nb-center">{b.center}</div>
       </div>
+      <div className="nb-name" ref={nameRef} style={{ bottom: `${Math.max(5, (b.bottom || 21) - 8)}%` }}>{b.center}</div>
     </div>
   );
 }

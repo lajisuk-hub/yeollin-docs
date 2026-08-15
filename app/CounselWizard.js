@@ -364,6 +364,10 @@ export default function CounselWizard({ onBack }) {
                       <input type="range" min="0.7" max="1.3" step="0.05" value={round.noticeScale ?? 1} onChange={(e) => upd({ noticeScale: Number(e.target.value) })} />
                       <b>{Math.round((round.noticeScale ?? 1) * 100)}%</b>
                     </label>
+                    <label className="bg-check">
+                      <input type="checkbox" checked={round.noticeAsk !== false} onChange={(e) => upd({ noticeAsk: e.target.checked })} />
+                      상담 전 질문 넣기 <span className="fhint">(빼면 글자가 커져요)</span>
+                    </label>
                   </div>
                 )}
               </div>
