@@ -21,26 +21,25 @@ function NoticeOnImage({ b }) {
     const fit = () => {
       const w = wrap.clientWidth || 780;
       if (nameRef.current) nameRef.current.style.fontSize = `${w * 0.034}px`;
-      const scale = b.textScale || 1;
-      const max = w * 0.055 * scale;
-      const min = w * 0.012;
-      let size = w * 0.030 * scale;
       const put = (s) => { area.style.fontSize = `${s}px`; };
+      let size = w * 0.030;
       put(size);
-      // ① 남는 자리가 있으면 키운다
+      // ① 칸을 꽉 채울 때까지 키운다
       let guard = 0;
-      while (area.scrollHeight <= area.clientHeight && size < max && guard < 80) {
+      while (area.scrollHeight <= area.clientHeight && size < w * 0.06 && guard < 80) {
         size *= 1.03;
         put(size);
         guard += 1;
       }
       // ② 넘치면 들어갈 때까지 줄인다
       guard = 0;
-      while (area.scrollHeight > area.clientHeight && size > min && guard < 120) {
+      while (area.scrollHeight > area.clientHeight && size > w * 0.012 && guard < 120) {
         size *= 0.975;
         put(size);
         guard += 1;
       }
+      // ③ 원장님이 정한 글자 크기(%)를 마지막에 적용한다
+      put(size * (b.textScale || 1));
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -54,7 +53,6 @@ function NoticeOnImage({ b }) {
     <div className="nb-wrap" ref={wrapRef}>
       <img className="nb-img" src={b.bg} alt="" />
       <div className="nb-area" ref={areaRef} style={{ top: `${b.top}%`, bottom: `${b.bottom}%` }}>
-        <div className="nb-to">(　　　　　　　　) 부모님께</div>
         <div className="nb-greet">{greetLines.map((t, i) => <p key={i}>{t}</p>)}</div>
         {!!items.length && (
           <ul className="nb-items">
@@ -116,8 +114,6 @@ function NoticePoster({ b }) {
           <span className="np-round">{b.round}</span>
           <span className="np-main">부모 개별상담 <em>안내</em></span>
         </h2>
-
-        <div className="np-to">(　　　　　　　　　　) 부모님께</div>
 
         <div className="np-greet">
           {greetLines.map((t, i) => <p key={i}>{t}</p>)}
