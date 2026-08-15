@@ -183,14 +183,19 @@ export default function CommitteeWizard({ onBack }) {
 
   const blocks = buildCommitteeDoc(data, basic || {});
 
-  async function saveHwpx() {
+  // 한글(hwpx) 저장 — 전체 문서 또는 한 차수만
+  async function saveHwpx(only = null) {
     setBusy(true);
     setErr('');
     setSaveMsg('한글 파일을 만드는 중입니다…');
     try {
       const { buildDocHwpx, downloadBlob } = await import('../lib/hwpx');
-      const blob = await buildDocHwpx({ blocks: toHwpxBlocks(blocks), onProgress: setSaveMsg });
-      downloadBlob(blob, `${center || '어린이집'}_운영위원회_운영결과.hwpx`);
+      const src = only === null ? blocks : buildOneMeetingDoc(data, only, basic || {});
+      const name = only === null
+        ? `${center || '어린이집'}_운영위원회_운영결과.hwpx`
+        : `${center || '어린이집'}_운영위원회_${MEETINGS[only].no}_${MEETINGS[only].quarter}.hwpx`;
+      const blob = await buildDocHwpx({ blocks: toHwpxBlocks(src), onProgress: setSaveMsg });
+      downloadBlob(blob, name);
       setSaveMsg('한글 파일을 내려받았습니다. (다운로드 폴더를 확인하세요)');
     } catch (e) {
       setErr(e.message || '한글 파일을 만들지 못했습니다');
@@ -585,6 +590,14 @@ export default function CommitteeWizard({ onBack }) {
                   <b>{info.no} ({info.quarter}) 문서 정리본</b>입니다.
                   아래에 <b>{info.year}년 회칙 · 위원 명단 · 개최 공지문 · 회의록 · 결과 공지문</b>이 한 번에 들어 있습니다.
                 </p>
+                <h3 className="wiz-sub">이 차수만 저장하기</h3>
+                <p className="hint">아래 정리본을 <b>{info.no}만 따로</b> 저장할 수 있습니다. 네 차수를 묶은 전체 문서는 차수 목록에서 저장하세요.</p>
+                <div className="wiz-saves">
+                  <button className="primary" onClick={() => window.print()}>🖨️ {info.no}만 PDF로 저장</button>
+                  <button className="ghost" onClick={() => saveHwpx(q)} disabled={busy}>📄 {info.no}만 한글(hwpx)로 저장</button>
+                </div>
+                {saveMsg && <p className="hint">{saveMsg}</p>}
+
                 <h3 className="wiz-sub">{info.quarter} 운영의 특징</h3>
                 <p className="hint">이 분기 회의가 어떤 점에서 의미 있었는지 한 문단으로 정리합니다.</p>
                 <button className="primary" onClick={makeFeature} disabled={busy}>
@@ -648,7 +661,7 @@ export default function CommitteeWizard({ onBack }) {
             )}
             <div className="wiz-saves">
               <button className="primary" onClick={() => window.print()}>🖨️ PDF로 저장 (사진 포함)</button>
-              <button className="ghost" onClick={saveHwpx} disabled={busy}>📄 한글(hwpx)로 저장</button>
+              <button className="ghost" onClick={() => saveHwpx()} disabled={busy}>📄 한글(hwpx)로 저장</button>
             </div>
             {saveMsg && <p className="hint">{saveMsg}</p>}
             {err && <p className="error">⚠️ {err}</p>}
