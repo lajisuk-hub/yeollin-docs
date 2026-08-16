@@ -8,7 +8,7 @@ import {
   DEFAULT_NOTICE_BG, DEFAULT_TOP, DEFAULT_BOTTOM,
   emptyData, emptyMonth, monthList, monthLabel, monthOf, planOf, defaultPlan,
   whenText, attendText, totalCount, flowList,
-  monthHasContent, monthDone, noticeDone, chosenMonths, noticeBlock,
+  monthHasContent, monthDone, noticeDone, chosenMonths, noticeBlock, upgradeMonth,
   buildProgramDoc, buildOneMonthDoc, toHwpxBlocks,
 } from '../lib/programDoc';
 import Block from './NewBlocks';
@@ -43,7 +43,9 @@ export default function ProgramWizard({ onBack }) {
       if (!alive) return;
       setBasic(b || {});
       if (saved?.plan) {
-        setData({ ...emptyData(), ...saved });
+        // 예전에 저장한 달은 서식 기본값(아래 여백 등)이 옛 값일 수 있어 새 값으로 올려 준다
+        const months = Object.fromEntries(Object.entries(saved.months || {}).map(([k, v]) => [k, upgradeMonth(v)]));
+        setData({ ...emptyData(), ...saved, months });
         if (saved.view) setView(saved.view);
       }
       loadedRef.current = true;
