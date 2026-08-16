@@ -5,19 +5,22 @@ import { saveForm, loadForm, clearForm } from '../lib/store';
 import {
   AREAS, QUESTIONS, emptyData, periodText, replyRate,
   makeSampleScores, scoreOf, totalScore, hasScores, bestArea, worstArea,
-  buildSurveyDoc, buildResultDoc, buildFormDoc, toHwpxBlocks,
+  buildSurveyDoc, buildResultDoc, buildFormDoc, buildNoticeDoc, toHwpxBlocks,
 } from '../lib/surveyDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
 
 const KEY = 'survey-wizard';
 
-const STEPS = ['size', 'form', 'scores', 'result', 'save'];
+const STEPS = ['size', 'need', 'notice', 'form', 'scores', 'result', 'plan', 'save'];
 const STEP_TITLE = {
   size: '조사 규모 정하기',
+  need: '조사의 필요성 쓰기',
+  notice: '조사 공지문 만들기',
   form: '설문지 만들기',
   scores: '조사 결과 넣기',
   result: '결과보고서 만들기',
+  plan: '내년 반영 내용 쓰기',
   save: '문서 저장하기',
 };
 
@@ -99,6 +102,27 @@ export default function SurveyWizard({ onBack }) {
     if (j?.text) upd({ intro: j.text, introFeedback: '' });
   }
 
+  async function makeNeed() {
+    const j = await ask('need', data.need && data.needFeedback
+      ? { previous: data.need, feedback: data.needFeedback } : {});
+    if (j?.text) upd({ need: j.text, needFeedback: '' });
+  }
+
+  async function makeNotice() {
+    const j = await ask('notice', data.noticeGreeting && data.noticeFeedback
+      ? { previous: `${data.noticeGreeting}\n\n${data.noticeClosing}`, feedback: data.noticeFeedback } : {});
+    if (j?.result) upd({ noticeGreeting: j.result.greeting || '', noticeClosing: j.result.closing || '', noticeFeedback: '' });
+  }
+
+  async function makePlan() {
+    if (!hasScores(data)) { setErr('먼저 조사 결과(점수)를 넣어주세요.'); return; }
+    const j = await ask('plan', {
+      memo,
+      ...(data.plan && data.planFeedback ? { previous: data.plan, feedback: data.planFeedback } : {}),
+    });
+    if (j?.text) upd({ plan: j.text, planFeedback: '' });
+  }
+
   async function makeResult() {
     if (!hasScores(data)) { setErr('먼저 조사 결과(점수)를 넣어주세요.'); return; }
     const j = await ask('result', {
@@ -118,17 +142,19 @@ export default function SurveyWizard({ onBack }) {
     all: buildSurveyDoc(data, basic || {}),
     result: buildResultDoc(data, basic || {}),
     form: buildFormDoc(data, basic || {}),
+    notice: buildNoticeDoc(data, basic || {}),
   };
-  const [which, setWhich] = useState('result');
+  const [which, setWhich] = useState('all');
 
   async function saveHwpx(kind) {
     setBusy(true); setErr(''); setSaveMsg('한글 파일을 만드는 중입니다…');
     try {
       const { buildDocHwpx, downloadBlob } = await import('../lib/hwpx');
       const name = {
-        all: `${center || '어린이집'}_${data.year}_부모만족도조사.hwpx`,
-        result: `${center || '어린이집'}_${data.year}_부모만족도_결과보고서.hwpx`,
-        form: `${center || '어린이집'}_${data.year}_부모만족도_설문지.hwpx`,
+        all: `${center || '어린이집'}_${data.year}_학부모만족도조사_전체.hwpx`,
+        result: `${center || '어린이집'}_${data.year}_학부모만족도_결과서.hwpx`,
+        form: `${center || '어린이집'}_${data.year}_학부모만족도_설문지.hwpx`,
+        notice: `${center || '어린이집'}_${data.year}_학부모만족도_공지문.hwpx`,
       }[kind];
       const blob = await buildDocHwpx({ blocks: toHwpxBlocks(docs[kind]), onProgress: setSaveMsg });
       downloadBlob(blob, name);
@@ -227,6 +253,84 @@ export default function SurveyWizard({ onBack }) {
           <button className="next-doc" disabled={!sizeOk} onClick={next}>설문지 만들기 →</button>
           {!sizeOk && <p className="hint center">※ 부모 총 인원 · 배부 · 회신 수를 넣어주세요.</p>}
         </div>
+      )}
+
+      {/* 조사의 필요성 */}
+      {step === 'need' && (
+        <div className="card wiz-card">
+          <p className="wiz-lead">
+            전체 문서 <b>맨 앞</b>에 들어가는 <b>조사의 필요성</b>입니다.<br />
+            <b>매년 1회 조사로 투명한 어린이집 운영을 한다</b>는 내용이 꼭 들어갑니다.
+          </p>
+          <p className="hint">비워 두셔도 기본 문구가 들어갑니다. AI로 우리 원에 맞게 다듬을 수 있습니다.</p>
+          <button className="primary" onClick={makeNeed} disabled={busy}>
+            {busy ? 'AI가 작성 중입니다…' : `✍️ ${data.need ? '다시 ' : ''}필요성 쓰기`}
+          </button>
+          {err && <p className="error">⚠️ {err}</p>}
+          {data.need && (
+            <>
+              <div className="wiz-result">
+                <div className="wiz-result-top">학부모 만족도 조사의 필요성 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                <textarea rows={10} value={data.need} onChange={(e) => upd({ need: e.target.value })} />
+              </div>
+              <div className="field">
+                <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
+                <input type="text" value={data.needFeedback} onChange={(e) => upd({ needFeedback: e.target.value })} />
+              </div>
+              {data.needFeedback?.trim() && (
+                <button className="ghost" onClick={makeNeed} disabled={busy}>🔁 고친 내용으로 다시 만들기</button>
+              )}
+            </>
+          )}
+          <div className="wiz-nav">
+            <button className="ghost" onClick={prev}>← 이전</button>
+            <button className="primary" onClick={next}>조사 공지문 만들기 →</button>
+          </div>
+        </div>
+      )}
+
+      {/* 조사 공지문 */}
+      {step === 'notice' && (
+        <>
+          <div className="card wiz-card">
+            <p className="wiz-lead">
+              조사 <b>전에</b> 부모님께 보내는 <b>공지문</b>입니다.<br />
+              기간·대상·방법·내용은 <b>표로 자동</b>으로 들어가고, <b>인사말과 맺음말</b>만 AI가 씁니다.
+            </p>
+            <button className="primary" onClick={makeNotice} disabled={busy}>
+              {busy ? 'AI가 작성 중입니다…' : `✍️ ${data.noticeGreeting ? '다시 ' : ''}공지문 만들기`}
+            </button>
+            {err && <p className="error">⚠️ {err}</p>}
+            {data.noticeGreeting && (
+              <>
+                <div className="wiz-result">
+                  <div className="wiz-result-top">인사말 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                  <textarea rows={5} value={data.noticeGreeting} onChange={(e) => upd({ noticeGreeting: e.target.value })} />
+                </div>
+                <div className="wiz-result">
+                  <div className="wiz-result-top">맺음말 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                  <textarea rows={4} value={data.noticeClosing} onChange={(e) => upd({ noticeClosing: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
+                  <input type="text" value={data.noticeFeedback} onChange={(e) => upd({ noticeFeedback: e.target.value })} />
+                </div>
+                {data.noticeFeedback?.trim() && (
+                  <button className="ghost" onClick={makeNotice} disabled={busy}>🔁 고친 내용으로 다시 만들기</button>
+                )}
+              </>
+            )}
+            <div className="wiz-nav">
+              <button className="ghost" onClick={prev}>← 이전</button>
+              <button className="primary" onClick={next}>설문지 만들기 →</button>
+            </div>
+          </div>
+          <div className="page-outer">
+            <div className="print-area">
+              <PrintSheet>{docs.notice.map((b, i) => <Block key={i} b={b} />)}</PrintSheet>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ② 설문지 */}
@@ -350,7 +454,7 @@ export default function SurveyWizard({ onBack }) {
             )}
             <div className="wiz-nav">
               <button className="ghost" onClick={prev}>← 이전</button>
-              <button className="primary" onClick={next}>저장하기 →</button>
+              <button className="primary" onClick={next}>내년 반영 내용 쓰기 →</button>
             </div>
           </div>
           <div className="page-outer">
@@ -361,13 +465,48 @@ export default function SurveyWizard({ onBack }) {
         </>
       )}
 
+      {/* 내년 반영 내용 */}
+      {step === 'plan' && (
+        <div className="card wiz-card">
+          <p className="wiz-lead">
+            전체 문서 <b>마지막</b>에 들어가는 <b>결과 내용을 통한 내년 반영 내용</b>입니다.<br />
+            가장 낮게 나온 <b>{worstArea(data)?.name}</b> 영역을 우선 개선 과제로 잡아 씁니다.
+          </p>
+          <button className="primary" onClick={makePlan} disabled={busy}>
+            {busy ? 'AI가 작성 중입니다…' : `✍️ ${data.plan ? '다시 ' : ''}내년 반영 내용 쓰기`}
+          </button>
+          {err && <p className="error">⚠️ {err}</p>}
+          {data.plan && (
+            <>
+              <div className="wiz-result">
+                <div className="wiz-result-top">내년 반영 내용 <span>✏️ 직접 고쳐도 됩니다</span></div>
+                <textarea rows={9} value={data.plan} onChange={(e) => upd({ plan: e.target.value })} />
+              </div>
+              <div className="field">
+                <label>고칠 부분을 알려주시면 다시 만들어 드려요 (선택)</label>
+                <input type="text" value={data.planFeedback} onChange={(e) => upd({ planFeedback: e.target.value })} />
+              </div>
+              {data.planFeedback?.trim() && (
+                <button className="ghost" onClick={makePlan} disabled={busy}>🔁 고친 내용으로 다시 만들기</button>
+              )}
+            </>
+          )}
+          <div className="wiz-nav">
+            <button className="ghost" onClick={prev}>← 이전</button>
+            <button className="primary" onClick={next}>저장하기 →</button>
+          </div>
+        </div>
+      )}
+
       {/* ⑤ 저장 */}
       {step === 'save' && (
         <>
           <div className="card wiz-card">
-            <p className="wiz-lead">무엇을 저장할지 고르세요. <b>심사 제출은 결과보고서</b>입니다.</p>
+            <p className="wiz-lead">
+              무엇을 저장할지 고르세요. <b>전체 문서</b>는 필요성 → 공지문 → 설문지 → 결과서 → 내년 반영 내용 순서로 묶여 있습니다.
+            </p>
             <div className="range-row">
-              {[['result', '결과보고서 (제출용)'], ['form', '설문지'], ['all', '결과보고서 + 설문지']].map(([k, label]) => (
+              {[['all', '전체 문서 (제출용)'], ['notice', '조사 공지문'], ['form', '설문지'], ['result', '결과서']].map(([k, label]) => (
                 <button key={k} className={`range-chip ${which === k ? 'on' : ''}`} onClick={() => setWhich(k)}>{label}</button>
               ))}
             </div>

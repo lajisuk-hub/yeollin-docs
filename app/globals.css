@@ -844,6 +844,10 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .doc-divider { break-after: avoid; }
   .doc-photos-cap { break-after: avoid; }
 
+  /* 만족도 조사 전체 문서는 문단이 많아 줄간격을 조금 좁힌다 (빈 쪽이 딸려 나오지 않게) */
+  .doc-para { line-height: 1.75; margin-bottom: 4px; }
+  .doc-heading { margin: 15px 0 6px; }
+
   /* 부모만족도 결과보고서는 A4 한 쪽에 들어가야 한다 (원장님 서식과 같게) */
   .doc-greenbar { font-size: 16.5px; padding: 8px 12px; margin-bottom: 10px; }
   .doc-checklist li { font-size: 12px; line-height: 1.55; }
