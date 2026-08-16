@@ -397,24 +397,12 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .doc-pair .nb-wrap { margin: 0; }
 .doc-pair-cap { text-align: center; font-size: 13px; font-weight: 700; color: #444; margin-bottom: 5px; }
 
-/* 전체 문서에서 공지문·실시기록을 좌우 2단으로 작게 (한 달이 한 쪽에 들어가게) */
-.doc-pair.compact { gap: 12px; margin: 6px 0 10px; }
-.doc-pair.compact .doc-pair-cap { font-size: 11.5px; margin-bottom: 4px; }
-.doc-pair.compact .docbox { margin: 0; }
-.doc-pair.compact .docbox-head { font-size: 11.5px; padding: 6px 8px; }
-.doc-pair.compact .docbox-body { padding: 8px 9px; }
-.doc-pair.compact .doc-kv { margin: 0 0 6px; }
-.doc-pair.compact .doc-kv th, .doc-pair.compact .doc-kv td { font-size: 9.5px; padding: 3px 5px; }
-.doc-pair.compact .doc-kv th { width: 68px; }
-.doc-pair.compact .doc-table { font-size: 9.5px; margin: 0 0 6px; }
-.doc-pair.compact .doc-table th, .doc-pair.compact .doc-table td { padding: 3px 5px; line-height: 1.5; height: auto; }
-.doc-pair.compact .docbox-sub { font-size: 10.5px; margin: 8px 0 3px; }
-.doc-pair.compact .docbox-part { margin-top: 7px; padding-top: 6px; }
-.doc-pair.compact .docbox-body .doc-para { font-size: 9.8px; line-height: 1.62; margin-bottom: 3px; }
-.doc-pair.compact .docbox-sign { font-size: 10.5px; letter-spacing: 1px; margin-top: 6px; }
 
 /* 배경 그림 위에 글을 얹는 안내문 */
 .nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.62; word-break: keep-all; }
+/* 전체 문서에서는 조금 좁게 — 그림이 쪽 높이를 다 차지해 다음 쪽으로 통째로 밀리는 것을 막는다
+   (글자 크기는 칸 너비에 맞춰 자동으로 함께 줄어든다) */
+.nb-wrap.narrow { max-width: 78%; margin-left: auto; margin-right: auto; }
 .nb-img { display: block; width: 100%; height: auto; }
 .nb-area { position: absolute; left: 8%; right: 8%; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 0.85em; color: #4a5240; }
 .nb-to { align-self: center; font-weight: 700; font-size: 1.05em; color: #5f7a3f; border-bottom: 0.09em solid #b9d49a; padding-bottom: 0.12em; letter-spacing: 0.05em; }
@@ -715,10 +703,6 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .doc-pagebreak + .doc-sessionhead,
 .doc-divider + .doc-sessionhead { padding-top: 10mm; }
 .doc-photos-cap { font-size: 12.5px; color: #777; margin-top: 4px; text-align: center; }
-/* 전체 문서(2단)에서는 사진도 작게 — 한 달이 한 쪽을 넘지 않게 */
-.doc-photos-wrap.small .doc-photos { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.doc-photos-wrap.small .doc-photo img { max-height: 42mm; }
-.doc-photos-wrap.small .doc-photos-cap { font-size: 11px; }
 .doc-pages-title { text-align: center; font-weight: 700; font-size: 13.5px; margin: 8px 0 4px; }
 
 /* 공지문·신청서 좌우 2단 배치 (세로 공백 최소화) */
@@ -816,4 +800,15 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 구분선이 쪽 끝에 홀로 남지 않게 */
   .doc-divider { break-after: avoid; }
   .doc-photos-cap { break-after: avoid; }
+
+  /* 전체 문서: 중간 공백보다 이어짐을 우선 (원장님 지시)
+     실시기록은 쪽을 넘어가도 되고, 대신 앞 쪽이 텅 비지 않게 자연스럽게 흐르게 한다 */
+  .docbox, .docbox-body, .docbox-part { break-inside: auto; }
+  .docbox-part .doc-para { break-inside: auto; }
+  /* 달 사이 간격은 화면보다 좁게 (쪽 넘김 없이 이어 붙이므로) */
+  .doc-divider { margin: 12px 0 2px; }
+  .doc-divider + .doc-sessionhead { padding-top: 4mm; }
+  /* 공지문 그림 아래·소제목 위 여백을 줄여 위아래 균형을 맞춘다 */
+  .nb-wrap { margin: 6px 0 10px; }
+  .doc-subheading { margin-top: 10px; }
 }

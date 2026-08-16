@@ -132,7 +132,7 @@ function NoticeOnImage({ b }) {
   useFitText(wrapRef, areaRef, nameRef, b.textScale, b.top, b.bottom, [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale]);
 
   return (
-    <div className="nb-wrap" ref={wrapRef}>
+    <div className={`nb-wrap ${b.narrow ? 'narrow' : ''}`} ref={wrapRef}>
       <img className="nb-img" src={b.bg} alt="" />
       <div className="nb-area" ref={areaRef} style={{ top: `${b.top}%`, bottom: `${b.bottom}%` }}>
         <div className="nb-greet"><Lines text={b.greeting} /></div>
@@ -295,9 +295,10 @@ function RulesDoc({ text }) {
 }
 
 // ── 공지문·회의록·결과보고서를 테두리 있는 한 덩어리 문서로 ──
-function DocBox({ title, children }) {
+// tight — 전체 문서에서 쪽수를 줄이려고 글자·여백을 조금 작게 (내용은 그대로)
+function DocBox({ title, children, tight }) {
   return (
-    <div className="docbox">
+    <div className={`docbox ${tight ? 'tight' : ''}`}>
       <div className="docbox-head">{title}</div>
       <div className="docbox-body">{children}</div>
     </div>
@@ -359,7 +360,7 @@ export default function Block({ b }) {
   // 실시기록 — 정보표(운영일시·참석자) + 진행 순서 표 + 운영 내용 정리
   if (b.type === 'recorddoc') {
     return (
-      <DocBox title={b.title}>
+      <DocBox title={b.title} tight={b.tight}>
         <InfoTable rows={b.info} />
         <table className="doc-table box-table flow-table">
           <thead>
