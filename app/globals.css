@@ -308,6 +308,46 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 /* 달 카드 목록 — 12개라 좁게 */
 .q-grid.month { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 
+/* 벽에 붙이는 게시용 안내문 (참관 안내문) */
+.doc-poster {
+  border: 2.5px solid #7cb342; border-radius: 14px; padding: 0 26px 22px; margin: 10px 0 16px;
+  background: #fcfdfb; break-inside: avoid; overflow: hidden;
+  word-break: keep-all;   /* 낱말 가운데서 줄이 끊기지 않게 */
+}
+.dp-band { height: 12px; background: #7cb342; margin: 0 -26px 20px; }
+.dp-title { text-align: center; font-size: 30px; font-weight: 800; color: #2f6b23; letter-spacing: -1px; margin-bottom: 14px; }
+.dp-lead { text-align: center; margin-bottom: 18px; }
+.dp-lead p { font-size: 15.5px; line-height: 1.85; color: #35443f; }
+.dp-items { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 10px; }
+.dp-items li { display: grid; grid-template-columns: 118px 1fr; gap: 12px; align-items: start; }
+.dp-label {
+  background: #eaf5e2; border: 1px solid #cfe4bf; border-radius: 8px; color: #2f6b23;
+  font-size: 15px; font-weight: 700; text-align: center; padding: 9px 6px; white-space: nowrap;
+}
+.dp-value p { font-size: 16px; line-height: 1.7; padding-top: 6px; color: #2b3b37; }
+.dp-value p + p { font-size: 13.5px; color: #55625f; padding-top: 2px; }
+.dp-notes { border-top: 1px dashed #cfd9d5; padding-top: 12px; margin-top: 4px; }
+.dp-notes p { font-size: 13.5px; line-height: 1.75; color: #55625f; margin-bottom: 3px; }
+.dp-foot { text-align: center; font-size: 20px; font-weight: 800; color: #2f6b23; margin-top: 16px; letter-spacing: 2px; }
+@media print {
+  /* 벽에 붙이는 안내문이므로 A4 한 장을 넉넉히 채운다 */
+  .doc-poster {
+    print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    min-height: 232mm; display: flex; flex-direction: column; padding-bottom: 26px;
+  }
+  .dp-title { font-size: 34px; margin: 8px 0 22px; }
+  .dp-lead { margin-bottom: 26px; }
+  .dp-lead p { font-size: 17px; line-height: 2; }
+  .dp-items { gap: 16px; margin-bottom: auto; }
+  .dp-items li { grid-template-columns: 132px 1fr; }
+  .dp-label { font-size: 16.5px; padding: 11px 6px; }
+  .dp-value p { font-size: 17.5px; line-height: 1.8; padding-top: 8px; }
+  .dp-value p + p { font-size: 14.5px; }
+  .dp-notes { margin-top: 26px; }
+  .dp-notes p { font-size: 14.5px; }
+  .dp-foot { font-size: 24px; margin-top: 20px; }
+}
+
 /* 심사에서 확인하는 네 가지 (연계·협력) */
 .check4 { list-style: none; padding: 0; margin: 6px 0 8px; display: grid; gap: 6px; }
 .check4 li {
@@ -315,6 +355,19 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
   border: 1px solid #dbe9e2; border-radius: 10px; font-size: 13.5px; color: #2b3b37;
 }
 .check4 li::before { content: '✓'; position: absolute; left: 12px; color: #4a8a2a; font-weight: 700; }
+
+/* 참관 — 꼭 기억할 점 */
+.kw-list { display: grid; gap: 8px; margin: 6px 0 4px; }
+.kw { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: baseline; padding: 9px 12px; background: #fff8ec; border: 1px solid #f0dcb8; border-radius: 10px; }
+.kw b { font-size: 13.5px; color: #b3620a; }
+.kw span { font-size: 13px; color: #55625f; line-height: 1.6; }
+@media (max-width: 640px) { .kw { grid-template-columns: 1fr; gap: 3px; } }
+
+/* 참관 기록 한 건 */
+.visit-log { display: grid; grid-template-columns: 28px 1fr 38px; gap: 8px; align-items: start; padding: 12px 0; border-top: 1px solid #eef1f0; }
+.visit-log:first-of-type { border-top: 0; }
+.visit-log-no { font-size: 14px; font-weight: 700; color: #6b7975; padding-top: 28px; text-align: center; }
+.visit-log-fields { display: grid; gap: 4px; }
 
 /* 연계·협력 활동 — 연간계획 한 줄 */
 .link-row { display: grid; grid-template-columns: 54px 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef1f0; align-items: start; }

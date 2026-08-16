@@ -374,6 +374,31 @@ export default function Block({ b }) {
   // 초록 띠 제목 (부모만족도 결과보고서)
   if (b.type === 'greenbar') return <h1 className="doc-greenbar">{b.text}</h1>;
   if (b.type === 'centertitle') return <p className="doc-centertitle">{b.text}</p>;
+  // 벽에 붙이는 게시용 안내문 (글씨를 크게)
+  if (b.type === 'poster') {
+    const lines = (t) => String(t || '').split(/\n+/).filter(Boolean);
+    return (
+      <div className="doc-poster">
+        <div className="dp-band" />
+        <h2 className="dp-title">{b.title}</h2>
+        {b.lead && <div className="dp-lead">{lines(b.lead).map((t, i) => <p key={i}>{t}</p>)}</div>}
+        <ul className="dp-items">
+          {(b.items || []).map((it, i) => (
+            <li key={i}>
+              <span className="dp-label">{it.label}</span>
+              <span className="dp-value">{lines(it.value).map((t, n) => <p key={n}>{t}</p>)}</span>
+            </li>
+          ))}
+        </ul>
+        {!!(b.notes || []).length && (
+          <div className="dp-notes">
+            {b.notes.map((n, i) => <p key={i}>※ {n}</p>)}
+          </div>
+        )}
+        <div className="dp-foot">{b.center}</div>
+      </div>
+    );
+  }
   if (b.type === 'bars') return <Bars items={b.items} total={b.total} />;
   // □ 조사기간 : … 처럼 네모 기호로 나열하는 목록
   if (b.type === 'checklist') {

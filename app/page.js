@@ -15,6 +15,7 @@ import CommitteeWizard from './CommitteeWizard';
 import ProgramWizard from './ProgramWizard';
 import SurveyWizard from './SurveyWizard';
 import LinkWizard from './LinkWizard';
+import VisitWizard from './VisitWizard';
 import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
@@ -116,6 +117,7 @@ export default function Home() {
     if (view.doc.wizard === 'program') return <ProgramWizard onBack={back} />;
     if (view.doc.wizard === 'survey') return <SurveyWizard onBack={back} />;
     if (view.doc.wizard === 'link') return <LinkWizard onBack={back} />;
+    if (view.doc.wizard === 'visit') return <VisitWizard onBack={back} />;
     if (view.doc.wizard) return <CounselWizard onBack={back} />;
     return <NewDocForm doc={view.doc} onBack={back} />;
   }
