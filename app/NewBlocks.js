@@ -53,8 +53,12 @@ function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps, minBott
       // 어린이집 이름은 글 칸 바로 아래에
       if (nameRef?.current) {
         const n = nameRef.current;
-        n.style.bottom = `${Math.max(6, h * (bottomPct / 100) - n.offsetHeight - h * 0.026)}px`;
+        n.style.bottom = `${Math.max(0.6, ((h * (bottomPct / 100) - n.offsetHeight - h * 0.026) / h) * 100)}%`;
       }
+      // ⑥ 마지막으로 픽셀 크기를 '그림 폭에 대한 비율'로 바꿔 둔다.
+      //    인쇄할 때처럼 그림 폭이 달라져도 글자가 함께 줄어들어 삐져나오지 않는다.
+      area.style.fontSize = `${(size / w) * 100}cqw`;
+      if (nameRef?.current) nameRef.current.style.fontSize = '3.4cqw';
     };
     fit();
     const ro = new ResizeObserver(fit);

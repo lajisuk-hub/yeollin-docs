@@ -549,7 +549,9 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 
 
 /* 배경 그림 위에 글을 얹는 안내문 */
-.nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.62; word-break: keep-all; }
+/* container-type: 그림 폭을 기준으로 글자 크기를 정하기 위한 것.
+   인쇄에서 폭이 달라져도 글자가 비례해서 줄어든다(cqw 단위 사용). */
+.nb-wrap { position: relative; margin: 10px 0 16px; line-height: 1.62; word-break: keep-all; container-type: inline-size; }
 /* 전체 문서에서는 조금 좁게 — 그림이 쪽 높이를 다 차지해 다음 쪽으로 통째로 밀리는 것을 막는다
    (글자 크기는 칸 너비에 맞춰 자동으로 함께 줄어든다) */
 .nb-wrap.narrow { max-width: 78%; margin-left: auto; margin-right: auto; }
