@@ -356,6 +356,30 @@ export default function Block({ b }) {
     );
   }
 
+  // 실시기록 — 정보표(운영일시·참석자) + 진행 순서 표 + 운영 내용 정리
+  if (b.type === 'recorddoc') {
+    return (
+      <DocBox title={b.title}>
+        <InfoTable rows={b.info} />
+        <table className="doc-table box-table flow-table">
+          <thead>
+            <tr>{(b.head || []).map((h, i) => <th key={i} style={b.widths ? { width: b.widths[i] } : undefined}>{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {(b.rows || []).map((r, i) => <tr key={i}>{r.map((c, n) => <td key={n}>{c || ' '}</td>)}</tr>)}
+          </tbody>
+        </table>
+        {b.summary && (
+          <>
+            <p className="docbox-sub">{b.summaryTitle || '운영 내용 정리'}</p>
+            <Paras text={b.summary} />
+          </>
+        )}
+        {b.center && <p className="docbox-sign">{b.center}</p>}
+      </DocBox>
+    );
+  }
+
   // 회의결과 보고서 — 안건별 표
   if (b.type === 'resultdoc') {
     return (

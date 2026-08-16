@@ -12,6 +12,7 @@ import NewDocList from './NewDocList';
 import NewDocForm from './NewDocForm';
 import CounselWizard from './CounselWizard';
 import CommitteeWizard from './CommitteeWizard';
+import ProgramWizard from './ProgramWizard';
 import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
@@ -108,12 +109,11 @@ export default function Home() {
 
   if (view.type === 'newdoc') {
     const back = () => go({ type: 'newlist' });
-    // 상담 서류는 한 단계씩 물어보며 만드는 방식
-    return view.doc.wizard
-      ? (view.doc.wizard === 'committee'
-        ? <CommitteeWizard onBack={back} />
-        : <CounselWizard onBack={back} />)
-      : <NewDocForm doc={view.doc} onBack={back} />;
+    // 서류에 따라 한 단계씩 물어보며 만드는 방식 (wizard 값으로 갈라짐)
+    if (view.doc.wizard === 'committee') return <CommitteeWizard onBack={back} />;
+    if (view.doc.wizard === 'program') return <ProgramWizard onBack={back} />;
+    if (view.doc.wizard) return <CounselWizard onBack={back} />;
+    return <NewDocForm doc={view.doc} onBack={back} />;
   }
 
   if (view.type === 'step') {
