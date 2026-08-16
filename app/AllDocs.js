@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm } from '../lib/store';
 import {
-  SECTIONS, emptyAll, sectionHasData, buildAllDoc, scheduleRows, toHwpxBlocks,
+  SECTIONS, emptyAll, sectionHasData, buildAllDoc, scheduleRows, scheduleTable, toHwpxBlocks,
 } from '../lib/allDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
@@ -173,15 +173,9 @@ export default function AllDocs({ onBack, onOpenDoc }) {
           만드신 서류의 날짜를 모아 <b>개방성 · 참여성 · 다양성</b>으로 나눠 자동으로 정리했습니다.
           지금 <b>{rows.length}줄</b>입니다.
         </p>
-        <div className="sched-preview">
-          {rows.slice(0, 8).map((r, i) => (
-            <div className="sp-row" key={i}>
-              <span className={`sp-area a${r[0]}`}>{r[0]}</span>
-              <b>{r[1]}</b>
-              <span>{r[2]}</span>
-            </div>
-          ))}
-          {rows.length > 8 && <p className="hint">… 그 밖에 {rows.length - 8}줄이 더 있습니다. (아래 미리보기에서 전체를 볼 수 있습니다)</p>}
+        <p className="hint">아래가 <b>문서에 실제로 들어가는 모양</b>입니다. 고치거나 더할 것이 있으면 말씀해 주세요.</p>
+        <div className="mini-doc">
+          <Block b={scheduleTable(all, docs)} />
         </div>
         <div className="field">
           <label>더 넣을 일정이 있으면 한 줄에 하나씩 적어주세요 (선택)</label>

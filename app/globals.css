@@ -322,15 +322,13 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .all-pt { font-size: 12.5px; color: #6b7975; }
 .all-item .ghost.sm { margin-left: auto; }
 
-/* 연간일정 미리보기 */
-.sched-preview { display: grid; gap: 5px; margin: 8px 0; }
-.sp-row { display: grid; grid-template-columns: 62px 1fr 150px; gap: 10px; align-items: center; font-size: 13.5px; padding: 6px 4px; border-bottom: 1px solid #f0f3f2; }
-.sp-row span:last-child { color: #6b7975; font-size: 12.5px; }
-.sp-area { font-size: 11.5px; font-weight: 700; text-align: center; padding: 3px 0; border-radius: 999px; background: #eef3f1; color: #55625f; }
-.sp-area.a개방성 { background: #eaf4fb; color: #1f6fb2; }
-.sp-area.a참여성 { background: #eef7ef; color: #3f8f4e; }
-.sp-area.a다양성 { background: #fdf3e8; color: #c77a2b; }
-@media (max-width: 640px) { .sp-row { grid-template-columns: 56px 1fr; } .sp-row span:last-child { grid-column: 2; } }
+/* 문서에 들어갈 모양 그대로 보여주는 작은 미리보기 (화면 전용) */
+.mini-doc {
+  border: 1px solid #dde3e1; border-radius: 10px; background: #fff;
+  padding: 14px 16px; margin: 8px 0 12px; overflow-x: auto;
+}
+.mini-doc > table { margin-top: 0; }
+@media print { .mini-doc { display: none; } }
 
 /* 전체 서류 묶음 표지 */
 .doc-cover {
