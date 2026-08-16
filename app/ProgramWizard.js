@@ -6,7 +6,7 @@ import { fileToResizedDataURL } from '../lib/image';
 import {
   MONTH_SEQ, QUARTERS, AGE_OPTIONS, TARGET_OPTIONS,
   DEFAULT_NOTICE_BG, DEFAULT_TOP, DEFAULT_BOTTOM,
-  emptyData, emptyMonth, monthList, monthLabel, monthOf, planOf, defaultPlan,
+  emptyData, emptyMonth, monthList, monthLabel, monthOf, planOf, defaultPlan, defaultMemo,
   whenText, attendText, totalCount, flowList,
   monthHasContent, monthDone, noticeDone, chosenMonths, noticeBlock, upgradeMonth,
   buildProgramDoc, buildOneMonthDoc, toHwpxBlocks,
@@ -75,6 +75,14 @@ export default function ProgramWizard({ onBack }) {
     ...d,
     plan: (d.plan || []).map((p) => (p.m === m ? { ...p, ...patch } : p)),
   }));
+
+  // 실시기록 화면에 들어오면 공지문에 적은 시간·주제·장소로 메모 샘플을 미리 채워 준다 (비어 있을 때만)
+  useEffect(() => {
+    if (!loadedRef.current || view.v !== 'step' || view.s !== 'record') return;
+    const x = data.months?.[mi.key];
+    if (!x?.memo?.trim()) upd({ memo: defaultMemo(x || {}, curPlan) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.v, view.s, q]);
 
   const go = (v) => { setErr(''); setView(v); window.scrollTo(0, 0); };
   const stepIdx = STEPS.indexOf(view.s);
@@ -182,6 +190,20 @@ export default function ProgramWizard({ onBack }) {
         recordFeedback: '',
       });
     }
+  }
+
+  // 공지문을 토대로 그날 메모 초안 만들기
+  async function makeMemo() {
+    const j = await ask('memo', {
+      month: mi.label,
+      program: curPlan.theme,
+      content: curPlan.content,
+      when: whenText(cur),
+      place: cur.place,
+      target: cur.target || curPlan.target,
+      notice: [cur.noticeGreeting, ...(cur.noticeNotes || [])].filter(Boolean).join('\n'),
+    });
+    if (j?.text) upd({ memo: j.text });
   }
 
   async function makeReview() {
@@ -609,10 +631,18 @@ export default function ProgramWizard({ onBack }) {
               <Sample label="가지고 계신 실시기록 서식이 있으면 붙여넣어 주세요 (선택)"
                 value={data.samples.record} onChange={(v) => setData((d) => ({ ...d, samples: { ...d.samples, record: v } }))} />
               <div className="field">
-                <label>그날 어떻게 진행했는지 메모 <span className="edit-badge">✏️ 편하게 적으시면 AI가 정리합니다</span></label>
-                <textarea rows={10} value={cur.memo}
+                <label>그날 어떻게 진행했는지 메모 <span className="edit-badge">✏️ 공지문을 토대로 샘플을 넣어두었습니다 · 우리 원 이야기로 고쳐 주세요</span></label>
+                <textarea rows={11} value={cur.memo}
                   placeholder={'예) 10시 부모님 오심, 이름표 달기\n10시 20분 반별 놀이 활동\n11시 소감 나누기\n아빠들이 많이 오셔서 아이들이 좋아함'}
                   onChange={(e) => upd({ memo: e.target.value })} />
+                <div className="wiz-saves" style={{ marginTop: 8 }}>
+                  <button type="button" className="ghost sm" onClick={() => upd({ memo: defaultMemo(cur, curPlan) })}>
+                    📋 샘플 다시 넣기
+                  </button>
+                  <button type="button" className="ghost sm" onClick={makeMemo} disabled={busy}>
+                    {busy ? 'AI가 작성 중입니다…' : '✍️ 공지문을 토대로 AI가 자세히 써주기'}
+                  </button>
+                </div>
               </div>
               <button className="primary" onClick={makeRecord} disabled={busy}>
                 {busy ? 'AI가 정리 중입니다…' : `✍️ ${flowList(cur).length ? '다시 ' : ''}실시기록으로 정리하기`}

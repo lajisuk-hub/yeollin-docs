@@ -85,6 +85,16 @@ const KINDS = {
       + '일시와 장소는 이미 위에 나오므로 참고사항에서 되풀이하지 않습니다. 문자열 배열로 씁니다.\n'
       + '아래 JSON 하나만 출력합니다. {"greeting":"인사말","notes":["참고사항1","참고사항2"]}',
   },
+  // 원장이 적을 메모의 초안 (공지문에 안내한 내용을 그대로 따라 그날 진행 순서를 짜 준다)
+  memo: {
+    system: `${BASE_RULE} 지금 쓸 것은 원장이 실시기록을 쓰기 위해 적어 두는 메모의 초안입니다. `
+      + '앞서 부모님께 보낸 공지문에 안내한 주제·일시·장소·대상 그대로 그날 진행되었다고 보고, '
+      + '시작 시각부터 끝 시각까지 진행 순서를 6줄 내외로 적습니다. 한 줄에 하나씩, 시간 다음에 무엇을 했는지 씁니다. '
+      + '예) 10:00 부모님과 아이가 함께 등원, 이름표 달기\n'
+      + '그다음 빈 줄을 하나 두고, 부모님 반응 한 줄과 아쉬웠던 점·다음에 보완할 점 한 줄을 덧붙입니다. '
+      + '이 두 줄은 원장이 고쳐 쓸 예시이므로 흔히 있을 법한 내용으로 담백하게 씁니다. '
+      + '참석 인원 같은 숫자는 지어내지 않습니다. 문장은 짧은 메모체로 씁니다.',
+  },
   // 실시기록 — 진행 순서 표와 운영 내용 정리
   record: {
     json: true,
@@ -115,7 +125,7 @@ export async function POST(request) {
       return Response.json({ error: 'API 키가 설정되지 않았습니다 (ANTHROPIC_API_KEY)' }, { status: 500 });
     }
 
-    const { kind, center, month, year, program, when, place, target, attend, memo, ages, past, targets, content, sample, previous, feedback } = await request.json();
+    const { kind, center, month, year, program, when, place, target, attend, memo, notice, ages, past, targets, content, sample, previous, feedback } = await request.json();
     const spec = KINDS[kind];
     if (!spec) return Response.json({ error: '알 수 없는 요청입니다' }, { status: 400 });
 
@@ -132,6 +142,7 @@ export async function POST(request) {
       place ? `장소: ${place}` : '',
       target ? `대상: ${target}` : '',
       attend ? `참석 현황: ${attend}` : '',
+      notice ? `부모님께 보낸 공지문 내용:\n${notice}` : '',
       memo ? `원장이 적은 진행·소감 메모:\n${memo}` : '',
       sample ? `\n[이 어린이집이 쓰던 서식 — 이 틀과 말투를 그대로 따라 주세요]\n${sample}` : '',
     ].filter(Boolean).join('\n');
