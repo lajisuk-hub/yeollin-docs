@@ -799,6 +799,18 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 /* 참석현황·안건처럼 여러 줄인 값은 줄바꿈을 그대로 살린다 */
 .doc-kv td { white-space: pre-wrap; }
 .doc-kv th { background: #eef3f1; width: 130px; font-weight: 700; white-space: nowrap; }
+/* 손으로 적는 서식 (신청서) */
+.doc-formtitle { text-align: center; font-size: 21px; font-weight: 700; margin: 8px 0 14px; letter-spacing: -0.5px; }
+.doc-kv.tall td, .doc-kv.tall th { height: 38px; vertical-align: middle; }
+
+/* 손으로 적는 서명란 (신청서 등) — 밑줄 칸을 넉넉히 */
+.doc-sign.blankline { margin-top: 56px; }
+.doc-sign.blankline .doc-sign-date { font-size: 16px; letter-spacing: 1px; margin-bottom: 26px; }
+.doc-sign.blankline .doc-sign-name { font-size: 16px; letter-spacing: 1px; }
+.sg-u { display: inline-block; border-bottom: 1px solid #777; margin: 0 6px; vertical-align: baseline; height: 1.15em; }
+.sg-u.w1 { width: 52px; }
+.sg-u.w3 { width: 170px; }
+
 .doc-sign { text-align: center; margin-top: 40px; }
 .doc-sign-date { font-size: 15px; margin-bottom: 14px; }
 .doc-sign-name { font-size: 17px; font-weight: 700; letter-spacing: 1px; }

@@ -564,9 +564,12 @@ export default function Block({ b }) {
       </div>
     );
   }
+  // 손으로 적는 서식의 제목 (신청서 등)
+  if (b.type === 'formtitle') return <h2 className="doc-formtitle">{b.text}</h2>;
   if (b.type === 'kv') {
+    // tall — 손으로 적는 칸이라 줄 높이를 넉넉히
     return (
-      <table className="doc-kv">
+      <table className={`doc-kv ${b.tall ? 'tall' : ''}`}>
         <tbody>
           {b.rows.map(([label, value], i) => (
             <tr key={i}><th>{label}</th><td>{value || ' '}</td></tr>
@@ -600,6 +603,19 @@ export default function Block({ b }) {
     );
   }
   if (b.type === 'sign') {
+    // blank — 손으로 적는 서식(신청서 등). 밑줄 칸을 넉넉히 그려 준다
+    if (b.blank) {
+      return (
+        <div className="doc-sign blankline">
+          <div className="doc-sign-date">
+            20<span className="sg-u w1" />년<span className="sg-u w1" />월<span className="sg-u w1" />일
+          </div>
+          <div className="doc-sign-name">
+            {b.role}<span className="sg-u w3" /><span className="doc-sign-seal">(인)</span>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="doc-sign">
         <div className="doc-sign-date">{b.date}</div>
