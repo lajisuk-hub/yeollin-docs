@@ -551,16 +551,23 @@ export default function Block({ b }) {
     );
   }
   if (b.type === 'table') {
-    // leftFirst — 첫 칸(설문 문항)만 왼쪽 정렬 / lastStrong — 마지막 줄(전체 평균) 강조
+    // leftFirst — 첫 칸만 왼쪽 정렬 / lastStrong — 마지막 줄 강조 / cls — 표마다 다른 모양
+    // 셀은 문자열이거나 {t:'글', rs:합칠 줄 수} 객체. null이면 위 칸에 합쳐진 자리라 그리지 않는다.
     return (
-      <table className={`doc-table ${b.leftFirst ? 'left-first' : ''}`}>
+      <table className={`doc-table ${b.leftFirst ? 'left-first' : ''} ${b.cls || ''}`}>
         <thead>
           <tr>{b.head.map((h, i) => <th key={i} style={b.widths ? { width: b.widths[i] } : undefined}>{h}</th>)}</tr>
         </thead>
         <tbody>
           {b.rows.map((r, i) => (
             <tr key={i} className={b.lastStrong && i === b.rows.length - 1 ? 'row-strong' : undefined}>
-              {r.map((c, j) => <td key={j}>{c || ' '}</td>)}
+              {r.map((c, j) => {
+                if (c === null) return null;
+                if (c && typeof c === 'object') {
+                  return <th key={j} className="cell-group" rowSpan={c.rs || 1}>{c.t}</th>;
+                }
+                return <td key={j}>{c || ' '}</td>;
+              })}
             </tr>
           ))}
         </tbody>

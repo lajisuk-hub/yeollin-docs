@@ -523,6 +523,16 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .doc-table.left-first td:first-child { text-align: left; line-height: 1.6; padding: 8px 10px; }
 .doc-table tr.row-strong td { background: #eaf5ef; font-weight: 700; }
 
+/* 학부모 만족도 설문지 — 문항을 한 표로 모으고 칸 간격을 좁게 (샘플 서식이라 촘촘하게 보여준다) */
+.doc-table.survey { font-size: 11.5px; margin: 6px 0 12px; }
+.doc-table.survey th, .doc-table.survey td { padding: 4px 7px; line-height: 1.45; height: auto; }
+.doc-table.survey td:first-of-type { text-align: left; }
+.doc-table.survey .cell-group {
+  background: #f4f7f6; font-weight: 700; font-size: 12px;
+  vertical-align: middle; text-align: center; letter-spacing: -0.3px;
+  word-break: keep-all;   /* 운영의 / 개방성 처럼 낱말 단위로만 줄바꿈 */
+}
+
 /* ── 부모만족도 결과보고서 ── */
 .doc-greenbar {
   background: #d8ede1; text-align: center; font-size: 18px; font-weight: 700; color: #1f3d33;
