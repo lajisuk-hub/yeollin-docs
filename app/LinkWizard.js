@@ -686,7 +686,8 @@ export default function LinkWizard({ onBack }) {
           </div>
           <div className="card wiz-card">
             <p className="wiz-lead">
-              <b>필요성 → 연간계획 → 활동별 [안내문 + 실시기록] → 심사 항목별 실시 현황</b> 순서로 묶었습니다.
+              <b>필요성 → 연간계획 → 활동별 [안내문 + 실시기록]</b> 순서로 묶었습니다.
+              아래 충족 현황은 <b>확인용</b>이며 문서에는 들어가지 않습니다.
             </p>
 
             <h3 className="wiz-sub">조사의 필요성</h3>
