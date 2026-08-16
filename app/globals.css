@@ -308,6 +308,13 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 /* 달 카드 목록 — 12개라 좁게 */
 .q-grid.month { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 
+/* 부모만족도 영역별 점수 넣기 */
+.score-grid { display: grid; gap: 8px; margin: 10px 0 6px; }
+.score-row { display: grid; grid-template-columns: 1fr 110px 24px; gap: 8px; align-items: center; }
+.score-name { display: inline-flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 700; color: #2b3b37; }
+.score-name i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.score-unit { font-size: 13.5px; color: #6b7975; }
+
 /* 저장할 구간 고르기 (전체 / 분기별) */
 .range-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 6px; }
 .range-chip {
@@ -512,6 +519,42 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .doc-table th, .doc-table td { border: 1px solid #999; padding: 7px 8px; text-align: center; vertical-align: middle; }
 .doc-table th { background: #f2f2f2; font-weight: 700; }
 .doc-table td { height: 30px; }
+/* 설문지 — 문항 칸만 왼쪽 정렬 / 전체 평균 줄 강조 */
+.doc-table.left-first td:first-child { text-align: left; line-height: 1.6; padding: 8px 10px; }
+.doc-table tr.row-strong td { background: #eaf5ef; font-weight: 700; }
+
+/* ── 부모만족도 결과보고서 ── */
+.doc-greenbar {
+  background: #d8ede1; text-align: center; font-size: 18px; font-weight: 700; color: #1f3d33;
+  padding: 10px 14px; margin: 0 0 12px; letter-spacing: -0.3px;
+}
+.doc-centertitle { text-align: center; font-size: 13.5px; font-weight: 700; margin: 10px 0 5px; }
+.doc-checklist { list-style: none; margin: 4px 0 8px; padding: 0; }
+.doc-checklist li { display: flex; gap: 8px; font-size: 13px; line-height: 1.65; margin-bottom: 2px; }
+.doc-checklist li b { white-space: nowrap; font-weight: 700; }
+.doc-checklist li span { white-space: pre-line; }
+
+/* 막대그래프 두 개 나란히 */
+.bars-wrap { display: grid; grid-template-columns: 2.2fr 1fr; gap: 10px; margin: 8px 0 12px; align-items: stretch; }
+.bars-box { border: 1px solid #dde3e1; border-radius: 4px; padding: 6px 6px 4px; background: #fff; }
+.bars-svg { max-height: 132px; }
+.bars-svg { width: 100%; height: auto; display: block; }
+.bars-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; margin-top: 4px; }
+.bars-legend span { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: #444; }
+.bars-legend i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+/* 비고 (잘된 점·개선 의견) + 조치사항 */
+.doc-notes2 { display: grid; grid-template-columns: 1.15fr 1fr; gap: 10px; margin: 4px 0 10px; align-items: start; break-inside: avoid; }
+.notes-tbl thead th { background: #efefef; text-align: center; }
+.notes-tbl th { width: 78px; text-align: center; vertical-align: middle; }
+.notes-tbl td p { font-size: 12.5px; line-height: 1.7; margin-bottom: 2px; }
+.notes-action { background: #fdf6e0; border: 1px solid #eadfae; border-radius: 4px; padding: 12px 14px; }
+.notes-action p { font-size: 12.5px; line-height: 1.75; margin-bottom: 6px; }
+.notes-closing { margin-top: 12px; text-align: center; font-weight: 700; color: #1f3d33; }
+.notes-closing p { font-size: 12.5px; margin-bottom: 2px; }
+/* 마지막 블록 아래 여백 때문에 빈 쪽이 딸려 나오지 않게 */
+.doc-sheet tbody td > *:last-child { margin-bottom: 0; }
+
 .doc-blank { margin: 6px 0 16px; }
 .doc-blank span { display: block; border-bottom: 1px solid #bbb; height: 26px; }
 
@@ -800,6 +843,18 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 구분선이 쪽 끝에 홀로 남지 않게 */
   .doc-divider { break-after: avoid; }
   .doc-photos-cap { break-after: avoid; }
+
+  /* 부모만족도 결과보고서는 A4 한 쪽에 들어가야 한다 (원장님 서식과 같게) */
+  .doc-greenbar { font-size: 16.5px; padding: 8px 12px; margin-bottom: 10px; }
+  .doc-checklist li { font-size: 12px; line-height: 1.55; }
+  .doc-centertitle { font-size: 12.5px; margin: 8px 0 4px; }
+  .bars-wrap { margin: 6px 0 8px; gap: 8px; }
+  .bars-svg { max-height: 108px; }
+  .bars-legend span { font-size: 9px; }
+  .doc-notes2 { gap: 8px; margin: 2px 0 0; }
+  .notes-tbl td p, .notes-action p { font-size: 11.5px; line-height: 1.62; }
+  .notes-action { padding: 10px 12px; }
+  .notes-closing { margin-top: 9px; }
 
   /* 전체 문서: 중간 공백보다 이어짐을 우선 (원장님 지시)
      실시기록은 쪽을 넘어가도 되고, 대신 앞 쪽이 텅 비지 않게 자연스럽게 흐르게 한다 */

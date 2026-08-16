@@ -318,8 +318,101 @@ const InfoTable = ({ rows }) => (
 const Paras = ({ text, cls = 'doc-para' }) =>
   String(text || '').split(/\n+/).filter(Boolean).map((t, i) => <p className={cls} key={i}>{t}</p>);
 
+// ── 부모만족도 결과보고서용 ──
+// 항목별 평균 점수 막대그래프 (5점 만점). 원장님 결과자료 서식과 같은 모양.
+function Bars({ items, total }) {
+  const H = 150, TOP = 22, BOT = 26, W = 100;
+  const y = (v) => TOP + (H - TOP - BOT) * (1 - Math.min(5, Math.max(0, v)) / 5);
+  const grid = [0, 1, 2, 3, 4, 5];
+  const list = (items || []).filter((x) => x && x.value > 0);
+  const chart = (arr, width, showLegend) => {
+    const step = width / (arr.length + 0.4);
+    const bw = Math.min(26, step * 0.5);
+    return (
+      <svg className="bars-svg" viewBox={`0 0 ${width} ${H}`} preserveAspectRatio="xMidYMid meet">
+        {grid.map((g) => (
+          <g key={g}>
+            <line x1="16" x2={width - 4} y1={y(g)} y2={y(g)} stroke="#e2e6e5" strokeWidth="1" />
+            <text x="12" y={y(g) + 3.5} textAnchor="end" fontSize="8" fill="#6b7975">{g}</text>
+          </g>
+        ))}
+        <line x1="16" x2="16" y1={TOP - 6} y2={y(0)} stroke="#c3cbc9" strokeWidth="1" />
+        {arr.map((it, i) => {
+          const cx = 16 + step * (i + 0.7);
+          return (
+            <g key={i}>
+              <rect x={cx - bw / 2} y={y(it.value)} width={bw} height={y(0) - y(it.value)} fill={it.color} />
+              <text x={cx} y={y(it.value) - 4} textAnchor="middle" fontSize="8.5" fill="#333">{Number(it.value).toFixed(1)}</text>
+              {!showLegend && <text x={cx} y={H - 8} textAnchor="middle" fontSize="8.5" fill="#444">{it.name}</text>}
+            </g>
+          );
+        })}
+      </svg>
+    );
+  };
+  return (
+    <div className="bars-wrap">
+      <div className="bars-box">
+        {chart(list, 260, true)}
+        <div className="bars-legend">
+          {list.map((it, i) => (
+            <span key={i}><i style={{ background: it.color }} />{it.name}</span>
+          ))}
+        </div>
+      </div>
+      {total?.value > 0 && (
+        <div className="bars-box narrow">
+          {chart([total], 120, false)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Block({ b }) {
   if (b.type === 'title') return <h1 className="doc-title">{b.text}</h1>;
+  // 초록 띠 제목 (부모만족도 결과보고서)
+  if (b.type === 'greenbar') return <h1 className="doc-greenbar">{b.text}</h1>;
+  if (b.type === 'centertitle') return <p className="doc-centertitle">{b.text}</p>;
+  if (b.type === 'bars') return <Bars items={b.items} total={b.total} />;
+  // □ 조사기간 : … 처럼 네모 기호로 나열하는 목록
+  if (b.type === 'checklist') {
+    return (
+      <ul className="doc-checklist">
+        {(b.items || []).filter((it) => it.value).map((it, i) => (
+          <li key={i}>
+            <b>□ {it.label} :</b>
+            <span>{it.value}</span>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  // 비고 — 잘된 점 / 개선 의견 (왼쪽 표) + 어린이집 조치사항 (오른쪽 노란 박스)
+  if (b.type === 'resultnotes') {
+    const lines = (t) => String(t || '').split(/\n+/).filter(Boolean);
+    return (
+      <div className="doc-notes2">
+        <table className="doc-kv notes-tbl">
+          <thead><tr><th colSpan={2}>비고</th></tr></thead>
+          <tbody>
+            <tr>
+              <th>잘된 점</th>
+              <td>{lines(b.good).map((t, i) => <p key={i}>- {t.replace(/^[-·▪\s]+/, '')}</p>)}</td>
+            </tr>
+            <tr>
+              <th>개선 의견</th>
+              <td>{lines(b.improve).map((t, i) => <p key={i}>- {t.replace(/^[-·▪\s]+/, '')}</p>)}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div className="notes-action">
+          {lines(b.action).map((t, i) => <p key={i}>▪ {t.replace(/^[-·▪\s]+/, '')}</p>)}
+          {b.closing && <div className="notes-closing">{lines(b.closing).map((t, i) => <p key={i}>{t}</p>)}</div>}
+        </div>
+      </div>
+    );
+  }
   if (b.type === 'rulesdoc') return <RulesDoc text={b.text} />;
 
   // 개최 공지문 — 인사말 / 안내 표 / 맺음말
@@ -458,13 +551,18 @@ export default function Block({ b }) {
     );
   }
   if (b.type === 'table') {
+    // leftFirst — 첫 칸(설문 문항)만 왼쪽 정렬 / lastStrong — 마지막 줄(전체 평균) 강조
     return (
-      <table className="doc-table">
+      <table className={`doc-table ${b.leftFirst ? 'left-first' : ''}`}>
         <thead>
           <tr>{b.head.map((h, i) => <th key={i} style={b.widths ? { width: b.widths[i] } : undefined}>{h}</th>)}</tr>
         </thead>
         <tbody>
-          {b.rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c || ' '}</td>)}</tr>)}
+          {b.rows.map((r, i) => (
+            <tr key={i} className={b.lastStrong && i === b.rows.length - 1 ? 'row-strong' : undefined}>
+              {r.map((c, j) => <td key={j}>{c || ' '}</td>)}
+            </tr>
+          ))}
         </tbody>
       </table>
     );
