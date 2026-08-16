@@ -450,7 +450,7 @@ export default function Block({ b }) {
   // 개최 공지문 — 인사말 / 안내 표 / 맺음말
   if (b.type === 'noticedoc') {
     return (
-      <DocBox title={b.title}>
+      <DocBox title={b.title} tight={b.tight}>
         <Paras text={b.greeting} />
         <InfoTable rows={b.rows} />
         <Paras text={b.closing} />

@@ -906,6 +906,18 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .docbox-sign { text-align: right; font-size: 14px; font-weight: 700; margin-top: 10px; letter-spacing: 2px; }
 .docbox-star { font-size: 13.5px; line-height: 1.8; background: #fbfaf3; border: 1px dashed #d8cfa8; border-radius: 8px; padding: 10px 12px; margin-top: 10px; white-space: pre-wrap; }
 .box-kv th { width: 100px; }
+/* 한 쪽에 여러 상자를 담아야 하는 문서(연계·협력)에서 조금 작게 */
+.docbox.tight { margin: 4px 0 10px; }
+.docbox.tight .docbox-head { font-size: 13px; padding: 7px 10px; }
+.docbox.tight .docbox-body { padding: 9px 11px; }
+.docbox.tight .doc-kv { margin: 7px 0; }
+.docbox.tight .doc-kv th, .docbox.tight .doc-kv td { font-size: 11.5px; padding: 4px 8px; }
+.docbox.tight .doc-table { font-size: 11.5px; margin: 0 0 7px; }
+.docbox.tight .doc-table th, .docbox.tight .doc-table td { padding: 4px 7px; line-height: 1.55; height: auto; }
+.docbox.tight .docbox-sub { font-size: 12px; margin: 8px 0 3px; }
+.docbox.tight .docbox-part { margin-top: 7px; padding-top: 6px; }
+.docbox.tight .docbox-body .doc-para { font-size: 11.8px; line-height: 1.65; margin-bottom: 3px; }
+.docbox.tight .docbox-sign { font-size: 12px; letter-spacing: 1px; margin-top: 7px; }
 .box-table th, .box-table td { text-align: left; vertical-align: top; }
 .box-table td { white-space: pre-wrap; line-height: 1.7; }
 .box-table thead th { text-align: center; }
