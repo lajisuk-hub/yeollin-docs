@@ -5,7 +5,7 @@ import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
 import {
   CHECKPOINTS, KEYWORDS, emptyData, emptyLog, logList,
-  DEFAULT_BG, DEFAULT_TOP, DEFAULT_BOTTOM,
+  DEFAULT_BG, DEFAULT_TOP, DEFAULT_BOTTOM, upgradeVisit,
   buildVisitDoc, buildPosterDoc, toHwpxBlocks,
 } from '../lib/visitDoc';
 import Block from './NewBlocks';
@@ -39,7 +39,8 @@ export default function VisitWizard({ onBack }) {
       if (!alive) return;
       setBasic(b || {});
       if (saved?.year) {
-        setData({ ...emptyData(), ...saved });
+        // 예전에 저장한 서식 값(글자 크기·여백)이면 새 기본값으로 올려 준다
+        setData(upgradeVisit({ ...emptyData(), ...saved }));
         if (saved.step) setStep(saved.step);
       }
       loadedRef.current = true;
