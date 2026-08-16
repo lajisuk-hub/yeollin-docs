@@ -9,6 +9,7 @@ import {
   emptyData, emptyMonth, monthList, monthLabel, monthOf, planOf, defaultPlan, defaultMemo,
   whenText, attendText, totalCount, flowList,
   monthHasContent, monthDone, noticeDone, chosenMonths, noticeBlock, upgradeMonth,
+  RANGES, rangeInfo, rangeMonths, rangeTitle,
   buildProgramDoc, buildOneMonthDoc, toHwpxBlocks,
 } from '../lib/programDoc';
 import Block from './NewBlocks';
@@ -247,8 +248,10 @@ export default function ProgramWizard({ onBack }) {
     finally { setBusy(false); }
   }
 
-  const blocks = buildProgramDoc(data, basic || {});
-  const picks = chosenMonths(data);
+  // 저장할 때 전체로 묶을지, 분기 구간별로 묶을지
+  const [range, setRange] = useState('all');
+  const blocks = buildProgramDoc(data, basic || {}, range);
+  const picks = rangeMonths(data, range);
 
   // 한글(hwpx) 저장 — 전체 문서 또는 한 달만
   async function saveHwpx(only = null) {
@@ -258,8 +261,9 @@ export default function ProgramWizard({ onBack }) {
     try {
       const { buildDocHwpx, downloadBlob } = await import('../lib/hwpx');
       const src = only === null ? blocks : buildOneMonthDoc(data, only, basic || {});
+      const tag = range === 'all' ? '' : `_${rangeInfo(range).label}`;
       const name = only === null
-        ? `${center || '어린이집'}_부모참여프로그램.hwpx`
+        ? `${center || '어린이집'}_부모참여프로그램${tag}.hwpx`
         : `${center || '어린이집'}_부모참여프로그램_${only.label.replace(/\s/g, '')}.hwpx`;
       const blob = await buildDocHwpx({ blocks: toHwpxBlocks(src), onProgress: setSaveMsg });
       downloadBlob(blob, name);
@@ -731,19 +735,20 @@ export default function ProgramWizard({ onBack }) {
                 {saveMsg && <p className="hint">{saveMsg}</p>}
                 {err && <p className="error">⚠️ {err}</p>}
 
-                {q < months.length - 1 ? (
+                {q < months.length - 1 && (
                   <button className="next-doc" onClick={() => go({ v: 'step', q: q + 1, s: 'notice' })}>
                     ✅ 확인했습니다 · {months[q + 1].label} 이어서 만들기 →
                   </button>
-                ) : (
-                  <button className="next-doc" onClick={() => go({ v: 'finish' })}>
-                    ✅ 열두 달 끝 · 문서 정리하기 →
-                  </button>
                 )}
+                <button className="next-doc calm" onClick={() => go({ v: 'finish' })}>
+                  📄 여기까지 만든 것으로 문서 정리하기 (전체 · 분기별) →
+                </button>
+                <p className="hint center">
+                  지금 <b>{doneCount}개 달</b>을 만드셨습니다. 열두 달을 다 채우지 않아도 <b>지금까지 만든 것만으로</b> 문서를 묶을 수 있습니다.
+                </p>
                 <div className="wiz-nav">
                   <button className="ghost" onClick={prev}>← 이전</button>
                   <button className="ghost" onClick={() => go({ v: 'pick' })}>달 목록으로</button>
-                  <button className="ghost" onClick={() => go({ v: 'finish' })}>문서 정리하기</button>
                 </div>
               </div>
               <div className="page-outer">
@@ -859,11 +864,27 @@ export default function ProgramWizard({ onBack }) {
           <div className="card wiz-card">
             <p className="wiz-lead">
               <b>필요성 → 연간계획 → 달마다 [공지문 + 결과보고서]</b> 순서로 묶었습니다.
-              지금 문서에는 <b>{picks.length}개 달</b>이 들어 있습니다.
+            </p>
+
+            <h3 className="wiz-sub">어느 구간으로 묶을까요?</h3>
+            <p className="hint">분기를 고르면 <b>그 구간 자료만</b> 담은 문서가 됩니다. 구간별로 따로 저장해 두시면 제출할 때 편합니다.</p>
+            <div className="range-row">
+              {RANGES.map((r) => {
+                const n = rangeMonths(data, r.key).length;
+                return (
+                  <button key={r.key} className={`range-chip ${range === r.key ? 'on' : ''}`} onClick={() => setRange(r.key)}>
+                    {r.label}
+                    <em>{n}개 달</em>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="hint">
+              지금 고른 것 : <b>{rangeInfo(range).months ? rangeTitle(data, range) : '전체 (지금까지 만든 달 모두)'}</b> · 문서에 <b>{picks.length}개 달</b>이 들어갑니다.
             </p>
             {!picks.length && (
               <p className="hint" style={{ color: '#b8860b' }}>
-                ※ 아직 들어갈 달이 없습니다. 달 목록에서 공지문과 실시기록을 먼저 만들어 주세요.
+                ※ 이 구간에는 들어갈 달이 없습니다. 달 목록에서 공지문과 실시기록을 먼저 만들어 주세요.
               </p>
             )}
             <div className="wiz-saves">
