@@ -721,6 +721,10 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .docbox-body > .doc-para { font-size: 13.5px; margin-bottom: 4px; }
 .docbox-body > .doc-kv, .docbox-body > .doc-table { margin: 10px 0; }
 .docbox-sub { font-size: 13.5px; font-weight: 700; color: #1f4d3f; margin: 12px 0 4px; }
+/* 실시기록 안에서 진행내용 / 평가를 눈에 띄게 나눈다 */
+.docbox-part { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cfd9d5; }
+.docbox-part:first-of-type { border-top: 0; }
+.docbox-part .docbox-sub { margin-top: 2px; }
 .docbox-sign { text-align: right; font-size: 14px; font-weight: 700; margin-top: 10px; letter-spacing: 2px; }
 .docbox-star { font-size: 13.5px; line-height: 1.8; background: #fbfaf3; border: 1px dashed #d8cfa8; border-radius: 8px; padding: 10px 12px; margin-top: 10px; white-space: pre-wrap; }
 .box-kv th { width: 100px; }

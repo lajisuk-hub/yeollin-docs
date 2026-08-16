@@ -369,12 +369,12 @@ export default function Block({ b }) {
             {(b.rows || []).map((r, i) => <tr key={i}>{r.map((c, n) => <td key={n}>{c || ' '}</td>)}</tr>)}
           </tbody>
         </table>
-        {b.summary && (
-          <>
-            <p className="docbox-sub">{b.summaryTitle || '운영 내용 정리'}</p>
-            <Paras text={b.summary} />
-          </>
-        )}
+        {(b.sections || []).filter((s) => s.text).map((s, i) => (
+          <div className="docbox-part" key={i}>
+            <p className="docbox-sub">{s.title}</p>
+            <Paras text={s.text} />
+          </div>
+        ))}
         {b.center && <p className="docbox-sign">{b.center}</p>}
       </DocBox>
     );
