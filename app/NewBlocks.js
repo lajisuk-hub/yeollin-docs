@@ -421,7 +421,7 @@ export default function Block({ b }) {
     const items = (b.items || []).filter(Boolean);
     if (!items.length) return null;
     return (
-      <div className="doc-photos-wrap">
+      <div className={`doc-photos-wrap ${b.small ? 'small' : ''}`}>
         {b.caption && <div className="doc-photos-cap">{b.caption}</div>}
         <div className="doc-photos">
           {items.map((src, i) => <figure key={i} className="doc-photo"><img src={src} alt="" /></figure>)}
@@ -435,7 +435,7 @@ export default function Block({ b }) {
   // 서식 두 장을 나란히 (문서에 넣을 때는 크게 볼 필요가 없음)
   if (b.type === 'pair') {
     return (
-      <div className="doc-pair">
+      <div className={`doc-pair ${b.compact ? 'compact' : ''}`}>
         {(b.items || []).map((it, i) => (
           <div key={i}>
             {b.labels?.[i] && <div className="doc-pair-cap">{b.labels[i]}</div>}
