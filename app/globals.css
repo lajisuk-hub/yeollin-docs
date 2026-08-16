@@ -308,6 +308,39 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 /* 달 카드 목록 — 12개라 좁게 */
 .q-grid.month { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 
+/* 심사에서 확인하는 네 가지 (연계·협력) */
+.check4 { list-style: none; padding: 0; margin: 6px 0 8px; display: grid; gap: 6px; }
+.check4 li {
+  position: relative; padding: 8px 12px 8px 34px; background: #f4f9f6;
+  border: 1px solid #dbe9e2; border-radius: 10px; font-size: 13.5px; color: #2b3b37;
+}
+.check4 li::before { content: '✓'; position: absolute; left: 12px; color: #4a8a2a; font-weight: 700; }
+
+/* 연계·협력 활동 — 연간계획 한 줄 */
+.link-row { display: grid; grid-template-columns: 54px 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef1f0; align-items: start; }
+.link-no { font-size: 14px; font-weight: 700; color: #2b3b37; padding-top: 8px; }
+.link-fields { display: grid; gap: 6px; }
+.link-fields input { width: 100%; font-size: 13.5px; padding: 7px 9px; }
+
+/* 인정 항목 고르기 (어린이집 간 / 지역사회) */
+.type-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.type-chip {
+  padding: 7px 12px; border: 1.5px solid #e2e8e6; border-radius: 999px; background: #fff;
+  font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.type-chip em { font-style: normal; font-size: 11.5px; color: #6b7975; }
+.type-chip.on { border-color: var(--brand); background: #eaf4fb; font-weight: 700; }
+.type-chip.on em { color: var(--brand); }
+
+/* 항목별 충족 현황 */
+.type-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 10px 0; }
+.type-stat { border: 2px solid #e2e8e6; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+.type-stat b { font-size: 14px; color: #2b3b37; }
+.type-stat span { font-size: 18px; font-weight: 700; color: #55625f; }
+.type-stat em { font-style: normal; font-size: 12.5px; color: #b8860b; font-weight: 700; }
+.type-stat.ok { border-color: #7cb342; background: #f3f9ef; }
+.type-stat.ok em { color: #4a8a2a; }
+
 /* 부모만족도 영역별 점수 넣기 */
 .score-grid { display: grid; gap: 8px; margin: 10px 0 6px; }
 .score-row { display: grid; grid-template-columns: 1fr 110px 24px; gap: 8px; align-items: center; }
