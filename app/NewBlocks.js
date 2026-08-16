@@ -377,6 +377,29 @@ function Bars({ items, total }) {
 }
 
 export default function Block({ b }) {
+  // 전체 서류 묶음의 표지
+  if (b.type === 'cover') {
+    return (
+      <div className="doc-cover">
+        <div className="dc-top">
+          <span className="dc-year">{b.year}년</span>
+          <h1 className="dc-title">{b.center}<br />열린어린이집 관련 서류</h1>
+          <div className="dc-rule" />
+        </div>
+        <div className="dc-foot">{b.center}</div>
+      </div>
+    );
+  }
+  // 영역별 큰 구분 (참여성 / 다양성)
+  if (b.type === 'sectionhead') {
+    return (
+      <div className="doc-sectionhead">
+        <span className="ds-area">{b.area}</span>
+        <h1>{b.no}. {b.text}</h1>
+        {b.pt ? <span className="ds-pt">{b.pt}점</span> : null}
+      </div>
+    );
+  }
   if (b.type === 'title') return <h1 className="doc-title">{b.text}</h1>;
   // 초록 띠 제목 (부모만족도 결과보고서)
   if (b.type === 'greenbar') return <h1 className="doc-greenbar">{b.text}</h1>;

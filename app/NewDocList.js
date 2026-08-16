@@ -5,7 +5,7 @@ import { NEW_DOCS, classList } from '../lib/newdocs';
 import { loadForm } from '../lib/store';
 
 // '서류 새로 만들기' 2단계 — 기본사항으로 만들 수 있는 서류 목록
-export default function NewDocList({ onSelect, onBasic, onGate, onHome }) {
+export default function NewDocList({ onSelect, onBasic, onGate, onHome, onAll }) {
   const [basic, setBasic] = useState(null);
 
   useEffect(() => { loadForm('basic-info').then((b) => setBasic(b || {})); }, []);
@@ -65,6 +65,15 @@ export default function NewDocList({ onSelect, onBasic, onGate, onHome }) {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="card">
+        <h3 className="card-title" style={{ color: '#1F6FB2' }}>📚 다 만드셨나요?</h3>
+        <p className="hint">
+          만드신 서류를 <b>표지 · 운영 목표 · 연간일정</b>과 함께 <b>한 권으로</b> 묶어 드립니다.
+          영역별로 순서대로 정리되어 그대로 제출하실 수 있습니다.
+        </p>
+        <button className="next-doc" onClick={onAll}>📚 전체 서류 하나로 묶기 →</button>
       </div>
 
       <div className="step-nav">

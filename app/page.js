@@ -16,6 +16,7 @@ import ProgramWizard from './ProgramWizard';
 import SurveyWizard from './SurveyWizard';
 import LinkWizard from './LinkWizard';
 import VisitWizard from './VisitWizard';
+import AllDocs from './AllDocs';
 import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
@@ -41,7 +42,7 @@ export default function Home() {
       } else if (v?.type === 'newdoc' && v.docId) {
         const d = getNewDoc(v.docId);
         if (d) setView({ type: 'newdoc', doc: d });
-      } else if (v?.type === 'gate' || v?.type === 'basic' || v?.type === 'newlist') {
+      } else if (v?.type === 'gate' || v?.type === 'basic' || v?.type === 'newlist' || v?.type === 'alldocs') {
         setView({ type: v.type });
       }
     }
@@ -106,6 +107,25 @@ export default function Home() {
         onBasic={() => go({ type: 'basic' })}
         onGate={goGate}
         onHome={goHome}
+        onAll={() => go({ type: 'alldocs' })}
+      />
+    );
+  }
+
+  // 만든 서류를 한 권으로 묶기
+  if (view.type === 'alldocs') {
+    // 묶음 화면에서 '고치러 가기'를 누르면 그 서류로 바로 이동
+    const DOC_OF = {
+      counsel: 'counsel-new', committee: 'committee-new', program: 'program-new',
+      survey: 'survey-new', visit: 'visit-new', link: 'link-new',
+    };
+    return (
+      <AllDocs
+        onBack={() => go({ type: 'newlist' })}
+        onOpenDoc={(key) => {
+          const d = getNewDoc(DOC_OF[key]);
+          if (d) go({ type: 'newdoc', doc: d });
+        }}
       />
     );
   }
