@@ -496,6 +496,11 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 /* 전체 문서에서는 조금 좁게 — 그림이 쪽 높이를 다 차지해 다음 쪽으로 통째로 밀리는 것을 막는다
    (글자 크기는 칸 너비에 맞춰 자동으로 함께 줄어든다) */
 .nb-wrap.narrow { max-width: 78%; margin-left: auto; margin-right: auto; }
+/* 벽에 붙이는 게시문 — 줄간격을 넓게 (참관 안내문) */
+.nb-wrap.airy { line-height: 1.95; }
+.nb-wrap.airy .nb-area { gap: 1.15em; }
+.nb-wrap.airy .nb-items { gap: 0.72em; }
+.nb-wrap.airy .nb-notes p { line-height: 1.85; margin-bottom: 0.15em; }
 .nb-img { display: block; width: 100%; height: auto; }
 .nb-area { position: absolute; left: 8%; right: 8%; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 0.85em; color: #4a5240; }
 .nb-to { align-self: center; font-weight: 700; font-size: 1.05em; color: #5f7a3f; border-bottom: 0.09em solid #b9d49a; padding-bottom: 0.12em; letter-spacing: 0.05em; }

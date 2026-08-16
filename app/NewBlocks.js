@@ -13,7 +13,9 @@ function Lines({ text }) {
 }
 
 // 배경 그림 안 빈 칸에 글자가 꽉 차도록 크기를 맞춘다 (짧으면 키우고, 길면 줄인다)
-function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps) {
+// minBottom — 글이 넘칠 때 칸을 아래로 늘릴 수 있는 한계.
+// 게시용 안내문처럼 그림 아래쪽에 그림이 있는 서식은 늘리지 말고 글자를 줄여야 한다.
+function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps, minBottom = 8) {
   useLayoutEffect(() => {
     const wrap = wrapRef.current;
     const area = areaRef.current;
@@ -42,7 +44,7 @@ function useFitText(wrapRef, areaRef, nameRef, scale, top, bottom, deps) {
       put(size);
       // ④ 넘치면 글 칸을 아래로 늘린다 (시작 위치는 그대로)
       guard = 0;
-      while (over() && bottomPct > 8 && guard < 40) {
+      while (over() && bottomPct > minBottom && guard < 40) {
         bottomPct -= 1; area.style.bottom = `${bottomPct}%`; guard += 1;
       }
       // ⑤ 그래도 넘치면 이름을 침범하지 않도록 조금 줄인다
@@ -129,10 +131,15 @@ function NoticeOnImage({ b }) {
   const notes = b.notes || [];
   const questions = b.questions || [];
 
-  useFitText(wrapRef, areaRef, nameRef, b.textScale, b.top, b.bottom, [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale]);
+  useFitText(
+    wrapRef, areaRef, nameRef, b.textScale, b.top, b.bottom,
+    [b.greeting, b.items, b.notes, b.questions, b.bg, b.top, b.bottom, b.textScale],
+    // 게시용(airy) 서식은 아래 그림을 침범하지 않도록 칸을 늘리지 않는다
+    b.airy ? (b.bottom ?? 8) : 8,
+  );
 
   return (
-    <div className={`nb-wrap ${b.narrow ? 'narrow' : ''}`} ref={wrapRef}>
+    <div className={`nb-wrap ${b.narrow ? 'narrow' : ''} ${b.airy ? 'airy' : ''}`} ref={wrapRef}>
       <img className="nb-img" src={b.bg} alt="" />
       <div className="nb-area" ref={areaRef} style={{ top: `${b.top}%`, bottom: `${b.bottom}%` }}>
         <div className="nb-greet"><Lines text={b.greeting} /></div>
