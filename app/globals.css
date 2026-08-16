@@ -330,10 +330,19 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .mini-doc > table { margin-top: 0; }
 @media print { .mini-doc { display: none; } }
 
-/* 저장(인쇄)할 때만 들어가는 부분 — 화면에는 펼치지 않는다
-   (.page-outer 등 다른 규칙보다 뒤에서 이기도록 선택자를 겹쳐 쓴다) */
-.print-only.print-only { display: none; }
-@media print { .print-only.print-only { display: block !important; } }
+/* 저장(인쇄)할 때만 들어가는 부분 — 화면에는 보이지 않게 하되 크기 계산은 되어야 한다.
+   ⚠️ display:none 으로 감추면 그림 폭이 0으로 읽혀 서식 그림 위 글자 크기가 잘못 잡힌다.
+   그래서 화면 밖으로 밀어두고 폭은 인쇄와 비슷하게 유지한다. */
+.print-only.print-only {
+  position: absolute; left: -99999px; top: 0;
+  width: 760px; pointer-events: none;
+}
+@media print {
+  .print-only.print-only {
+    position: static !important; left: auto !important; width: auto !important;
+    display: block !important;
+  }
+}
 
 /* 전체 서류 묶음 표지 */
 .doc-cover {
