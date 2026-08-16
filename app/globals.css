@@ -506,6 +506,8 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .nb-items li::before { content: '·'; color: #7cb342; font-weight: 800; }
 .nb-items b { flex: 0 0 auto; color: #5f7a3f; }
 .nb-items b::after { content: ' :'; }
+/* 값에 넣은 줄바꿈을 그대로 살린다 (참관 가능 시간·연락처 등) */
+.nb-items li > span { white-space: pre-line; }
 .nb-ask { background: rgba(255,255,255,.65); border: 0.07em solid #cfe3b4; border-radius: 0.7em; padding: 0.6em 0.85em; }
 .nb-ask-title { font-weight: 700; font-size: 0.94em; color: #5f9c3c; margin-bottom: 0.3em; }
 .nb-ask ol { margin: 0; padding-left: 1.25em; display: flex; flex-direction: column; gap: 0.22em; }

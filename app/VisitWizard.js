@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
+import { fileToResizedDataURL } from '../lib/image';
 import {
   CHECKPOINTS, KEYWORDS, emptyData, emptyLog, logList,
+  DEFAULT_BG, DEFAULT_TOP, DEFAULT_BOTTOM,
   buildVisitDoc, buildPosterDoc, toHwpxBlocks,
 } from '../lib/visitDoc';
 import Block from './NewBlocks';
@@ -90,6 +92,15 @@ export default function VisitWizard({ onBack }) {
         noticeFeedback: '',
       });
     }
+  }
+
+  // 게시문 서식 그림 올리기
+  async function pickBg(file) {
+    if (!file) return;
+    setBusy(true);
+    try { upd({ bg: await fileToResizedDataURL(file, 1400) }); }
+    catch { setErr('그림을 불러오지 못했습니다.'); }
+    finally { setBusy(false); }
   }
 
   async function makePolicy() {
@@ -236,6 +247,36 @@ export default function VisitWizard({ onBack }) {
                 )}
               </>
             )}
+            <div className="bg-tools">
+              <div className="bg-row">
+                <span className="bg-label">서식 그림</span>
+                <label className="file-btn sm">
+                  🖼️ 내 그림 올리기
+                  <input type="file" accept="image/*" hidden onChange={(e) => { pickBg(e.target.files[0]); e.target.value = ''; }} />
+                </label>
+                <button className="bg-btn" onClick={() => upd({ bg: DEFAULT_BG, top: DEFAULT_TOP, bottom: DEFAULT_BOTTOM })}>기본 서식</button>
+                <button className="bg-btn" onClick={() => upd({ bg: '' })}>그림 없이</button>
+              </div>
+              {data.bg && (
+                <div className="bg-row sliders">
+                  <label>글 시작 위치
+                    <input type="range" min="14" max="45" value={data.top ?? DEFAULT_TOP}
+                      onChange={(e) => upd({ top: Number(e.target.value) })} />
+                    <b>{data.top ?? DEFAULT_TOP}%</b>
+                  </label>
+                  <label>아래 여백
+                    <input type="range" min="10" max="40" value={data.bottom ?? DEFAULT_BOTTOM}
+                      onChange={(e) => upd({ bottom: Number(e.target.value) })} />
+                    <b>{data.bottom ?? DEFAULT_BOTTOM}%</b>
+                  </label>
+                  <label>글자 크기
+                    <input type="range" min="70" max="200" value={Math.round((data.textScale ?? 1.15) * 100)}
+                      onChange={(e) => upd({ textScale: Number(e.target.value) / 100 })} />
+                    <b>{Math.round((data.textScale ?? 1.15) * 100)}%</b>
+                  </label>
+                </div>
+              )}
+            </div>
             <p className="hint">
               💡 만드신 뒤 <b>「게시용 안내문만 PDF로 저장」</b>해서 인쇄해 붙이세요. 현관·각 반 게시판에 <b>상시 게시</b>해야 합니다.
             </p>
