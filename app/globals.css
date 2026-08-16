@@ -356,7 +356,13 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .ds-pt { margin-left: auto; font-size: 14px; font-weight: 700; color: #1f6fb2; }
 @media print {
   .doc-cover { min-height: 226mm; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .doc-sectionhead { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  /* 서류가 바뀌는 자리는 쪽을 나누지 않고 위 여백만 넉넉히 둔다 */
+  .doc-sectionhead {
+    print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    margin-top: 14mm; break-after: avoid; break-inside: avoid;
+  }
+  /* 표지 다음 첫 구분 줄은 여백이 필요 없다 */
+  .doc-pagebreak + .doc-sectionhead { margin-top: 0; }
 }
 
 /* 벽에 붙이는 게시용 안내문 (참관 안내문) */

@@ -485,7 +485,7 @@ export default function Block({ b }) {
   // 회의록 — 표(일시·장소·간사·참석) + 회의순서/토의 및 의결사항 표 + 서명란
   if (b.type === 'minutesdoc') {
     return (
-      <DocBox title={b.title}>
+      <DocBox title={b.title} tight={b.tight}>
         <InfoTable rows={b.info} />
         <table className="doc-table box-table flow-table minutes-table">
           <thead><tr><th style={{ width: '22%' }}>구분</th><th>회 의 내 용</th></tr></thead>
@@ -532,7 +532,7 @@ export default function Block({ b }) {
   // 회의결과 보고서 — 안건별 표
   if (b.type === 'resultdoc') {
     return (
-      <DocBox title={b.title}>
+      <DocBox title={b.title} tight={b.tight}>
         <Paras text={b.intro} />
         <table className="doc-table box-table flow-table">
           <thead><tr><th style={{ width: '28%' }}>안건</th><th>논의·결정 내용</th></tr></thead>
