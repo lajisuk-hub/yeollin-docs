@@ -186,8 +186,11 @@ export default function AllDocs({ onBack, onOpenDoc }) {
 
       {/* 저장 */}
       <div className="card wiz-card">
-        <h2 className="wiz-sub">3. 확인하고 저장하기</h2>
-        <p className="hint">아래 미리보기를 확인하신 뒤 저장하세요. 지금 <b>{done.length}개 서류</b>가 들어 있습니다.</p>
+        <h2 className="wiz-sub">3. 저장하기</h2>
+        <p className="hint">
+          지금 <b>{done.length}개 서류</b>가 들어 있습니다.
+          저장하면 <b>표지 · 운영 목표 · 연간일정 · 서류 본문</b>이 모두 들어갑니다.
+        </p>
         <div className="wiz-saves">
           <button className="primary" onClick={() => window.print()}>🖨️ 전체 서류 PDF로 저장 (사진 포함)</button>
           <button className="ghost" onClick={saveHwpx} disabled={busy}>📄 한글(hwpx)로 저장</button>
@@ -200,7 +203,8 @@ export default function AllDocs({ onBack, onOpenDoc }) {
         </p>
       </div>
 
-      <div className="page-outer">
+      {/* 전체 문서는 화면에 펼치지 않고 저장(인쇄)할 때만 들어간다 — 원장님 지시 */}
+      <div className="page-outer print-only">
         <div className="print-area">
           <PrintSheet>
             {blocks.map((b, i) => <Block key={i} b={b} />)}

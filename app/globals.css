@@ -330,6 +330,11 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .mini-doc > table { margin-top: 0; }
 @media print { .mini-doc { display: none; } }
 
+/* 저장(인쇄)할 때만 들어가는 부분 — 화면에는 펼치지 않는다
+   (.page-outer 등 다른 규칙보다 뒤에서 이기도록 선택자를 겹쳐 쓴다) */
+.print-only.print-only { display: none; }
+@media print { .print-only.print-only { display: block !important; } }
+
 /* 전체 서류 묶음 표지 */
 .doc-cover {
   min-height: 232mm; display: flex; flex-direction: column; justify-content: space-between;
