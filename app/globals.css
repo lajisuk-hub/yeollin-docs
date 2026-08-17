@@ -1060,8 +1060,8 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .notes-action { padding: 10px 12px; }
   .notes-closing { margin-top: 9px; }
 
-  /* 전체 문서: 번호 항목(1. 2. 3.)이 바뀌는 자리는 새 쪽에서 시작하고(lib/allDoc.js),
-     한 항목 안에서는 이어짐을 우선한다 — 실시기록은 쪽을 넘어가도 자연스럽게 흐르게 */
+  /* 전체 문서: 큰 단락(서류)이 바뀌는 자리만 새 쪽에서 시작하고(lib/allDoc.js),
+     그 안에서는 이어짐을 우선한다 — 실시기록은 쪽을 넘어가도 자연스럽게 흐르게 */
   .docbox, .docbox-body, .docbox-part { break-inside: auto; }
   .docbox-part .doc-para { break-inside: auto; }
   /* 달 사이 간격은 화면보다 좁게 (쪽 넘김 없이 이어 붙이므로) */
