@@ -539,6 +539,11 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .score-name { display: inline-flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 700; color: #2b3b37; }
 .score-name i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 .score-unit { font-size: 13.5px; color: #6b7975; }
+/* 문항별 평균 점수 고치기 (부모만족도조사 서류 정리) */
+.qscore-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.qscore-row { display: grid; grid-template-columns: 1fr 90px 38px; gap: 6px; align-items: center; }
+.qscore-row input { width: 100%; border: 1px solid #cdd6d3; border-radius: 8px; padding: 8px 10px; font-size: 13.5px; font-family: inherit; }
+@media (max-width: 640px) { .qscore-row { grid-template-columns: 1fr 72px 34px; } }
 
 /* 저장할 구간 고르기 (전체 / 분기별) */
 .range-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 6px; }
