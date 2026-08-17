@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { CRITERIA, docsByArea, AREAS } from '../lib/docs';
 import { saveLocal, loadLocal, getDocStates } from '../lib/store';
 
-const STEP_IDS = ['open', 'join', 'diverse'];
+const STEP_IDS = ['open', 'join', 'diverse', 'local'];
 
-export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) {
+export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate, onAll }) {
   const stepIndex = STEP_IDS.indexOf(areaId);
   const area = AREAS.find((a) => a.id === areaId);
   const crit = CRITERIA.find((c) => c.id === areaId);
@@ -156,7 +156,7 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) 
         </>
       )}
 
-      {/* 단계 이동 */}
+      {/* 단계 이동 — 마지막(지자체) 다음은 전체 문서 정리 */}
       <div className="step-nav">
         {prevId ? (
           <button className="ghost" onClick={() => onGo(prevId)}>← 이전 단계</button>
@@ -164,9 +164,11 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) 
           <button className="ghost" onClick={onHome}>← 심사기준</button>
         )}
         {nextId ? (
-          <button className="primary" onClick={() => onGo(nextId)}>다음 단계 →</button>
+          <button className="primary" onClick={() => onGo(nextId)}>
+            다음 단계 · {AREAS.find((a) => a.id === nextId)?.label} →
+          </button>
         ) : (
-          <button className="primary" onClick={onHome}>단계 완료 · 처음으로</button>
+          <button className="primary" onClick={onAll || onHome}>📚 전체 문서 정리하기 →</button>
         )}
       </div>
     </div>

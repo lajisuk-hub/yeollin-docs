@@ -514,14 +514,17 @@ export default function Block({ b }) {
     return (
       <DocBox title={b.title} tight={b.tight}>
         <InfoTable rows={b.info} />
-        <table className="doc-table box-table flow-table">
-          <thead>
-            <tr>{(b.head || []).map((h, i) => <th key={i} style={b.widths ? { width: b.widths[i] } : undefined}>{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {(b.rows || []).map((r, i) => <tr key={i}>{r.map((c, n) => <td key={n}>{c || ' '}</td>)}</tr>)}
-          </tbody>
-        </table>
+        {/* noFlow — 시간별 진행 순서 표가 없는 실시기록 (정보표 + 글만) */}
+        {!b.noFlow && (
+          <table className="doc-table box-table flow-table">
+            <thead>
+              <tr>{(b.head || []).map((h, i) => <th key={i} style={b.widths ? { width: b.widths[i] } : undefined}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {(b.rows || []).map((r, i) => <tr key={i}>{r.map((c, n) => <td key={n}>{c || ' '}</td>)}</tr>)}
+            </tbody>
+          </table>
+        )}
         {(b.sections || []).filter((s) => s.text).map((s, i) => (
           <div className="docbox-part" key={i}>
             <p className="docbox-sub">{s.title}</p>

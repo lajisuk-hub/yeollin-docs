@@ -21,9 +21,12 @@ import CommitteeTidy from './CommitteeTidy';
 import ProgramTidy from './ProgramTidy';
 import SurveyTidy from './SurveyTidy';
 import VisitTidy from './VisitTidy';
+import LinkTidy from './LinkTidy';
+import LocalTidy from './LocalTidy';
+import AllTidy from './AllTidy';
 import { getNewDoc } from '../lib/newdocs';
 
-const STEP_IDS = ['open', 'join', 'diverse'];
+const STEP_IDS = ['open', 'join', 'diverse', 'local'];
 
 export default function Home() {
   // view: {type:'home'} | {type:'step', areaId} | {type:'gate'} | {type:'basic'} | {type:'doc', doc}
@@ -48,7 +51,7 @@ export default function Home() {
       } else if (v?.type === 'newdoc' && v.docId) {
         const d = getNewDoc(v.docId);
         if (d) setView({ type: 'newdoc', doc: d });
-      } else if (v?.type === 'gate' || v?.type === 'basic' || v?.type === 'newlist' || v?.type === 'alldocs') {
+      } else if (['gate', 'basic', 'newlist', 'alldocs', 'localtidy', 'alltidy'].includes(v?.type)) {
         setView({ type: v.type });
       }
     }
@@ -72,10 +75,13 @@ export default function Home() {
   const goHome = () => go({ type: 'home' });
   const goGate = () => go({ type: 'gate' });
   // 참여성부터는 서류 단계 → 방식을 아직 안 골랐으면 갈림길 화면부터
+  // 지자체는 서류 카드가 없고 전용 화면 하나로 바로 간다
   const goStep = (areaId) => {
     if (areaId === 'join' && !pathChosen) return goGate();
+    if (areaId === 'local') return go({ type: 'localtidy' });
     go({ type: 'step', areaId });
   };
+  const goAll = () => go({ type: 'alltidy' });
 
   // 저장된 화면을 불러오는 아주 짧은 순간 (깜빡임 방지)
   if (!ready) return <div className="wrap" />;
@@ -93,6 +99,14 @@ export default function Home() {
     }
     if (view.doc.tidy === 'visit') {
       return <VisitTidy onBack={() => go({ type: 'step', areaId: view.doc.area })} />;
+    }
+    if (view.doc.tidy === 'link') {
+      return (
+        <LinkTidy
+          onBack={() => go({ type: 'step', areaId: view.doc.area })}
+          onNextArea={() => goStep('local')}
+        />
+      );
     }
     // 문서 작성 후 뒤로가면 그 문서가 속한 단계로 돌아감
     return (
@@ -167,6 +181,30 @@ export default function Home() {
     return <NewDocForm doc={view.doc} onBack={back} />;
   }
 
+  // 지자체 자체기준 (4단계) — 서류 카드 없이 전용 화면
+  if (view.type === 'localtidy') {
+    return (
+      <LocalTidy
+        onBack={() => go({ type: 'step', areaId: 'diverse' })}
+        onNextArea={goAll}
+      />
+    );
+  }
+
+  // ②번 길 전체 문서 묶기
+  if (view.type === 'alltidy') {
+    return (
+      <AllTidy
+        onBack={() => go({ type: 'localtidy' })}
+        onOpenDoc={(docId) => {
+          if (docId === 'local-tidy') return go({ type: 'localtidy' });
+          const d = getDoc(docId);
+          if (d) go({ type: 'doc', doc: d });
+        }}
+      />
+    );
+  }
+
   if (view.type === 'step') {
     return (
       <StepPage
@@ -175,6 +213,7 @@ export default function Home() {
         onGo={goStep}
         onHome={goHome}
         onGate={goGate}
+        onAll={goAll}
       />
     );
   }
