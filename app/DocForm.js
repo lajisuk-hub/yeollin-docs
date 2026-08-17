@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { saveForm, loadForm, clearForm } from '../lib/store';
-import { monthText, toMonthValue } from '../lib/docs';
+import { saveForm, loadForm, clearForm, getDocStates, setDocState } from '../lib/store';
+import { monthText, toMonthValue, getNextDoc } from '../lib/docs';
 import PrintSheet from './PrintSheet';
 
 // 업로드 이미지를 화면/PDF에 알맞게 축소해 dataURL로 변환 (용량·속도 안정화)
@@ -183,7 +183,7 @@ export function Block({ b }) {
   return null;
 }
 
-export default function DocForm({ doc, onBack }) {
+export default function DocForm({ doc, onBack, onNextDoc }) {
   const initial = useMemo(() => {
     const o = {};
     doc.fields.forEach((f) => { if (f.key) o[f.key] = (f.type === 'attach' || f.type === 'images') ? [] : ''; });
@@ -198,6 +198,8 @@ export default function DocForm({ doc, onBack }) {
   const [busy, setBusy] = useState({});
   const [restored, setRestored] = useState(false);
   const [saved, setSaved] = useState(false);
+  // 원장님이 직접 표시하는 '작성 완료'
+  const [done, setDone] = useState(false);
 
   // ── 자동 저장/복원 (같은 브라우저) ──
   const loadedRef = useRef(false);
@@ -207,6 +209,7 @@ export default function DocForm({ doc, onBack }) {
     loadedRef.current = false;
     setRestored(false);
     let alive = true;
+    setDone(getDocStates()[doc.id] === 'done');
     // 기본사항에 등록해 둔 어린이집 이름은 비어 있을 때 자동으로 채워준다
     Promise.all([loadForm(doc.id), loadForm('basic-info')]).then(([savedData, basic]) => {
       if (!alive) return;
@@ -228,23 +231,34 @@ export default function DocForm({ doc, onBack }) {
     return () => { alive = false; };
   }, [doc.id, initial]);
 
+  // 어린이집 이름은 기본사항에서 자동으로 들어오므로 '작성 시작'으로 보지 않는다
+  const hasContent = doc.fields.some((f) => {
+    if (!f.key || f.key === 'centerName') return false;
+    const v = values[f.key];
+    return Array.isArray(v) ? v.length > 0 : !!String(v || '').trim();
+  });
+
   useEffect(() => {
     if (!loadedRef.current) return;
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       saveForm(doc.id, { values, ai }).then((ok) => { if (ok) { setSaved(true); } });
+      // 문서 목록에 보여줄 진행 상태
+      setDocState(doc.id, done ? 'done' : (hasContent ? 'writing' : null));
     }, 700);
     return () => clearTimeout(saveTimer.current);
-  }, [values, ai, doc.id]);
+  }, [values, ai, doc.id, done, hasContent]);
 
   function resetForm() {
     if (typeof window !== 'undefined' && !window.confirm('작성한 내용과 첨부한 자료를 모두 지우고 새로 시작할까요?')) return;
     clearForm(doc.id);
+    setDocState(doc.id, null);
     setValues(initial);
     setAi(null);
     setShowPreview(false);
     setRestored(false);
     setSaved(false);
+    setDone(false);
   }
 
   const set = (k, v) => { setValues((p) => ({ ...p, [k]: v })); setShowPreview(false); };
@@ -343,13 +357,19 @@ export default function DocForm({ doc, onBack }) {
   }
 
   const blocks = showPreview ? doc.build(values, ai) : [];
+  const nextDoc = onNextDoc ? getNextDoc(doc.id) : null;
 
   return (
     <div className="wrap">
       <button className="back" onClick={onBack}>← 문서 목록으로</button>
 
       <div className="doc-head">
-        <h2 className="doc-name">{doc.name}</h2>
+        <h2 className="doc-name">
+          {doc.name}
+          {done
+            ? <span className="state-badge done">작성 완료</span>
+            : hasContent && <span className="state-badge writing">작성중</span>}
+        </h2>
         <p className="doc-meta"><span className="chip">{doc.item}</span> <span className="chip freq">필요 횟수 · {doc.freq}</span></p>
         <p className="doc-desc">{doc.desc}</p>
       </div>
@@ -368,21 +388,23 @@ export default function DocForm({ doc, onBack }) {
         {doc.fields.map((f, fi) => {
           if (f.type === 'section') return <div className="form-section" key={'sec' + fi}>{f.label}</div>;
           const arr = Array.isArray(values[f.key]) ? values[f.key] : [];
+          // 문서를 바꾼 직후 한 프레임 동안 값이 없을 수 있어 빈 글자로 받쳐 준다
+          const val = typeof values[f.key] === 'string' ? values[f.key] : '';
           return (
           <div className="field" key={f.key}>
             <label>{f.label}{f.required && <span className="req">*</span>}</label>
             {f.type === 'textarea' ? (
-              <textarea rows={4} value={values[f.key]} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
+              <textarea rows={4} value={val} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
             ) : f.type === 'material' ? (
               <div>
-                <textarea rows={5} value={values[f.key]} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
+                <textarea rows={5} value={val} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
                 <label className="file-btn">
                   {busy[f.key] ? '문서 읽는 중…' : '📎 문서 파일 불러오기 (한글·워드·PDF·txt)'}
                   <input type="file" accept=".hwpx,.docx,.pdf,.txt" hidden disabled={busy[f.key]} onChange={(e) => { onPickMaterial(f.key, e.target.files[0]); e.target.value = ''; }} />
                 </label>
               </div>
             ) : f.type === 'select' ? (
-              <select value={values[f.key]} onChange={(e) => set(f.key, e.target.value)}>
+              <select value={val} onChange={(e) => set(f.key, e.target.value)}>
                 <option value="">선택하세요</option>
                 {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
@@ -407,16 +429,16 @@ export default function DocForm({ doc, onBack }) {
               <div className="month-field">
                 <input
                   type="month"
-                  value={/^\d{4}-\d{2}$/.test(values[f.key] || '') ? values[f.key] : ''}
+                  value={/^\d{4}-\d{2}$/.test(val) ? val : ''}
                   min="2024-01" max="2027-12"
                   onChange={(e) => set(f.key, e.target.value)}
                 />
-                {monthText(values[f.key])
-                  ? <span className="month-view">→ <b>{monthText(values[f.key])}</b> 로 문서에 들어갑니다</span>
+                {monthText(val)
+                  ? <span className="month-view">→ <b>{monthText(val)}</b> 로 문서에 들어갑니다</span>
                   : <span className="month-hint">칸을 누르면 달력이 열립니다</span>}
               </div>
             ) : (
-              <input type={f.type === 'date' ? 'date' : 'text'} value={values[f.key]} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
+              <input type={f.type === 'date' ? 'date' : 'text'} value={val} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
             )}
           </div>
           );
@@ -463,6 +485,32 @@ export default function DocForm({ doc, onBack }) {
           </div>
         </>
       )}
+
+      {/* 마무리: 작성 완료 표시 + 다음 문서 이어서 만들기 */}
+      <div className="card finish-card">
+        <h3 className="card-title">{showPreview ? '4' : '3'}. 다 되셨나요?</h3>
+        <p className="hint">
+          이 서류를 마쳤으면 <b>아래 버튼으로 표시</b>해 두세요. 문서 목록에 <b>작성 완료</b>로 보여서,
+          어떤 서류가 남았는지 한눈에 알 수 있습니다.
+        </p>
+
+        <button type="button" className={`done-btn ${done ? 'on' : ''}`} onClick={() => setDone((v) => !v)}>
+          {done ? '✅ 작성 완료로 표시했습니다 (누르면 취소)' : '✅ 이 서류 작성 완료로 표시하기'}
+        </button>
+
+        {nextDoc ? (
+          <>
+            <p className="finish-next-lead">이어서 만들 서류</p>
+            <button type="button" className="next-doc" onClick={() => onNextDoc(nextDoc)}>
+              📄 다음 문서 만들기 · {nextDoc.name} →
+            </button>
+          </>
+        ) : (
+          <p className="finish-next-lead">🎉 이 단계의 <b>마지막 서류</b>입니다.</p>
+        )}
+
+        <button type="button" className="next-doc calm" onClick={onBack}>📋 문서 목록으로 돌아가기</button>
+      </div>
     </div>
   );
 }

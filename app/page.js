@@ -76,7 +76,13 @@ export default function Home() {
 
   if (view.type === 'doc') {
     // 문서 작성 후 뒤로가면 그 문서가 속한 단계로 돌아감
-    return <DocForm doc={view.doc} onBack={() => go({ type: 'step', areaId: view.doc.area })} />;
+    return (
+      <DocForm
+        doc={view.doc}
+        onBack={() => go({ type: 'step', areaId: view.doc.area })}
+        onNextDoc={(d) => go({ type: 'doc', doc: d })}
+      />
+    );
   }
 
   if (view.type === 'gate') {

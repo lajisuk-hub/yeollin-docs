@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CRITERIA, docsByArea, AREAS } from '../lib/docs';
-import { saveLocal, loadLocal } from '../lib/store';
+import { saveLocal, loadLocal, getDocStates } from '../lib/store';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
 
@@ -18,6 +18,10 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) 
   // 영역별 체크를 한 덩어리로 보관해, 단계를 옮겨도 서로 덮어쓰지 않게 한다
   const [checkMap, setCheckMap] = useState(null); // null = 아직 불러오기 전
   const checked = (checkMap && checkMap[areaId]) || {};
+
+  // 서류별 진행 상태(작성중·작성완료) — 이 화면에 들어올 때마다 새로 읽는다
+  const [docStates, setDocStates] = useState({});
+  useEffect(() => { setDocStates(getDocStates()); }, [areaId]);
 
   useEffect(() => { setCheckMap(loadLocal('checks') || {}); }, []);
   useEffect(() => { if (checkMap) saveLocal('checks', checkMap); }, [checkMap]);
@@ -114,19 +118,36 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) 
           </div>
 
           <div className="card">
-            <h3 className="card-title" style={{ color }}>📄 여기서 만들 수 있는 문서</h3>
+            <h3 className="card-title" style={{ color }}>
+              📄 여기서 만들 수 있는 문서
+              {docs.length > 0 && (
+                <span className="check-count">
+                  작성 완료 {docs.filter((d) => docStates[d.id] === 'done').length}/{docs.length}
+                </span>
+              )}
+            </h3>
             {docs.length === 0 ? (
               <p className="hint">이 항목은 현장 확인 위주라 별도 문서가 없습니다.</p>
             ) : (
               <div className="doc-grid">
-                {docs.map((doc) => (
-                  <button key={doc.id} className="doc-card" onClick={() => onSelectDoc(doc)} style={{ '--accent': color }}>
-                    <span className="doc-card-name">{doc.name}</span>
-                    <span className="doc-card-freq">{doc.freq}</span>
-                    <span className="doc-card-desc">{doc.desc}</span>
-                    <span className="doc-card-go">문서 만들기 →</span>
-                  </button>
-                ))}
+                {docs.map((doc) => {
+                  const st = docStates[doc.id];
+                  return (
+                    <button key={doc.id} className={`doc-card ${st || ''}`} onClick={() => onSelectDoc(doc)} style={{ '--accent': color }}>
+                      <span className="doc-card-top">
+                        {st === 'done'
+                          ? <span className="state-badge done">✅ 작성 완료</span>
+                          : st === 'writing'
+                            ? <span className="state-badge writing">✏️ 작성중</span>
+                            : <span className="state-badge todo">아직 시작 안 함</span>}
+                      </span>
+                      <span className="doc-card-name">{doc.name}</span>
+                      <span className="doc-card-freq">{doc.freq}</span>
+                      <span className="doc-card-desc">{doc.desc}</span>
+                      <span className="doc-card-go">{st ? '이어서 작성하기 →' : '문서 만들기 →'}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
