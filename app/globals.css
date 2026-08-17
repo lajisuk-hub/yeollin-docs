@@ -1038,6 +1038,8 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .doc-table thead { display: table-header-group; }
   /* 회차 사진·2회차는 새 페이지에서 시작 */
   .doc-pagebreak { break-before: page; border: none; margin: 0; height: 0; }
+  /* 새 쪽 맨 위에 오는 제목은 위 여백을 없앤다 (쪽 위쪽이 뜨지 않게) */
+  .doc-pagebreak + .doc-heading, .doc-pagebreak + .doc-title { margin-top: 0; }
   /* 구분선이 쪽 끝에 홀로 남지 않게 */
   .doc-divider { break-after: avoid; }
   .doc-photos-cap { break-after: avoid; }
@@ -1058,8 +1060,8 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .notes-action { padding: 10px 12px; }
   .notes-closing { margin-top: 9px; }
 
-  /* 전체 문서: 중간 공백보다 이어짐을 우선 (원장님 지시)
-     실시기록은 쪽을 넘어가도 되고, 대신 앞 쪽이 텅 비지 않게 자연스럽게 흐르게 한다 */
+  /* 전체 문서: 번호 항목(1. 2. 3.)이 바뀌는 자리는 새 쪽에서 시작하고(lib/allDoc.js),
+     한 항목 안에서는 이어짐을 우선한다 — 실시기록은 쪽을 넘어가도 자연스럽게 흐르게 */
   .docbox, .docbox-body, .docbox-part { break-inside: auto; }
   .docbox-part .doc-para { break-inside: auto; }
   /* 달 사이 간격은 화면보다 좁게 (쪽 넘김 없이 이어 붙이므로) */
