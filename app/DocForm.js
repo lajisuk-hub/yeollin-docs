@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm, getDocStates, setDocState } from '../lib/store';
 import { monthText, toMonthValue, getNextDoc } from '../lib/docs';
+import { extractTextFromFile } from '../lib/extract';
 import PrintSheet from './PrintSheet';
 
 // 업로드 이미지를 화면/PDF에 알맞게 축소해 dataURL로 변환 (용량·속도 안정화)
@@ -50,48 +51,6 @@ async function pdfToImages(file) {
     imgs.push(canvas.toDataURL('image/jpeg', 0.85));
   }
   return imgs;
-}
-
-function decodeXml(s) {
-  return s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&amp;/g, '&');
-}
-function tagsToText(xml, closeTag, textTagRe) {
-  return xml.split(closeTag).map((p) => {
-    const m = [...p.matchAll(textTagRe)].map((x) => decodeXml(x[1].replace(/<[^>]+>/g, '')));
-    return m.join('');
-  }).filter((s) => s.trim()).join('\n');
-}
-
-// 업로드한 문서 파일에서 글자만 추출 (txt / pdf / docx / hwpx)
-async function extractTextFromFile(file) {
-  const name = (file.name || '').toLowerCase();
-  if (name.endsWith('.txt') || file.type === 'text/plain') return (await file.text()).trim();
-  if (name.endsWith('.pdf') || file.type === 'application/pdf') {
-    const pdfjs = await import('pdfjs-dist');
-    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-    const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
-    let txt = '';
-    for (let p = 1; p <= pdf.numPages; p++) {
-      const c = await (await pdf.getPage(p)).getTextContent();
-      txt += c.items.map((i) => i.str).join(' ') + '\n';
-    }
-    return txt.trim();
-  }
-  const JSZip = (await import('jszip')).default;
-  const zip = await JSZip.loadAsync(await file.arrayBuffer());
-  if (name.endsWith('.hwpx')) {
-    const names = Object.keys(zip.files).filter((n) => /Contents\/section\d+\.xml$/i.test(n)).sort();
-    let txt = '';
-    for (const n of names) txt += tagsToText(await zip.files[n].async('string'), '</hp:p>', /<hp:t>([\s\S]*?)<\/hp:t>/g) + '\n';
-    return txt.trim();
-  }
-  if (name.endsWith('.docx')) {
-    const f = zip.file('word/document.xml');
-    if (!f) throw new Error('워드 문서를 읽지 못했습니다');
-    return tagsToText(await f.async('string'), '</w:p>', /<w:t[^>]*>([\s\S]*?)<\/w:t>/g);
-  }
-  throw new Error('지원하지 않는 파일 형식입니다 (사진·PDF·한글hwpx·워드docx·txt만 가능)');
 }
 
 // 문서 블록 한 개를 화면/인쇄용으로 렌더

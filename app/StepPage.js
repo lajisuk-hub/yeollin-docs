@@ -133,8 +133,10 @@ export default function StepPage({ areaId, onSelectDoc, onGo, onHome, onGate }) 
                 {docs.map((doc) => {
                   const st = docStates[doc.id];
                   return (
-                    <button key={doc.id} className={`doc-card ${st || ''}`} onClick={() => onSelectDoc(doc)} style={{ '--accent': color }}>
+                    <button key={doc.id} className={`doc-card ${st || ''} ${doc.legacy ? 'legacy' : ''}`} onClick={() => onSelectDoc(doc)} style={{ '--accent': color }}>
                       <span className="doc-card-top">
+                        {doc.tidy && <span className="state-badge tidy">🤖 자료 올려 정리</span>}
+                        {doc.legacy && <span className="state-badge old">이전 방식 · 한 장씩</span>}
                         {st === 'done'
                           ? <span className="state-badge done">✅ 작성 완료</span>
                           : st === 'writing'

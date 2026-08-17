@@ -17,6 +17,7 @@ import SurveyWizard from './SurveyWizard';
 import LinkWizard from './LinkWizard';
 import VisitWizard from './VisitWizard';
 import AllDocs from './AllDocs';
+import CommitteeTidy from './CommitteeTidy';
 import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
@@ -75,6 +76,10 @@ export default function Home() {
   if (!ready) return <div className="wrap" />;
 
   if (view.type === 'doc') {
+    // 가지고 있는 자료를 올려 한 흐름으로 정리하는 서류 (기존 서류 분석·정리)
+    if (view.doc.tidy === 'committee') {
+      return <CommitteeTidy onBack={() => go({ type: 'step', areaId: view.doc.area })} />;
+    }
     // 문서 작성 후 뒤로가면 그 문서가 속한 단계로 돌아감
     return (
       <DocForm
