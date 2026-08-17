@@ -583,6 +583,35 @@ export default function Block({ b }) {
     );
   }
   // 가정통신문 모양 안내문 (인쇄해서 그대로 나눠줄 수 있는 형태)
+  // 올린 서식(사진·PDF) 여러 장을 위아래로
+  if (b.type === 'pages') {
+    const items = (Array.isArray(b.items) ? b.items : []).filter(Boolean);
+    if (!items.length) return <p className="doc-img-empty">{b.emptyText || '첨부된 자료가 없습니다.'}</p>;
+    return (
+      <div className={`doc-pages ${b.big ? 'big' : ''}`}>
+        {b.title && <div className="doc-pages-title">{b.title}</div>}
+        {items.map((src, i) => <figure key={i} className="doc-figure"><img src={src} alt="" /></figure>)}
+      </div>
+    );
+  }
+  // 올린 서식 두 가지를 좌우 2단으로 (세로 공백 최소화)
+  if (b.type === 'attachrow') {
+    return (
+      <div className="doc-attachrow">
+        {(b.cols || []).map((col, ci) => {
+          const items = (Array.isArray(col.items) ? col.items : []).filter(Boolean);
+          return (
+            <div className="doc-attachcol" key={ci}>
+              <div className="doc-attachcol-title">{col.title}</div>
+              {items.length
+                ? items.map((src, i) => <figure key={i}><img src={src} alt="" /></figure>)
+                : <p className="doc-img-empty">{col.emptyText || '미첨부'}</p>}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
   if (b.type === 'notice') return b.bg ? <NoticeOnImage b={b} /> : <NoticePoster b={b} />;
   if (b.type === 'apply') return <ApplyOnImage b={b} />;
   // 서식 두 장을 나란히 (문서에 넣을 때는 크게 볼 필요가 없음)

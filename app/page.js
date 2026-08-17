@@ -20,6 +20,7 @@ import AllDocs from './AllDocs';
 import CommitteeTidy from './CommitteeTidy';
 import ProgramTidy from './ProgramTidy';
 import SurveyTidy from './SurveyTidy';
+import VisitTidy from './VisitTidy';
 import { getNewDoc } from '../lib/newdocs';
 
 const STEP_IDS = ['open', 'join', 'diverse'];
@@ -89,6 +90,9 @@ export default function Home() {
     }
     if (view.doc.tidy === 'survey') {
       return <SurveyTidy onBack={() => go({ type: 'step', areaId: view.doc.area })} />;
+    }
+    if (view.doc.tidy === 'visit') {
+      return <VisitTidy onBack={() => go({ type: 'step', areaId: view.doc.area })} />;
     }
     // 문서 작성 후 뒤로가면 그 문서가 속한 단계로 돌아감
     return (

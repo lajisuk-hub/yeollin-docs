@@ -539,6 +539,13 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .score-name { display: inline-flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 700; color: #2b3b37; }
 .score-name i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 .score-unit { font-size: 13.5px; color: #6b7975; }
+/* 참관 기록 한 칸 (어린이집 참관 서류 정리) */
+.visit-log { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: #fcfdfc; }
+.visit-log-no { width: 28px; height: 28px; border-radius: 999px; background: #eef3f1; color: #4a5a55; font-weight: 700; font-size: 13.5px; display: flex; align-items: center; justify-content: center; }
+.visit-log-body .field { margin-bottom: 8px; }
+.kw-list { margin: 8px 0 0; padding-left: 20px; font-size: 13.5px; line-height: 1.8; }
+.kw-list b { color: #1f4d3f; }
+
 /* 문항별 평균 점수 고치기 (부모만족도조사 서류 정리) */
 .qscore-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .qscore-row { display: grid; grid-template-columns: 1fr 90px 38px; gap: 6px; align-items: center; }
@@ -1028,6 +1035,10 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .doc-attachcol figure { margin: 0 0 6px; }
 .doc-attachcol img { max-width: 100%; max-height: 88mm; border: 1px solid #ddd; }
 .doc-attachcol .doc-img-empty { margin: 4px 0; }
+/* 벽에 붙이는 게시용 — 한 장을 A4에 꽉 차게 (참관 안내문·신청서 양식만 따로 저장할 때) */
+.doc-pages.big .doc-pages-title { display: none; }
+.doc-pages.big .doc-figure { margin: 0; }
+.doc-pages.big .doc-figure img { max-height: none; width: 100%; border: 0; }
 
 /* ── 회칙: 장 → 조 → 항 → 호 단계마다 글씨 크기를 달리 ── */
 .rules-doc { margin: 8px 0 14px; }
