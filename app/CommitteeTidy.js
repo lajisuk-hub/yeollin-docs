@@ -32,11 +32,14 @@ const STEP_TITLE = {
 // 올린 파일 원문과 분석 상태를 함께 보관한다
 const freshMeeting = () => ({
   ...emptyMeeting(),
-  src: { notice: '', minutes: '', result: '' },
-  files: { notice: '', minutes: '', result: '' },
+  src: { notice: '', minutes: '', result: '', etc: '' },
+  files: { notice: [], minutes: [], result: [], etc: [] },
   missing: [],
   analyzed: false,
 });
+
+// 예전에 저장된 것(파일 이름이 글자 하나였던 때)도 배열로 맞춘다
+const fileList = (v) => (Array.isArray(v) ? v : (v ? [v] : []));
 
 const freshData = () => ({
   ...emptyData(),
@@ -47,9 +50,10 @@ const freshData = () => ({
 
 // 올릴 자료 세 가지
 const SRC_KINDS = [
-  { k: 'notice', label: '개최 공지문', hint: '회의 전에 부모님께 보낸 안내문' },
+  { k: 'notice', label: '운영위 회의 안내문 (개최 공지문)', hint: '회의 전에 부모님께 보낸 안내문' },
   { k: 'minutes', label: '회의록', hint: '회의 내용을 적어 둔 회의록' },
-  { k: 'result', label: '회의결과서', hint: '회의 후 부모님께 알린 결과 안내문' },
+  { k: 'result', label: '결과보고서 (회의결과 안내문)', hint: '회의 후 부모님께 알린 결과' },
+  { k: 'etc', label: '그 밖의 자료 (선택)', hint: '위원 위촉장·총회 자료·참석 서명지 등 참고할 문서' },
 ];
 
 export default function CommitteeTidy({ onBack }) {
@@ -130,23 +134,36 @@ export default function CommitteeTidy({ onBack }) {
     go({ v: 'pick' });
   }
 
-  // ── 파일 올리기 → 글자 뽑기 ──
-  async function pickSrc(kind, file) {
-    if (!file) return;
+  // ── 파일 올리기 → 글자 뽑기 (여러 개를 이어서 올릴 수 있다) ──
+  async function pickSrc(kind, fileArr) {
+    const files = Array.from(fileArr || []);
+    if (!files.length) return;
     setErr('');
     setBusy(kind);
     try {
-      const text = await extractTextFromFile(file);
-      if (!text.trim()) throw new Error('파일에서 글자를 찾지 못했습니다.');
+      let added = '';
+      const names = [];
+      for (const f of files) {
+        const text = await extractTextFromFile(f);
+        if (!text.trim()) throw new Error(`${f.name}에서 글자를 찾지 못했습니다.`);
+        added += `${added ? '\n\n' : ''}[${f.name}]\n${text}`;
+        names.push(f.name);
+      }
+      const before = meeting.src?.[kind] || '';
       upd({
-        src: { ...meeting.src, [kind]: text },
-        files: { ...meeting.files, [kind]: file.name },
+        src: { ...meeting.src, [kind]: before ? `${before}\n\n${added}` : added },
+        files: { ...meeting.files, [kind]: [...fileList(meeting.files?.[kind]), ...names] },
       });
     } catch (e) {
       setErr(e.message || '파일을 읽지 못했습니다.');
     } finally {
       setBusy('');
     }
+  }
+
+  // 그 칸에 올린 자료 전부 비우기
+  function clearSrc(kind) {
+    upd({ src: { ...meeting.src, [kind]: '' }, files: { ...meeting.files, [kind]: [] } });
   }
 
   async function pickRules(file) {
@@ -208,6 +225,7 @@ export default function CommitteeTidy({ onBack }) {
       noticeSrc: meeting.src.notice,
       minutesSrc: meeting.src.minutes,
       resultSrc: meeting.src.result,
+      etcSrc: meeting.src.etc,
       ...(again && meeting.analyzeFeedback
         ? { previous: JSON.stringify({ agenda: meeting.agenda, discussion: meeting.discussion }), feedback: meeting.analyzeFeedback }
         : {}),
@@ -310,25 +328,13 @@ export default function CommitteeTidy({ onBack }) {
         <>
           <div className="wiz-head">
             <div className="wiz-count">운영위원회 서류 정리</div>
-            <h1>가지고 있는 자료로 정리하기</h1>
+            <h1>차수별 서류 정리하기</h1>
           </div>
 
           <div className="card wiz-card">
             <p className="wiz-lead">
-              <b>25년 4분기 → 26년 1분기 → 2분기 → 3분기</b> 순서로 정리합니다.
-              차수마다 <b>공지문·회의록·회의결과서</b>를 올리면 AI가 읽어서 서식에 맞춰 정리해 드려요.
+              차수를 골라 <b>가지고 있는 자료를 올리면</b> AI가 읽어서 정리합니다. <b>1차부터</b> 차례로 하시면 됩니다.
             </p>
-            <p className="hint">
-              📌 <b>회칙과 운영위원 명단은 연도별로 한 번만</b> 올리면 됩니다.
-              2025년도 것은 <b>1차</b>에, 2026년도 것은 <b>2차</b>에 올리시면 전체 문서에도 그대로 한 번씩만 들어갑니다.
-            </p>
-            <p className="hint">🖼️ 운영위원회 자료에는 <b>사진이 필요하지 않습니다.</b></p>
-
-            <div className="field">
-              <label>어린이집 이름 <span className="req">*</span></label>
-              <input type="text" value={center} placeholder="예) 멘토어린이집" onChange={(e) => setCenter(e.target.value)} />
-              {!center && <p className="hint" style={{ color: '#b4661a' }}>⚠️ 이름을 넣으면 모든 문서 제목과 회칙에 자동으로 들어갑니다.</p>}
-            </div>
 
             <div className="q-grid">
               {MEETINGS.map((mi, i) => {
@@ -352,6 +358,17 @@ export default function CommitteeTidy({ onBack }) {
             <button className="next-doc" onClick={() => go({ v: 'save' })}>
               📚 전체 문서 다운받기 (1~4차 한 권으로) →
             </button>
+
+            <div className="field" style={{ marginTop: 18 }}>
+              <label>어린이집 이름 <span className="req">*</span></label>
+              <input type="text" value={center} placeholder="예) 멘토어린이집" onChange={(e) => setCenter(e.target.value)} />
+              {!center && <p className="hint" style={{ color: '#b4661a' }}>⚠️ 이름을 넣으면 모든 문서 제목과 회칙에 자동으로 들어갑니다.</p>}
+            </div>
+            <p className="hint">
+              📌 <b>회칙과 운영위원 명단은 연도별로 한 번만</b> 올리면 됩니다 —
+              2025년도는 <b>1차</b>, 2026년도는 <b>2차</b>에 올리면 전체 문서에도 한 번씩만 들어갑니다.
+            </p>
+            <p className="hint">🖼️ 운영위원회 자료에는 <b>사진이 필요하지 않습니다.</b></p>
             <div className="wiz-nav">
               <button className="ghost" onClick={restart}>처음부터 다시 하기</button>
             </div>
@@ -447,27 +464,35 @@ export default function CommitteeTidy({ onBack }) {
 
               <div className="tidy-sec">
                 <h4>{firstOfYear ? '③' : '①'} 이번 차수 회의 자료</h4>
-                {SRC_KINDS.map(({ k, label, hint }, n) => (
-                  <div className="tidy-src" key={k}>
-                    <div className="tidy-src-top">
-                      <b>{firstOfYear ? n + 3 : n + 1}. {label}</b>
-                      <span className="hint">{hint}</span>
+                {SRC_KINDS.map(({ k, label, hint }, n) => {
+                  const names = fileList(meeting.files?.[k]);
+                  return (
+                    <div className="tidy-src" key={k}>
+                      <div className="tidy-src-top">
+                        <b>{(firstOfYear ? n + 3 : n + 1)}. {label}</b>
+                        <span className="hint">{hint}</span>
+                      </div>
+                      <label className="file-btn">
+                        {busy === k ? '읽는 중…' : (names.length ? '📎 파일 더 올리기' : `📎 ${label} 올리기`)}
+                        <input type="file" accept=".hwpx,.docx,.pdf,.txt" multiple hidden disabled={!!busy}
+                          onChange={(e) => { pickSrc(k, e.target.files); e.target.value = ''; }} />
+                      </label>
+                      {names.length > 0 && (
+                        <>
+                          <span className="tidy-file">✔ {names.join(' · ')}</span>
+                          <button type="button" className="ghost sm" style={{ marginLeft: 8 }} onClick={() => clearSrc(k)}>비우기</button>
+                        </>
+                      )}
+                      {meeting.src?.[k] && (
+                        <details className="tidy-peek">
+                          <summary>올린 내용 보기 · 고치기 ({meeting.src[k].length.toLocaleString()}자)</summary>
+                          <textarea rows={8} value={meeting.src[k]}
+                            onChange={(e) => upd({ src: { ...meeting.src, [k]: e.target.value } })} />
+                        </details>
+                      )}
                     </div>
-                    <label className="file-btn">
-                      {busy === k ? '읽는 중…' : (meeting.files?.[k] ? '📎 다른 파일로 바꾸기' : `📎 ${label} 올리기`)}
-                      <input type="file" accept=".hwpx,.docx,.pdf,.txt" hidden disabled={!!busy}
-                        onChange={(e) => { pickSrc(k, e.target.files[0]); e.target.value = ''; }} />
-                    </label>
-                    {meeting.files?.[k] && <span className="tidy-file">✔ {meeting.files[k]}</span>}
-                    {meeting.src?.[k] && (
-                      <details className="tidy-peek">
-                        <summary>올린 내용 보기 · 고치기 ({meeting.src[k].length.toLocaleString()}자)</summary>
-                        <textarea rows={8} value={meeting.src[k]}
-                          onChange={(e) => upd({ src: { ...meeting.src, [k]: e.target.value } })} />
-                      </details>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="wiz-nav">

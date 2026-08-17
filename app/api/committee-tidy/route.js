@@ -94,7 +94,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { kind, center, quarter, when, noticeSrc, minutesSrc, resultSrc, rulesSrc, previous, feedback } = body;
+    const { kind, center, quarter, when, noticeSrc, minutesSrc, resultSrc, etcSrc, rulesSrc, previous, feedback } = body;
 
     let system;
     let user;
@@ -107,7 +107,7 @@ export async function POST(request) {
       system = RULES_SYSTEM;
       user = `[올린 회칙 원문 — 글자를 바꾸지 말고 줄만 정리해 주세요]\n${rulesSrc}`;
     } else if (kind === 'analyze') {
-      const has = [noticeSrc, minutesSrc, resultSrc].some((t) => String(t || '').trim());
+      const has = [noticeSrc, minutesSrc, resultSrc, etcSrc].some((t) => String(t || '').trim());
       if (!has) {
         return Response.json({ error: '분석할 자료가 없습니다. 공지문·회의록·회의결과서 중 하나라도 올려 주세요.' }, { status: 400 });
       }
@@ -123,7 +123,8 @@ export async function POST(request) {
         minutesSrc ? `[올린 자료 ② 회의록]\n${minutesSrc}` : '[올린 자료 ② 회의록] (없음)',
         '',
         resultSrc ? `[올린 자료 ③ 회의결과서]\n${resultSrc}` : '[올린 자료 ③ 회의결과서] (없음)',
-      ].filter((x) => x !== undefined).join('\n');
+        etcSrc ? `\n[올린 자료 ④ 그 밖의 참고 자료]\n${etcSrc}` : '',
+      ].filter((x) => x !== undefined && x !== '').join('\n');
       if (previous && feedback) {
         user += `\n\n[먼저 정리한 결과]\n${previous}\n\n[원장이 고쳐 달라고 한 부분]\n${feedback}\n\n위 요청을 반영해 전체를 다시 정리해 주세요.`;
       }

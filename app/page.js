@@ -37,7 +37,9 @@ export default function Home() {
       const v = ui.view;
       if (v?.type === 'doc' && v.docId) {
         const d = getDoc(v.docId);
-        if (d) setView({ type: 'doc', doc: d });
+        // 목록에서 감춘(예전 방식) 문서를 보고 있었으면 그 영역 목록으로 돌린다
+        if (d?.hidden) setView({ type: 'step', areaId: d.area });
+        else if (d) setView({ type: 'doc', doc: d });
       } else if (v?.type === 'step' && v.areaId) {
         setView({ type: 'step', areaId: v.areaId });
       } else if (v?.type === 'newdoc' && v.docId) {
