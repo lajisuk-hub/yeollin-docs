@@ -13,7 +13,7 @@ import { extractTextFromFile } from '../lib/extract';
 import {
   MEETINGS, MEMBER_ROLES, emptyData, emptyMeeting, suggestMembers,
   whenText, agendaList, meetingHasContent, meetingDone, membersOf, attendText,
-  defaultRulesText, defaultOrder, qLabel, isFirstOfYear, yearDocAt,
+  defaultRulesText, defaultOrder, qLabel, isFirstOfYear, yearDocAt, normalizeRules,
   buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
 } from '../lib/committeeDoc';
 import Block from './NewBlocks';
@@ -173,11 +173,12 @@ export default function CommitteeTidy({ onBack }) {
     try {
       const text = await extractTextFromFile(file);
       if (!text.trim()) throw new Error('파일에서 글자를 찾지 못했습니다.');
+      // PDF·한글에서 뽑으면 줄바꿈이 사라지므로 장·조·항 앞에서 줄을 나눠 준다 (글자는 그대로)
       setData((d) => ({
         ...d,
         rulesSrc: { ...d.rulesSrc, [year]: text },
         rulesFile: { ...d.rulesFile, [year]: file.name },
-        rules: { ...d.rules, [year]: { ...d.rules[year], text } },
+        rules: { ...d.rules, [year]: { ...d.rules[year], text: normalizeRules(text) } },
       }));
     } catch (e) {
       setErr(e.message || '파일을 읽지 못했습니다.');
@@ -185,6 +186,15 @@ export default function CommitteeTidy({ onBack }) {
       setBusy('');
     }
   }
+
+  // 회칙은 기본자료를 먼저 넣어 두고, 고치고 싶은 부분만 고치게 한다 (원장님 방식)
+  useEffect(() => {
+    if (!loadedRef.current) return;
+    if (view.v !== 'step' || view.s !== 'upload' || !isFirstOfYear(q)) return;
+    if ((data.rules?.[year]?.text || '').trim()) return;
+    setRules(year, { text: defaultRulesText(year, center || '○○어린이집') });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.v, view.s, q, year, center]);
 
   // ── AI 부르기 ──
   async function ask(kind, extra = {}) {
@@ -418,35 +428,37 @@ export default function CommitteeTidy({ onBack }) {
                 <>
                   <div className="tidy-sec">
                     <h4>① {year}년 운영위원회 회칙 <span className="tidy-once">연도별 1회</span></h4>
-                    <p className="hint">회칙은 법령에 따른 문서라 <b>AI가 내용을 지어내지 않습니다.</b> 올린 원문을 그대로 쓰고, 줄만 정리해 드립니다.</p>
-                    <label className="file-btn">
-                      {busy === 'rules' ? '읽는 중…' : (data.rulesFile?.[year] ? '📎 다른 파일로 바꾸기' : '📎 회칙 파일 올리기 (PDF·한글)')}
-                      <input type="file" accept=".hwpx,.docx,.pdf,.txt" hidden disabled={!!busy}
-                        onChange={(e) => { pickRules(e.target.files[0]); e.target.value = ''; }} />
-                    </label>
-                    {data.rulesFile?.[year] && <span className="tidy-file">✔ {data.rulesFile[year]}</span>}
+                    <p className="hint">
+                      <b>기본 회칙을 미리 넣어 두었습니다.</b> 위원 정수·임기 날짜·어린이집 이름은 <b>{year}년에 맞춰 자동</b>으로 들어갑니다.
+                      아래에서 <b>고치고 싶은 부분만</b> 고치세요.
+                    </p>
+                    <div className="wiz-result-top">
+                      <span>{year}년 회칙 전문</span>
+                      <span className="edit-badge">✏️ 고치고 싶은 부분만 고치세요</span>
+                    </div>
+                    <textarea rows={14} value={data.rules?.[year]?.text || ''} onChange={(e) => setRules(year, { text: e.target.value })} />
+                    <button type="button" className="ghost sm" onClick={() => setRules(year, { text: defaultRulesText(year, center || '○○어린이집') })}>
+                      기본 회칙으로 되돌리기
+                    </button>
 
-                    {(data.rules?.[year]?.text || '').trim() ? (
-                      <>
-                        <div className="wiz-result-top">
-                          <span>올린 회칙</span>
-                          <span className="edit-badge">✏️ 직접 고쳐도 됩니다</span>
-                        </div>
-                        <textarea rows={10} value={data.rules[year].text} onChange={(e) => setRules(year, { text: e.target.value })} />
-                        <button className="ghost" onClick={tidyRules} disabled={!!busy}>
-                          {busy === 'rules' ? '정리 중…' : '🧹 줄 정리하기 (내용은 그대로)'}
-                        </button>
-                        <button className="ghost" style={{ marginLeft: 8 }} onClick={() => setRules(year, { text: defaultRulesText(year, center || '○○어린이집') })}>
-                          기본 회칙 넣기
-                        </button>
-                      </>
-                    ) : (
-                      <p className="hint">※ 회칙 파일이 없으면 <b>기본 회칙</b>을 넣어 쓸 수도 있습니다.
-                        <button className="ghost sm" style={{ marginLeft: 8 }} onClick={() => setRules(year, { text: defaultRulesText(year, center || '○○어린이집') })}>
-                          기본 회칙 넣기
-                        </button>
+                    <details className="tidy-peek" style={{ marginTop: 10 }}>
+                      <summary>우리 원 회칙 파일이 따로 있으면 올리기 (선택)</summary>
+                      <p className="hint">
+                        회칙은 법령에 따른 문서라 <b>AI가 내용을 지어내지 않습니다.</b> 올린 원문을 그대로 쓰고 줄만 정리합니다.
+                        ⚠️ 올리면 위 기본 회칙을 <b>덮어씁니다.</b>
                       </p>
-                    )}
+                      <label className="file-btn">
+                        {busy === 'rules' ? '읽는 중…' : (data.rulesFile?.[year] ? '📎 다른 파일로 바꾸기' : '📎 회칙 파일 올리기 (PDF·한글)')}
+                        <input type="file" accept=".hwpx,.docx,.pdf,.txt" hidden disabled={!!busy}
+                          onChange={(e) => { pickRules(e.target.files[0]); e.target.value = ''; }} />
+                      </label>
+                      {data.rulesFile?.[year] && <span className="tidy-file">✔ {data.rulesFile[year]}</span>}
+                      {data.rulesFile?.[year] && (
+                        <button className="ghost sm" style={{ marginTop: 8 }} onClick={tidyRules} disabled={!!busy}>
+                          {busy === 'rules' ? '정리 중…' : '🧹 줄이 안 맞으면 AI로 줄 정리 (내용은 그대로)'}
+                        </button>
+                      )}
+                    </details>
                   </div>
 
                   <div className="tidy-sec">
