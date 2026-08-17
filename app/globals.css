@@ -845,6 +845,12 @@ button.ghost.sm { padding: 8px 12px; font-size: 13px; }
 .field textarea { resize: vertical; }
 .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(46,125,104,.12); }
 
+/* 시기(달력에서 월 고르기) 칸 */
+.month-field { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.month-field input[type="month"] { width: auto; min-width: 190px; cursor: pointer; }
+.month-view { font-size: 13.5px; color: var(--brand); }
+.month-hint { font-size: 13px; color: #8a938f; }
+
 button.primary { background: var(--brand); color: #fff; border: none; border-radius: 9px; padding: 11px 18px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
 button.primary:disabled { background: #b7c4c0; cursor: not-allowed; }
 button.ghost { background: #fff; color: var(--brand); border: 1px solid var(--brand); border-radius: 9px; padding: 11px 16px; font-size: 14px; cursor: pointer; font-family: inherit; }
@@ -1007,7 +1013,10 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   @page { size: A4; margin: 0; }
   body { background: #fff; }
   .wrap > *:not(.page-outer) { display: none !important; }
-  .page-outer { display: block; }
+  /* 화면용 아래 여백(80px)이 남아 있으면 종이 한 장을 넘겨 빈 페이지가 딸려 나온다.
+     좌우 여백은 그대로 두어야 다른 서류의 줄바꿈이 바뀌지 않는다. */
+  .wrap { padding-bottom: 0; }
+  .page-outer { display: block; margin: 0; }
   .doc-page { box-shadow: none; width: auto; min-height: 0; margin: 0; padding: 0 18mm; }
   /* 표의 머리글·바닥글은 쪽마다 반복되므로 모든 쪽에 같은 위아래 공백이 생긴다 */
   .doc-sheet-top { height: 18mm; }
@@ -1017,7 +1026,9 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   /* 문서 상자 안의 정보표는 줄 단위로 쪼개져도 되게 (통째로 밀려 앞 쪽이 비는 것 방지) */
   .box-kv { break-inside: auto; }
   .box-kv tr { break-inside: avoid; }
-  .doc-figure, .doc-photos-wrap, .doc-photo { break-inside: avoid; }
+  .doc-figure, .doc-photo { break-inside: avoid; }
+  /* 사진 묶음은 쪽을 넘겨 나뉘어도 되게 (통째로 밀려 앞 쪽이 텅 비는 것 방지) */
+  .doc-photos-wrap, .doc-photos { break-inside: auto; }
   .doc-attachrow, .doc-attachcol figure { break-inside: avoid; }
   .doc-figure img, .doc-attachcol img { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   /* 제목·소제목이 페이지 끝에 홀로 남지 않고 다음 내용과 붙게 */

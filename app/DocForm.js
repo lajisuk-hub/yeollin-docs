@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
+import { monthText, toMonthValue } from '../lib/docs';
 import PrintSheet from './PrintSheet';
 
 // 업로드 이미지를 화면/PDF에 알맞게 축소해 dataURL로 변환 (용량·속도 안정화)
@@ -94,7 +95,7 @@ async function extractTextFromFile(file) {
 }
 
 // 문서 블록 한 개를 화면/인쇄용으로 렌더
-function Block({ b }) {
+export function Block({ b }) {
   if (b.type === 'title') return <h1 className="doc-title">{b.text}</h1>;
   if (b.type === 'heading') return <h2 className="doc-heading">{b.text}</h2>;
   if (b.type === 'subheading') return <h3 className="doc-subheading">{b.text}</h3>;
@@ -154,6 +155,7 @@ function Block({ b }) {
   }
   if (b.type === 'sessionhead') return <h3 className="doc-sessionhead">{b.text}</h3>;
   if (b.type === 'pagebreak') return <div className="doc-pagebreak" />;
+  if (b.type === 'divider') return <div className="doc-divider" />;
   if (b.type === 'kv') {
     return (
       <table className="doc-kv">
@@ -212,6 +214,8 @@ export default function DocForm({ doc, onBack }) {
       if (savedData && savedData.values) {
         const v = { ...initial, ...savedData.values };
         if (!v.centerName && centerName && 'centerName' in initial) v.centerName = centerName;
+        // 예전에 글자로 적어 둔 시기는 달력 값으로 바꿔 준다
+        doc.fields.forEach((f) => { if (f.type === 'month' && f.key) v[f.key] = toMonthValue(v[f.key]); });
         setValues(v);
         if (savedData.ai) setAi(savedData.ai);
         setRestored(true);
@@ -397,6 +401,19 @@ export default function DocForm({ doc, onBack }) {
                       onChange={(e) => { (f.type === 'attach' ? onPickAttach : onPickPhotos)(f.key, e.target.files); e.target.value = ''; }} />
                   </label>
                 </div>
+              </div>
+            ) : f.type === 'month' ? (
+              // 시기처럼 "몇 년 몇 월"만 필요한 칸: 직접 타이핑하지 않고 달력에서 고른다
+              <div className="month-field">
+                <input
+                  type="month"
+                  value={/^\d{4}-\d{2}$/.test(values[f.key] || '') ? values[f.key] : ''}
+                  min="2024-01" max="2027-12"
+                  onChange={(e) => set(f.key, e.target.value)}
+                />
+                {monthText(values[f.key])
+                  ? <span className="month-view">→ <b>{monthText(values[f.key])}</b> 로 문서에 들어갑니다</span>
+                  : <span className="month-hint">칸을 누르면 달력이 열립니다</span>}
               </div>
             ) : (
               <input type={f.type === 'date' ? 'date' : 'text'} value={values[f.key]} placeholder={f.placeholder || ''} onChange={(e) => set(f.key, e.target.value)} />
