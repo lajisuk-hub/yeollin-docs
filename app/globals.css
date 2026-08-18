@@ -17,6 +17,25 @@ body {
 
 .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
 
+/* ── 글 쓰는 칸 기본 모양 (2026-08-18) ──
+   .field 로 감싸지 않고 그냥 놓은 textarea·입력칸이 브라우저 기본 폭(아주 좁게)으로
+   나와 옆이 텅 비어 보이던 문제. 화면 어디에 있든 가로를 꽉 채우게 한다.
+   ⚠️ 이 규칙은 파일 앞쪽에 두어야 한다 — 뒤에 있는 개별 규칙
+   (.tidy-peek textarea, .wiz-result textarea, .flow-row textarea 등)이 그대로 이겨야 하기 때문. */
+.wrap textarea {
+  width: 100%;
+  border: 1px solid #cdd6d3; border-radius: 9px; padding: 10px 12px;
+  font-size: 15px; font-family: inherit; line-height: 1.7;
+  background: #fff; color: var(--ink); resize: vertical;
+}
+.wrap textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(46,125,104,.12); }
+/* .field 밖에 바로 놓인 한 줄 입력칸도 같은 폭·같은 모양으로 */
+.card > input[type="text"], .tidy-sec > input[type="text"], .wiz-card > input[type="text"] {
+  width: 100%;
+  border: 1px solid #cdd6d3; border-radius: 9px; padding: 10px 12px;
+  font-size: 15px; font-family: inherit; background: #fff; color: var(--ink);
+}
+
 /* ── 홈 ── */
 .hero { text-align: center; padding: 28px 12px 12px; }
 .hero h1 { font-family: 'Gowun Batang', serif; font-size: 30px; color: var(--brand); letter-spacing: -0.5px; }

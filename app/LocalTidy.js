@@ -15,11 +15,13 @@ import {
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
 
-const KEY = 'local-tidy';
-const DOC_ID = 'local-tidy';
 const MAX_IMGS = 4;
 
-export default function LocalTidy({ onBack, onNextArea }) {
+// ①번 길(문서 새로 만들기)과 ②번 길(기존 서류 정리)에서 함께 쓴다.
+// 저장 자리는 서로 다르게 두어 두 길의 내용이 섞이지 않게 한다.
+export default function LocalTidy({ onBack, onNextArea, storeKey = 'local-tidy', docId = 'local-tidy' }) {
+  const KEY = storeKey;
+  const DOC_ID = docId;
   const [data, setData] = useState(emptyTidyData());
   const [basic, setBasic] = useState(null);
   const [busy, setBusy] = useState('');
@@ -44,7 +46,8 @@ export default function LocalTidy({ onBack, onNextArea }) {
       loadedRef.current = true;
     });
     return () => { alive = false; };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [KEY]);
 
   useEffect(() => {
     if (!loadedRef.current) return;
@@ -54,7 +57,8 @@ export default function LocalTidy({ onBack, onNextArea }) {
       setDocState(DOC_ID, done ? 'done' : (tidyHasContent(data) ? 'writing' : null));
     }, 600);
     return () => clearTimeout(timer.current);
-  }, [data, done, advice]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, done, advice, KEY, DOC_ID]);
 
   const center = basic?.centerName?.trim() || '';
   const year = data.year || '2026';
@@ -187,7 +191,7 @@ export default function LocalTidy({ onBack, onNextArea }) {
 
   return (
     <div className="wrap">
-      <button className="back" onClick={onBack}>← 단계 목록으로</button>
+      <button className="back" onClick={onBack}>← 목록으로</button>
 
       <div className="wiz-head">
         <div className="wiz-count">4단계 · 지자체 자체기준 (15점)</div>
@@ -365,7 +369,7 @@ export default function LocalTidy({ onBack, onNextArea }) {
 
         <div className="wiz-nav">
           <button className="ghost" onClick={restart}>처음부터 다시 하기</button>
-          <button className="ghost" onClick={onBack}>단계 목록으로</button>
+          <button className="ghost" onClick={onBack}>목록으로</button>
         </div>
       </div>
 

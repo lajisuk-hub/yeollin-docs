@@ -156,7 +156,7 @@ export default function Home() {
     // 묶음 화면에서 '고치러 가기'를 누르면 그 서류로 바로 이동
     const DOC_OF = {
       counsel: 'counsel-new', committee: 'committee-new', program: 'program-new',
-      survey: 'survey-new', visit: 'visit-new', link: 'link-new',
+      survey: 'survey-new', visit: 'visit-new', link: 'link-new', local: 'local-new',
     };
     return (
       <AllDocs
@@ -177,6 +177,8 @@ export default function Home() {
     if (view.doc.wizard === 'survey') return <SurveyWizard onBack={back} />;
     if (view.doc.wizard === 'link') return <LinkWizard onBack={back} />;
     if (view.doc.wizard === 'visit') return <VisitWizard onBack={back} />;
+    // 지자체는 두 길이 같은 화면을 쓰되 저장 자리를 나눈다
+    if (view.doc.wizard === 'local') return <LocalTidy onBack={back} storeKey="local-new" docId="local-new" />;
     if (view.doc.wizard) return <CounselWizard onBack={back} />;
     return <NewDocForm doc={view.doc} onBack={back} />;
   }
