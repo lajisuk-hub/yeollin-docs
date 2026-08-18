@@ -306,7 +306,9 @@ export default function CommitteeTidy({ onBack }) {
   const yearDoc = yearDocAt(q);
 
   // 위원 명단 표 (그 해)
-  const MemberTable = () => (
+  // 주의: 컴포넌트 태그로 쓰면 한 글자 칠 때마다 칸이 새로 만들어져 한글 입력이 깨진다.
+  //       반드시 {memberTable()} 처럼 함수로 불러 쓴다.
+  const memberTable = () => (
     <div className="tidy-members">
       {(data.members?.[year] || []).map((mem, i) => (
         <div className="tidy-member" key={i}>
@@ -464,7 +466,7 @@ export default function CommitteeTidy({ onBack }) {
                   <div className="tidy-sec">
                     <h4>② {year}년 운영위원 명단 <span className="tidy-once">연도별 1회</span></h4>
                     <p className="hint">회의록을 올려 <b>AI 분석</b>을 하면 명단이 자동으로 들어옵니다. 여기서 직접 고쳐도 됩니다.</p>
-                    <MemberTable />
+                    {memberTable()}
                   </div>
                 </>
               ) : (
@@ -630,7 +632,7 @@ export default function CommitteeTidy({ onBack }) {
                 )}
                 <details className="tidy-peek" style={{ marginTop: 10 }}>
                   <summary>명단 고치기 (이름·구분 바꾸기 · 위원 추가)</summary>
-                  <div style={{ marginTop: 8 }}><MemberTable /></div>
+                  <div style={{ marginTop: 8 }}>{memberTable()}</div>
                 </details>
               </div>
 

@@ -287,7 +287,9 @@ export default function SurveyTidy({ onBack }) {
   }
 
   // 올린 자료 칸 (공통)
-  const SrcBox = ({ k, label, hint, zip }) => {
+  // 주의: 컴포넌트 태그로 쓰면 한 글자 칠 때마다 칸이 새로 만들어져 한글 입력이 깨진다.
+  //       반드시 {srcBox({...})} 처럼 함수로 불러 쓴다.
+  const srcBox = ({ k, label, hint, zip }) => {
     const names = listOf(data.files[k]);
     const skip = listOf(data.skipped[k]);
     return (
@@ -366,7 +368,7 @@ export default function SurveyTidy({ onBack }) {
               조사 전에 부모님께 보낸 <b>가정통신문·키즈노트 공지</b> 등을 올려 주세요.
               한글(hwpx)·워드(docx)·PDF·텍스트를 올릴 수 있습니다.
             </p>
-            <SrcBox {...SRC_KINDS[0]} />
+            {srcBox(SRC_KINDS[0])}
           </div>
 
           <button className="primary" onClick={() => analyzeNotice(false)} disabled={!!busy || !data.src.notice?.trim()}>
@@ -492,7 +494,7 @@ export default function SurveyTidy({ onBack }) {
             그런 자료뿐이라면 다음 단계에서 <b>영역별 점수를 직접 넣으시면</b> 그래프와 결과서가 완성됩니다.
           </p>
 
-          <SrcBox {...SRC_KINDS[1]} zip />
+          {srcBox({ ...SRC_KINDS[1], zip: true })}
 
           <div className="field">
             <label>부모님이 주신 의견·특이사항 (선택) — 적어주시면 개선 의견에 반영합니다</label>
