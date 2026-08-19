@@ -4,13 +4,23 @@ import { useState, useEffect, useRef } from 'react';
 import { saveForm, loadForm, clearForm } from '../lib/store';
 import { fileToResizedDataURL } from '../lib/image';
 import {
-  MEETINGS, YEARS, MEMBER_ROLES, emptyData, emptyMeeting, suggestMembers,
+  MEMBER_ROLES, emptyData, emptyMeeting, suggestMembers,
   whenText, agendaList, meetingHasContent, meetingDone, membersOf, attendText,
   defaultRulesText, defaultOrder, defaultAgenda, defaultMemo, qLabel, isFirstOfYear, yearDocAt,
   buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
+  meetingsOf, yearsOf, applyPicks, DEFAULT_PICKS,
 } from '../lib/committeeDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
+import QuarterPicker from './QuarterPicker';
+
+// 고른 분기에 걸친 해마다 위원 명단 자리를 만들어 둔다
+const initMembers = (basic, years) => {
+  const base = suggestMembers(basic);
+  const out = {};
+  years.forEach((y) => { out[y] = base.map((x) => ({ ...x })); });
+  return out;
+};
 
 const KEY = 'committee-wizard';
 const MAX_PHOTOS = 4;
@@ -47,8 +57,7 @@ export default function CommitteeWizard({ onBack }) {
         setData({ ...emptyData(), ...saved });
         if (saved.view) setView(saved.view);
       } else {
-        const m = suggestMembers(b);
-        setData({ ...emptyData(), members: { 2025: m, 2026: m.map((x) => ({ ...x })) } });
+        setData({ ...emptyData(), members: initMembers(b, yearsOf({ picks: DEFAULT_PICKS })) });
       }
       loadedRef.current = true;
     });
@@ -63,10 +72,20 @@ export default function CommitteeWizard({ onBack }) {
   }, [data, view]);
 
   const center = basic?.centerName?.trim() || '';
-  const q = view.q ?? 0;
-  const info = MEETINGS[q];
+  const meetings = meetingsOf(data);          // 원장님이 고른 분기 → 차수 목록
+  const years = yearsOf(data);
+  const q = Math.min(view.q ?? 0, meetings.length - 1);
+  const info = meetings[q];
   const meeting = data.meetings[q] || emptyMeeting();
   const members = membersOf(data, q);
+
+  // 정리할 분기 바꾸기 — 이미 적어 둔 내용은 그 분기를 따라간다
+  function setPicks(picks) {
+    const gone = meetings.filter((mi) => !picks.includes(mi.key) && meetingHasContent(data.meetings[meetings.indexOf(mi)]));
+    if (gone.length && !window.confirm(`${gone.map((x) => x.quarter).join(', ')}에 적어 둔 내용이 지워집니다. 그래도 뺄까요?`)) return;
+    setData((d) => applyPicks(d, picks, emptyMeeting));
+    setView((v) => (v.v === 'step' ? { v: 'pick' } : v));
+  }
 
   const upd = (patch) => setData((d) => ({
     ...d,
@@ -83,8 +102,8 @@ export default function CommitteeWizard({ onBack }) {
   useEffect(() => {
     if (!loadedRef.current || view.v !== 'step') return;
     const m = data.meetings[q];
-    if (view.s === 'agenda' && !m?.agenda?.trim()) upd({ agenda: defaultAgenda(q) });
-    if (view.s === 'minutes' && !m?.memo?.trim()) upd({ memo: defaultMemo(q) });
+    if (view.s === 'agenda' && !m?.agenda?.trim()) upd({ agenda: defaultAgenda(q, meetings) });
+    if (view.s === 'minutes' && !m?.memo?.trim()) upd({ memo: defaultMemo(q, meetings) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view.v, view.s, q]);
 
@@ -105,7 +124,7 @@ export default function CommitteeWizard({ onBack }) {
         body: JSON.stringify({
           kind,
           center,
-          quarter: `${info.no} · ${qLabel(q)} (회계연도 ${info.year}년도)`,
+          quarter: `${info.no} · ${qLabel(q, meetings)} (회계연도 ${info.year}년도)`,
           when: whenText(meeting),
           place: meeting.place,
           attend: attendText(members, meeting),
@@ -194,7 +213,7 @@ export default function CommitteeWizard({ onBack }) {
       const src = only === null ? blocks : buildOneMeetingDoc(data, only, basic || {});
       const name = only === null
         ? `${center || '어린이집'}_운영위원회_운영결과.hwpx`
-        : `${center || '어린이집'}_운영위원회_${MEETINGS[only].no}_${MEETINGS[only].quarter}.hwpx`;
+        : `${center || '어린이집'}_운영위원회_${meetings[only].no}_${meetings[only].quarter}.hwpx`;
       const blob = await buildDocHwpx({ blocks: toHwpxBlocks(src), onProgress: setSaveMsg });
       downloadBlob(blob, name);
       setSaveMsg('한글 파일을 내려받았습니다. (다운로드 폴더를 확인하세요)');
@@ -209,8 +228,7 @@ export default function CommitteeWizard({ onBack }) {
   function restart() {
     if (!window.confirm('운영위원회 서류에 작성한 내용을 모두 지우고 처음부터 다시 할까요?')) return;
     clearForm(KEY);
-    const m = suggestMembers(basic);
-    setData({ ...emptyData(), members: { 2025: m, 2026: m.map((x) => ({ ...x })) } });
+    setData({ ...emptyData(), members: initMembers(basic, yearsOf({ picks: DEFAULT_PICKS })) });
     go({ v: 'basic' });
   }
 
@@ -232,28 +250,35 @@ export default function CommitteeWizard({ onBack }) {
           <div className="card wiz-card">
             <p className="wiz-lead">
               <b>{center || '우리 어린이집'}</b>의 운영위원회 서류를 만듭니다.<br />
-              심사는 <b>직전 1년</b>을 보므로 <b>2025년 4분기부터 2026년 3분기까지 네 번</b>을 1~4차로 정리합니다.
+              아래에서 <b>정리할 분기를 고르시면</b> 고른 순서대로 <b>{meetings.map((mi) => mi.no).join(' · ')}</b>가 만들어집니다.
             </p>
             <ul className="wiz-steps">
-              <li><b>기본사항</b> — 25·26년 운영위원 명단, 네 차례 회의 일정</li>
-              <li><b>회칙</b> — 25년·26년 회칙 확인</li>
-              <li><b>1차 → 2차 → 3차 → 4차</b> — 공지문 · 회의록 · 결과공지문 · 특징정리</li>
+              <li><b>기본사항</b> — 정리할 분기 고르기, {years.join('·')}년 운영위원 명단, 회의 일정</li>
+              <li><b>회칙</b> — {years.map((y) => `${y}년`).join(' · ')} 회칙 확인</li>
+              <li><b>{meetings.map((mi) => mi.no).join(' → ')}</b> — 공지문 · 회의록 · 결과공지문 · 특징정리</li>
             </ul>
             <p className="hint">중간에 창을 닫아도 <b>여기까지 한 내용은 저장</b>됩니다.</p>
             {!center && <p className="error">⚠️ 기본사항에 어린이집 이름이 없습니다. 먼저 등록하시면 문서에 자동으로 들어갑니다.</p>}
           </div>
 
-          {YEARS.map((y) => (
+          <QuarterPicker
+            picks={data.picks}
+            onChange={setPicks}
+            lead="우리 원이 서류로 정리해야 하는 분기를 눌러서 고르세요."
+          />
+
+          {years.map((y, n) => (
             <MemberCard key={y} year={y} members={data.members[y] || []}
               onChange={(list) => setMembers(y, list)}
-              onCopy={y === '2026' ? () => setMembers('2026', (data.members['2025'] || []).map((x) => ({ ...x }))) : null}
+              copyFrom={n > 0 ? years[n - 1] : null}
+              onCopy={n > 0 ? () => setMembers(y, (data.members[years[n - 1]] || []).map((x) => ({ ...x }))) : null}
             />
           ))}
 
           <div className="card wiz-card">
             <h2 className="wiz-sub">운영위원회 회의 일정</h2>
-            <p className="hint">네 번의 회의를 <b>언제 열었는지</b> 적어주세요. 분기는 어린이집 회계연도 기준입니다.</p>
-            {MEETINGS.map((mi, i) => (
+            <p className="hint">고르신 <b>{meetings.length}번</b>의 회의를 <b>언제 열었는지</b> 적어주세요. 분기는 어린이집 회계연도 기준입니다.</p>
+            {meetings.map((mi, i) => (
               <div className="sched-row" key={i}>
                 <div className="sched-tag">
                   <b>{mi.no}</b>
@@ -271,7 +296,7 @@ export default function CommitteeWizard({ onBack }) {
                 </div>
               </div>
             ))}
-            {!schedOk && <p className="hint" style={{ color: '#b8860b' }}>※ 네 번의 날짜를 모두 넣으면 다음으로 넘어갈 수 있습니다.</p>}
+            {!schedOk && <p className="hint" style={{ color: '#b8860b' }}>※ {meetings.length}번의 날짜를 모두 넣으면 다음으로 넘어갈 수 있습니다.</p>}
             <button className="next-doc" disabled={!schedOk} onClick={() => go({ v: 'rules' })}>
               회칙 확인하기 →
             </button>
@@ -290,7 +315,7 @@ export default function CommitteeWizard({ onBack }) {
 
           <div className="card wiz-card">
             <p className="wiz-lead">
-              원장님 회칙 서식을 <b>2025년판 · 2026년판</b>으로 각각 맞춰 두었습니다.
+              원장님 회칙 서식을 <b>{years.map((y) => `${y}년판`).join(' · ')}</b>으로 각각 맞춰 두었습니다.
               위원 정수와 임기 날짜는 <b>등록한 명단·연도에 맞춰 자동</b>으로 들어갑니다.
             </p>
             <p className="hint" style={{ color: '#b3620a' }}>
@@ -299,7 +324,7 @@ export default function CommitteeWizard({ onBack }) {
             </p>
           </div>
 
-          {YEARS.map((y) => (
+          {years.map((y) => (
             <div className="card wiz-card" key={y}>
               <h2 className="wiz-sub">{y}년 회칙</h2>
               <div className="wiz-result">
@@ -328,11 +353,12 @@ export default function CommitteeWizard({ onBack }) {
             <h1>차수별 서류 만들기</h1>
           </div>
           <button className="gate-back" onClick={() => go({ v: 'rules' })}>← 회칙 고치기</button>
+          <button className="gate-back" onClick={() => go({ v: 'basic' })}>← 정리할 분기 다시 고르기</button>
 
           <div className="card wiz-card">
             <p className="wiz-lead">차수를 골라 <b>공지문 → 회의록 → 결과공지문</b> 순서로 만듭니다. <b>1차부터</b> 차례로 하시면 됩니다.</p>
             <div className="q-grid">
-              {MEETINGS.map((mi, i) => {
+              {meetings.map((mi, i) => {
                 const m = data.meetings[i];
                 const done = meetingDone(m);
                 const some = meetingHasContent(m);
@@ -348,7 +374,7 @@ export default function CommitteeWizard({ onBack }) {
                 );
               })}
             </div>
-            <p className="hint">{doneCount}/4 차수를 작성했습니다.</p>
+            <p className="hint">{doneCount}/{meetings.length} 차수를 작성했습니다.</p>
             <button className="next-doc" onClick={() => go({ v: 'save' })}>
               📄 지금까지 만든 것으로 전체 문서 보기 · 저장하기 →
             </button>
@@ -589,10 +615,10 @@ export default function CommitteeWizard({ onBack }) {
               <div className="card wiz-card">
                 <p className="wiz-lead">
                   <b>{info.no} ({info.quarter}) 문서 정리본</b>입니다.
-                  아래에 {isFirstOfYear(q) && <><b>{info.year}년 구성계획 · 위원 명단 · 회칙</b>과 </>}
+                  아래에 {isFirstOfYear(q, meetings) && <><b>{info.year}년 구성계획 · 위원 명단 · 회칙</b>과 </>}
                   <b>개최 공지문 · 회의록 · 결과보고서</b>가 한 번에 들어 있습니다.
-                  {!isFirstOfYear(q) && (
-                    <><br />※ {info.year}년 구성계획·회칙은 <b>{yearDocAt(q).no}({yearDocAt(q).quarter})</b> 문서에 들어 있습니다. (연도별 1회)</>
+                  {!isFirstOfYear(q, meetings) && (
+                    <><br />※ {info.year}년 구성계획·회칙은 <b>{yearDocAt(q, meetings).no}({yearDocAt(q, meetings).quarter})</b> 문서에 들어 있습니다. (연도별 1회)</>
                   )}
                 </p>
 
@@ -618,7 +644,7 @@ export default function CommitteeWizard({ onBack }) {
                   </>
                 )}
                 <h3 className="wiz-sub">이 차수만 저장하기</h3>
-                <p className="hint">아래 정리본을 <b>{info.no}만 따로</b> 저장할 수 있습니다. 네 차수를 묶은 전체 문서는 차수 목록에서 저장하세요.</p>
+                <p className="hint">아래 정리본을 <b>{info.no}만 따로</b> 저장할 수 있습니다. 고른 차수를 모두 묶은 전체 문서는 차수 목록에서 저장하세요.</p>
                 <div className="wiz-saves">
                   <button className="primary" onClick={() => window.print()}>🖨️ {info.no}만 PDF로 저장</button>
                   <button className="ghost" onClick={() => saveHwpx(q)} disabled={busy}>📄 {info.no}만 한글(hwpx)로 저장</button>
@@ -628,13 +654,13 @@ export default function CommitteeWizard({ onBack }) {
                   PDF는 인쇄 대화상자가 열리면 <b>대상을 「PDF로 저장」</b>으로 고르고 저장 버튼을 누르시면 됩니다.
                 </p>
 
-                {q < 3 ? (
+                {q < meetings.length - 1 ? (
                   <button className="next-doc" onClick={() => go({ v: 'step', q: q + 1, s: 'agenda' })}>
-                    ✅ 확인했습니다 · {MEETINGS[q + 1].no} ({MEETINGS[q + 1].quarter}) 이어서 만들기 →
+                    ✅ 확인했습니다 · {meetings[q + 1].no} ({meetings[q + 1].quarter}) 이어서 만들기 →
                   </button>
                 ) : (
                   <button className="next-doc" onClick={() => go({ v: 'save' })}>
-                    ✅ 네 차수 모두 끝 · 전체 문서 저장하기 →
+                    ✅ {meetings.length}개 차수 모두 끝 · 전체 문서 저장하기 →
                   </button>
                 )}
                 <div className="wiz-nav">
@@ -662,8 +688,8 @@ export default function CommitteeWizard({ onBack }) {
             <h1>문서 저장하기</h1>
           </div>
           <div className="card wiz-card">
-            <p className="wiz-lead">회칙과 네 차수를 <b>한 문서</b>로 묶었습니다. <b>PDF</b>나 <b>한글(hwpx)</b>로 저장하세요.</p>
-            {doneCount < 4 && (
+            <p className="wiz-lead">회칙과 {meetings.length}개 차수를 <b>한 문서</b>로 묶었습니다. <b>PDF</b>나 <b>한글(hwpx)</b>로 저장하세요.</p>
+            {doneCount < meetings.length && (
               <p className="hint" style={{ color: '#b8860b' }}>
                 ※ 지금 {doneCount}개 차수만 작성되어 있습니다. 심사에는 <b>분기별 1회, 연 4회</b>가 필요하니 나머지도 꼭 채워주세요.
               </p>
@@ -699,7 +725,7 @@ export default function CommitteeWizard({ onBack }) {
 }
 
 // ── 해마다 다른 운영위원 명단 ──
-function MemberCard({ year, members, onChange, onCopy }) {
+function MemberCard({ year, members, onChange, onCopy, copyFrom }) {
   const set = (i, patch) => onChange(members.map((x, n) => (n === i ? { ...x, ...patch } : x)));
   const add = () => onChange([...members, { name: '', role: '학부모 대표' }]);
   const del = (i) => onChange(members.filter((_, n) => n !== i));
@@ -725,7 +751,7 @@ function MemberCard({ year, members, onChange, onCopy }) {
       </div>
       <div className="mem-tools">
         <button type="button" className="ghost sm" onClick={add}>＋ 위원 추가</button>
-        {onCopy && <button type="button" className="ghost sm" onClick={onCopy}>2025년 명단과 똑같이</button>}
+        {onCopy && <button type="button" className="ghost sm" onClick={onCopy}>{copyFrom}년 명단과 똑같이</button>}
       </div>
     </div>
   );

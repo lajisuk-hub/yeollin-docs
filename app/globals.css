@@ -1228,3 +1228,21 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
   .nb-wrap { margin: 6px 0 10px; }
   .doc-subheading { margin-top: 10px; }
 }
+
+/* ── 정리할 분기 고르기 (운영위원회) ── */
+.qp-years { display: flex; flex-direction: column; gap: 14px; margin: 12px 0 6px; }
+.qp-year > b { display: block; font-size: 14px; color: var(--brand); margin-bottom: 7px; }
+.qp-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.qp-btn {
+  flex: 1 1 130px; min-width: 130px; text-align: left; cursor: pointer; font-family: inherit;
+  background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 11px 13px;
+}
+.qp-btn:hover { border-color: var(--brand); }
+.qp-btn.on { border-color: var(--brand); background: #f3faf7; }
+.qp-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.qp-top b { font-size: 16px; color: var(--ink); }
+.qp-btn.on .qp-top b { color: var(--brand); }
+.qp-no { font-size: 12px; font-weight: 700; color: #fff; background: var(--brand); border-radius: 999px; padding: 3px 9px; }
+.qp-btn em { display: block; font-style: normal; font-size: 12.5px; color: #6d7a76; margin-top: 5px; }
+.qp-sum { font-size: 14.5px; color: #40514c; background: #f3f6f5; border-radius: 10px; padding: 10px 12px; margin: 12px 0 8px; }
+.qp-sum b { color: var(--brand); }

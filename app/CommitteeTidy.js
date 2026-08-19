@@ -15,9 +15,11 @@ import {
   whenText, agendaList, meetingHasContent, meetingDone, membersOf, attendText,
   defaultRulesText, defaultOrder, qLabel, isFirstOfYear, yearDocAt, normalizeRules,
   buildCommitteeDoc, buildOneMeetingDoc, toHwpxBlocks,
+  meetingsOf, yearsOf, applyPicks, makeMeetings, DEFAULT_PICKS,
 } from '../lib/committeeDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
+import QuarterPicker from './QuarterPicker';
 
 const KEY = 'committee-tidy';
 
@@ -40,6 +42,14 @@ const freshMeeting = () => ({
 
 // 예전에 저장된 것(파일 이름이 글자 하나였던 때)도 배열로 맞춘다
 const fileList = (v) => (Array.isArray(v) ? v : (v ? [v] : []));
+
+// 고른 분기에 걸친 해마다 위원 명단 자리를 만들어 둔다
+const initMembers = (basic, years) => {
+  const base = suggestMembers(basic);
+  const out = {};
+  years.forEach((y) => { out[y] = base.map((x) => ({ ...x })); });
+  return out;
+};
 
 const freshData = () => ({
   ...emptyData(),
@@ -77,12 +87,11 @@ export default function CommitteeTidy({ onBack }) {
         setData({
           ...freshData(),
           ...saved,
-          meetings: MEETINGS.map((_, i) => ({ ...freshMeeting(), ...(saved.meetings[i] || {}) })),
+          meetings: makeMeetings(saved.picks).map((_, i) => ({ ...freshMeeting(), ...(saved.meetings[i] || {}) })),
         });
         if (saved.view) setView(saved.view);
       } else {
-        const m = suggestMembers(b);
-        setData({ ...freshData(), members: { 2025: m, 2026: m.map((x) => ({ ...x })) } });
+        setData({ ...freshData(), members: initMembers(b, yearsOf({ picks: DEFAULT_PICKS })) });
       }
       loadedRef.current = true;
     });
@@ -106,12 +115,23 @@ export default function CommitteeTidy({ onBack }) {
       return nextBasic;
     });
   }
-  const q = view.q ?? 0;
-  const info = MEETINGS[q];
+  const meetings = meetingsOf(data);          // 원장님이 고른 분기 → 차수 목록
+  const years = yearsOf(data);
+  const q = Math.min(view.q ?? 0, meetings.length - 1);
+  const info = meetings[q];
   const meeting = data.meetings[q] || freshMeeting();
   const year = info.year;
   const members = membersOf(data, q);
   const stepIdx = STEPS.indexOf(view.s);
+
+  // 정리할 분기 바꾸기 — 이미 올린 자료는 그 분기를 따라간다
+  function setPicks(picks) {
+    const gone = meetings.filter((mi, i) => !picks.includes(mi.key)
+      && (meetingHasContent(data.meetings[i]) || SRC_KINDS.some(({ k }) => data.meetings[i]?.src?.[k])));
+    if (gone.length && !window.confirm(`${gone.map((x) => x.quarter).join(', ')}에 올린 자료가 지워집니다. 그래도 뺄까요?`)) return;
+    setData((d) => applyPicks(d, picks, freshMeeting));
+    setView((v) => (v.v === 'step' ? { v: 'pick' } : v));
+  }
 
   const go = (v) => { setErr(''); setSaveMsg(''); setView(v); window.scrollTo(0, 0); };
   const goStep = (s) => go({ v: 'step', q, s });
@@ -190,7 +210,7 @@ export default function CommitteeTidy({ onBack }) {
   // 회칙은 기본자료를 먼저 넣어 두고, 고치고 싶은 부분만 고치게 한다 (원장님 방식)
   useEffect(() => {
     if (!loadedRef.current) return;
-    if (view.v !== 'step' || view.s !== 'upload' || !isFirstOfYear(q)) return;
+    if (view.v !== 'step' || view.s !== 'upload' || !isFirstOfYear(q, meetings)) return;
     if ((data.rules?.[year]?.text || '').trim()) return;
     setRules(year, { text: defaultRulesText(year, center || '○○어린이집') });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,7 +227,7 @@ export default function CommitteeTidy({ onBack }) {
         body: JSON.stringify({
           kind,
           center,
-          quarter: `${info.no} · ${qLabel(q)} (회계연도 ${year}년도, 예상 시기 ${info.when})`,
+          quarter: `${info.no} · ${qLabel(q, meetings)} (회계연도 ${year}년도, 예상 시기 ${info.when})`,
           when: whenText(meeting),
           ...extra,
         }),
@@ -289,7 +309,7 @@ export default function CommitteeTidy({ onBack }) {
       const src = only === null ? buildCommitteeDoc(data, basic || {}) : buildOneMeetingDoc(data, only, basic || {});
       const name = only === null
         ? `${center || '어린이집'}_운영위원회_서류정리.hwpx`
-        : `${center || '어린이집'}_운영위원회_${MEETINGS[only].no}_${MEETINGS[only].quarter}.hwpx`;
+        : `${center || '어린이집'}_운영위원회_${meetings[only].no}_${meetings[only].quarter}.hwpx`;
       const blob = await buildDocHwpx({ blocks: toHwpxBlocks(src), onProgress: setSaveMsg });
       downloadBlob(blob, name);
       setSaveMsg('한글 파일을 내려받았습니다. (다운로드 폴더를 확인하세요)');
@@ -302,8 +322,8 @@ export default function CommitteeTidy({ onBack }) {
   }
 
   const hasAnySrc = SRC_KINDS.some(({ k }) => meeting.src?.[k]?.trim());
-  const firstOfYear = isFirstOfYear(q);
-  const yearDoc = yearDocAt(q);
+  const firstOfYear = isFirstOfYear(q, meetings);
+  const yearDoc = yearDocAt(q, meetings);
 
   // 위원 명단 표 (그 해)
   // 주의: 컴포넌트 태그로 쓰면 한 글자 칠 때마다 칸이 새로 만들어져 한글 입력이 깨진다.
@@ -343,13 +363,19 @@ export default function CommitteeTidy({ onBack }) {
             <h1>차수별 서류 정리하기</h1>
           </div>
 
+          <QuarterPicker
+            picks={data.picks}
+            onChange={setPicks}
+            lead="가지고 있는 자료가 어느 분기 것인지 눌러서 고르세요."
+          />
+
           <div className="card wiz-card">
             <p className="wiz-lead">
               차수를 골라 <b>가지고 있는 자료를 올리면</b> AI가 읽어서 정리합니다. <b>1차부터</b> 차례로 하시면 됩니다.
             </p>
 
             <div className="q-grid">
-              {MEETINGS.map((mi, i) => {
+              {meetings.map((mi, i) => {
                 const m = data.meetings[i];
                 const ok = meetingDone(m);
                 const some = meetingHasContent(m) || SRC_KINDS.some(({ k }) => m.src?.[k]);
@@ -366,9 +392,9 @@ export default function CommitteeTidy({ onBack }) {
               })}
             </div>
 
-            <p className="hint">{doneCount}/4 차수를 정리했습니다.</p>
+            <p className="hint">{doneCount}/{meetings.length} 차수를 정리했습니다.</p>
             <button className="next-doc" onClick={() => go({ v: 'save' })}>
-              📚 전체 문서 다운받기 (1~4차 한 권으로) →
+              📚 전체 문서 다운받기 (1~{meetings.length}차 한 권으로) →
             </button>
 
             <div className="field" style={{ marginTop: 18 }}>
@@ -378,7 +404,10 @@ export default function CommitteeTidy({ onBack }) {
             </div>
             <p className="hint">
               📌 <b>회칙과 운영위원 명단은 연도별로 한 번만</b> 올리면 됩니다 —
-              2025년도는 <b>1차</b>, 2026년도는 <b>2차</b>에 올리면 전체 문서에도 한 번씩만 들어갑니다.
+              {years.map((y) => {
+                const first = meetings.find((mi) => mi.year === y);
+                return ` ${y}년도는 ${first.no}`;
+              }).join(',')}에 올리면 전체 문서에도 한 번씩만 들어갑니다.
             </p>
             <p className="hint">🖼️ 운영위원회 자료에는 <b>사진이 필요하지 않습니다.</b></p>
             <div className="wiz-nav">
@@ -720,13 +749,13 @@ export default function CommitteeTidy({ onBack }) {
                 </div>
                 {saveMsg && <p className="hint">{saveMsg}</p>}
 
-                {q < MEETINGS.length - 1 ? (
+                {q < meetings.length - 1 ? (
                   <button className="next-doc" onClick={() => go({ v: 'step', q: q + 1, s: 'upload' })}>
-                    ✅ 확인했습니다 · {MEETINGS[q + 1].no}({MEETINGS[q + 1].quarter}) 이어서 정리하기 →
+                    ✅ 확인했습니다 · {meetings[q + 1].no}({meetings[q + 1].quarter}) 이어서 정리하기 →
                   </button>
                 ) : (
                   <button className="next-doc" onClick={() => go({ v: 'save' })}>
-                    📚 네 차수 다 됐습니다 · 전체 문서 다운받기 →
+                    📚 {meetings.length}개 차수 다 됐습니다 · 전체 문서 다운받기 →
                   </button>
                 )}
                 <div className="wiz-nav">
@@ -757,15 +786,19 @@ export default function CommitteeTidy({ onBack }) {
 
           <div className="card wiz-card">
             <p className="wiz-lead">
-              정리한 차수를 <b>1차 → 2차 → 3차 → 4차</b> 순서로 한 권으로 묶었습니다.
+              정리한 차수를 <b>{meetings.map((mi) => mi.no).join(' → ')}</b> 순서로 한 권으로 묶었습니다.
             </p>
             <p className="hint">
-              📌 <b>회칙과 운영위원 명단</b>은 <b>1차(2025년도)</b>와 <b>2차(2026년도)</b> 문서에만 한 번씩 들어갑니다.
-              3·4차에는 &quot;{'앞 차수 문서에 있습니다'}&quot;라는 안내만 들어갑니다.
+              📌 <b>회칙과 운영위원 명단</b>은
+              {years.map((y) => {
+                const first = meetings.find((mi) => mi.year === y);
+                return ` ${first.no}(${y}년도)`;
+              }).join(',')} 문서에만 한 번씩 들어갑니다.
+              나머지 차수에는 &quot;{'앞 차수 문서에 있습니다'}&quot;라는 안내만 들어갑니다.
             </p>
-            {doneCount < 4 && (
+            {doneCount < meetings.length && (
               <p className="hint" style={{ color: '#b4661a' }}>
-                ⚠️ 아직 {4 - doneCount}개 차수가 덜 정리됐습니다. 지금까지 정리한 것만으로도 저장할 수 있어요.
+                ⚠️ 아직 {meetings.length - doneCount}개 차수가 덜 정리됐습니다. 지금까지 정리한 것만으로도 저장할 수 있어요.
               </p>
             )}
             {err && <p className="error">⚠️ {err}</p>}
