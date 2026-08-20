@@ -7,7 +7,7 @@ import { saveForm, loadForm, clearForm } from '../lib/store';
 // 어린이집 → 교직원 → 반 → 원아 순서로 하나씩 펼쳐서 채우는 방식(연계 입력).
 export const BASIC_KEY = 'basic-info';
 
-const ROLES = ['원장', '원감', '주임교사', '담임교사', '보조교사', '특수교사', '간호사', '영양사', '조리원', '사무원', '기타'];
+const ROLES = ['원장', '원감', '주임교사', '담임교사', '연장반교사', '보조교사', '특수교사', '간호사', '영양사', '조리원', '사무원', '기타'];
 const AGES = ['만 0세', '만 1세', '만 2세', '만 3세', '만 4세', '만 5세', '혼합연령', '장애아 통합'];
 
 const uid = () => Math.random().toString(36).slice(2, 9);
