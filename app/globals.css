@@ -1246,3 +1246,35 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .qp-btn em { display: block; font-style: normal; font-size: 12.5px; color: #6d7a76; margin-top: 5px; }
 .qp-sum { font-size: 14.5px; color: #40514c; background: #f3f6f5; border-radius: 10px; padding: 10px 12px; margin: 12px 0 8px; }
 .qp-sum b { color: var(--brand); }
+
+/* ── 어디서나 뜨는 문의하기 단추 (2026-08-19) ──
+   문서를 만들다 막혔을 때 바로 카카오톡으로 물어볼 수 있게. 인쇄에는 나오지 않는다. */
+.ask-fab {
+  position: fixed; right: 16px; bottom: 18px; z-index: 200;
+  background: #fee500; color: #3c1e1e; border: none; border-radius: 999px;
+  padding: 13px 19px; font-size: 15.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.ask-fab:hover { filter: brightness(.97); }
+.ask-fab:focus-visible { outline: 3px solid #2e7d68; outline-offset: 2px; }
+
+.ask-back {
+  position: fixed; inset: 0; z-index: 210; background: rgba(20,30,28,.5);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.ask-pop { background: #fff; border-radius: 18px; padding: 24px 22px; max-width: 420px; width: 100%; text-align: center; }
+.ask-pop h3 { font-family: 'Gowun Batang', serif; font-size: 21px; color: var(--brand); }
+.ask-pop p { font-size: 15px; color: #4a5754; margin: 10px 0 18px; white-space: pre-wrap; }
+.ask-kakao {
+  display: block; background: #fee500; color: #3c1e1e; text-decoration: none;
+  border-radius: 12px; padding: 15px; font-size: 17px; font-weight: 700;
+}
+.ask-close {
+  margin-top: 10px; width: 100%; background: #fff; color: #6d7a76;
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 15px;
+  font-family: inherit; cursor: pointer;
+}
+
+@media print {
+  .ask-fab, .ask-back { display: none !important; }
+}

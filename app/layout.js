@@ -1,4 +1,5 @@
 import './globals.css';
+import AskFab from './AskFab';
 
 export const metadata = {
   title: '열린어린이집 문서 도우미',
@@ -16,7 +17,10 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AskFab />
+      </body>
     </html>
   );
 }
