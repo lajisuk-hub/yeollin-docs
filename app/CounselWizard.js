@@ -522,6 +522,15 @@ export default function CounselWizard({ onBack }) {
       {cur.id === 'result' && (
         <div className="card wiz-card">
           <p className="wiz-lead">이제 <b>실제로 하신 상담 내용</b>을 정리하겠습니다.</p>
+          <div className="must-keep">
+            <span className="mk-icon">⚠️</span>
+            <span className="mk-body">
+              <span className="mk-title">꼭 확인하세요</span>
+              학부모상담 자료의 <b>분석</b>은 이렇게 정리해 드릴 수 있지만,
+              실제 열린어린이집 <b>현장실사에서는 학부모상담의 개별 자료를 인원수별로</b> 확인하고 있습니다.
+              상담일지·상담기록 같은 <b>개별 자료를 꼭 갖춰</b> 두시기 바랍니다.
+            </span>
+          </div>
           <div className="field">
             <label>{r + 1}회차 상담을 받은 원아는 몇 명인가요? <span className="req">*</span></label>
             <input type="text" value={round.count} onChange={(e) => upd({ count: e.target.value })} placeholder="예) 40명 중 38명" />
@@ -621,6 +630,16 @@ export default function CounselWizard({ onBack }) {
         <>
           <div className="card wiz-card">
             <p className="wiz-lead">1·2회차를 한 문서로 묶었습니다. <b>PDF</b>나 <b>한글(hwpx)</b>로 저장하세요.</p>
+          <div className="must-keep">
+            <span className="mk-icon">⚠️</span>
+            <span className="mk-body">
+              <span className="mk-title">꼭 확인하세요</span>
+              학부모상담 자료의 <b>분석</b>은 이렇게 정리해 드릴 수 있지만,
+              실제 열린어린이집 <b>현장실사에서는 학부모상담의 개별 자료를 인원수별로</b> 확인하고 있습니다.
+              상담일지·상담기록 같은 <b>개별 자료를 꼭 갖춰</b> 두시기 바랍니다.
+            </span>
+          </div>
+
             {!roundHasContent(data.rounds[1]) && (
               <p className="hint" style={{ color: '#b8860b' }}>※ 2회차 내용이 비어 있습니다. 심사에는 연 2회가 필요하니 나중에 꼭 채워주세요.</p>
             )}
