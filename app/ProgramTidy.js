@@ -18,7 +18,7 @@ import {
   emptyTidyData, emptyTidyMonth, tidyMonthOf, themeOf,
   monthTidyHasContent, monthTidyDone, photosShort,
   chosenTidyMonths, rangeTidyMonths,
-  YEAR_OPTIONS, switchTidyYear, tidyYearsWithContent, tidyYearCount,
+  tidyYearOptions, switchTidyYear, tidyYearsWithContent, tidyYearCount,
   buildOneMonthTidy, buildProgramTidyDoc,
   RANGES, rangeInfo, rangeTitle, monthList, monthLabel, whenText, flowList, attendText,
   toHwpxBlocks,
@@ -457,7 +457,7 @@ export default function ProgramTidy({ onBack }) {
             <div className="field">
               <label>학년도 (3월에 시작하는 해)</label>
               <div className="year-tabs">
-                {YEAR_OPTIONS.map((y) => {
+                {tidyYearOptions(data).map((y) => {
                   const n = tidyYearCount(data, y);
                   const has = tidyYearsWithContent(data).includes(y);
                   return (
@@ -473,10 +473,10 @@ export default function ProgramTidy({ onBack }) {
                 💡 <b>작년 자료를 먼저 만들고, 학년도를 바꿔 올해 자료를 이어서 만드세요.</b> 해마다 따로 보관되며, 학년도를 바꿔도 앞서 만든 자료는 지워지지 않습니다.
                 「전체 문서 만들기」에는 <b>자료가 있는 학년도가 모두</b> 앞선 해부터 차례로 들어갑니다.
               </p>
-              {startedCount > 0 && YEAR_OPTIONS.some((y) => y !== year && !tidyYearsWithContent(data).includes(y)) && (
+              {startedCount > 0 && tidyYearOptions(data).some((y) => y !== year && !tidyYearsWithContent(data).includes(y)) && (
                 <p className="hint">
                   학년도를 잘못 골랐다면:{' '}
-                  {YEAR_OPTIONS.filter((y) => y !== year && !tidyYearsWithContent(data).includes(y)).map((y) => (
+                  {tidyYearOptions(data).filter((y) => y !== year && !tidyYearsWithContent(data).includes(y)).map((y) => (
                     <button key={y} type="button" className="linkish" onClick={() => moveYear(y)}>지금 자료를 {y}학년도로 옮기기</button>
                   ))}
                 </p>
