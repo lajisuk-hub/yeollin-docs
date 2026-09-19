@@ -11,6 +11,7 @@ import {
   monthHasContent, monthDone, noticeDone, chosenMonths, noticeBlock, upgradeMonth,
   RANGES, rangeInfo, rangeMonths, rangeTitle,
   buildProgramDoc, buildOneMonthDoc, toHwpxBlocks,
+  programYearOptions, switchProgramYear, programYearsWithContent, programYearCount,
 } from '../lib/programDoc';
 import Block from './NewBlocks';
 import PrintSheet from './PrintSheet';
@@ -63,6 +64,34 @@ export default function ProgramWizard({ onBack }) {
 
   const center = basic?.centerName?.trim() || '';
   const months = monthList(data.year);
+
+  // 학년도 고르기 — 해마다 연간계획·달 자료를 따로 보관한다 (작년 것을 만든 뒤 올해 것을 이어서. 2026-09-19)
+  // ⚠️ 렌더 안에서 컴포넌트로 만들지 말고 함수로 부를 것 (입력칸 포커스가 풀리는 문제 예방)
+  const yearTabs = () => {
+    const withContent = programYearsWithContent(data);
+    return (
+      <div className="field">
+        <label>학년도 (3월에 시작하는 해)</label>
+        <div className="year-tabs">
+          {programYearOptions(data).map((y) => {
+            const n = programYearCount(data, y);
+            return (
+              <button key={y} type="button" className={`year-tab ${y === String(data.year) ? 'on' : ''}`}
+                onClick={() => setData((d) => switchProgramYear(d, y))}>
+                <b>{y}학년도</b>
+                <small>{y}년 3월 ~ {Number(y) + 1}년 2월</small>
+                <em>{n ? `자료 ${n}달` : (withContent.includes(y) ? '연간계획만' : '아직 없음')}</em>
+              </button>
+            );
+          })}
+        </div>
+        <p className="hint">
+          💡 <b>작년 자료를 먼저 만들고, 학년도를 바꿔 올해 자료를 이어서 만드세요.</b> 해마다 따로 보관되며, 학년도를 바꿔도 앞서 만든 자료는 지워지지 않습니다.
+          전체 문서에는 <b>자료가 있는 학년도가 모두</b> 앞선 해부터 차례로 들어갑니다.
+        </p>
+      </div>
+    );
+  };
   const q = view.q ?? 0;
   const mi = months[q] || months[0];
   const cur = monthOf(data, mi.key);
@@ -363,11 +392,7 @@ export default function ProgramWizard({ onBack }) {
                   onChange={(e) => setData((d) => ({ ...d, targetEtc: e.target.value }))} />
               </div>
             )}
-            <div className="field">
-              <label>연간계획 시작 연도 (어린이집 학년도 기준 3월 시작)</label>
-              <input type="text" value={data.year} style={{ maxWidth: 160 }}
-                onChange={(e) => setData((d) => ({ ...d, year: e.target.value }))} />
-            </div>
+            {yearTabs()}
             <button className="next-doc" disabled={!(data.ages || []).length || !(data.targets || []).length}
               onClick={() => go({ v: 'plan' })}>
               연간계획 만들기 →
@@ -389,6 +414,7 @@ export default function ProgramWizard({ onBack }) {
           <button className="gate-back" onClick={() => go({ v: 'basic' })}>← 기본사항 고치기</button>
 
           <div className="card wiz-card">
+            {yearTabs()}
             <p className="wiz-lead">
               <b>{data.year}년 3월부터 {Number(data.year) + 1}년 2월까지</b> 열두 달을 <b>월 1회</b>로 계획합니다.<br />
               AI가 만들어 드리면 <b>표에서 바로 고치실 수 있습니다.</b>
@@ -446,6 +472,10 @@ export default function ProgramWizard({ onBack }) {
           <button className="gate-back" onClick={() => go({ v: 'plan' })}>← 연간계획 고치기</button>
 
           <div className="card wiz-card">
+            <p className="hint" style={{ marginBottom: 8 }}>
+              지금 만드는 해 : <b>{data.year}학년도</b> ({data.year}년 3월 ~ {Number(data.year) + 1}년 2월)
+              {' · '}<button type="button" className="linkish" onClick={() => go({ v: 'plan' })}>다른 학년도 자료 만들기</button>
+            </p>
             <p className="wiz-lead">
               달을 골라 <b>공지문 → 실시기록</b> 순서로 만듭니다. <b>3월부터</b> 차례로 하시면 됩니다.<br />
               열두 달을 다 하지 않아도 됩니다. 마지막에 <b>분기별 1회만 낼지</b> 고르실 수 있습니다.
