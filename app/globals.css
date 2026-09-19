@@ -1090,6 +1090,8 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .doc-attachcol img { max-width: 100%; max-height: 88mm; border: 1px solid #ddd; }
 .doc-attachcol .doc-img-empty { margin: 4px 0; }
 /* 벽에 붙이는 게시용 — 한 장을 A4에 꽉 차게 (참관 안내문·신청서 양식만 따로 저장할 때) */
+/* 수료증·공문 증빙 — 공지문 그림 정도로 크게 (세로 한 장이 쪽의 대부분을 차지) */
+.doc-pages.large .doc-figure img { max-height: 190mm; }
 .doc-pages.big .doc-pages-title { display: none; }
 .doc-pages.big .doc-figure { margin: 0; }
 .doc-pages.big .doc-figure img { max-height: none; width: 100%; border: 0; }

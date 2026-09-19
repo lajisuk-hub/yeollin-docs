@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
+import { normalizeRules } from '../lib/committeeDoc';
 
 // 원장님이 입력한 줄바꿈을 그대로 살려서 보여준다 (빈 줄은 한 칸 띄우기)
 function Lines({ text }) {
@@ -279,13 +280,14 @@ function NoticePoster({ b }) {
 // '서류 새로 만들기' 쪽 미리보기 블록 렌더러 (기존 분석·정리 화면과 별개)
 // ── 회칙: 장 → 조 → 항 → 호 단계마다 글씨 크기를 달리해 읽기 쉽게 ──
 function RulesDoc({ text }) {
-  const lines = String(text || '').split('\n');
+  // 저장된 글이 예전 방식(한 덩어리)이어도 그리기 직전에 줄을 되살린다 (글자는 안 바꿈)
+  const lines = normalizeRules(text).split('\n');
   return (
     <div className="rules-doc">
       {lines.map((raw, i) => {
         const t = raw.trim();
         if (!t) return <div className="rd-gap" key={i} />;
-        if (/^제\s*\d+\s*장/.test(t) || t === '부칙') return <h4 className="rd-chapter" key={i}>{t}</h4>;
+        if (/^제\s*\d+\s*장/.test(t) || /^부\s*칙$/.test(t)) return <h4 className="rd-chapter" key={i}>{t}</h4>;
         if (/^제\s*\d+\s*조/.test(t)) {
           const m = t.match(/^(제\s*\d+\s*조\s*\([^)]*\))\s*([\s\S]*)$/);
           return (
@@ -296,8 +298,8 @@ function RulesDoc({ text }) {
         }
         if (/^[①-⑳]/.test(t)) return <p className="rd-clause" key={i}>{t}</p>;
         if (/^\d+\./.test(t)) return <p className="rd-item" key={i}>{t}</p>;
-        // 맨 위 제목줄과 제정일
-        if (i === 0) return <p className="rd-title" key={i}>{t}</p>;
+        // 맨 위 제목줄과 제정일 — 첫 줄이 긴 글이면(줄이 안 나뉜 자료) 제목이 아니라 본문으로
+        if (i === 0 && t.length <= 40) return <p className="rd-title" key={i}>{t}</p>;
         if (/^제정/.test(t)) return <p className="rd-date" key={i}>{t}</p>;
         return <p className="rd-body" key={i}>{t}</p>;
       })}
@@ -591,7 +593,7 @@ export default function Block({ b }) {
     const items = (Array.isArray(b.items) ? b.items : []).filter(Boolean);
     if (!items.length) return <p className="doc-img-empty">{b.emptyText || '첨부된 자료가 없습니다.'}</p>;
     return (
-      <div className={`doc-pages ${b.big ? 'big' : ''}`}>
+      <div className={`doc-pages ${b.big ? 'big' : ''} ${b.large ? 'large' : ''}`}>
         {b.title && <div className="doc-pages-title">{b.title}</div>}
         {items.map((src, i) => <figure key={i} className="doc-figure"><img src={src} alt="" /></figure>)}
       </div>

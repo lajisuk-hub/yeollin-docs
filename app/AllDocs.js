@@ -199,7 +199,7 @@ export default function AllDocs({ onBack, onOpenDoc }) {
         {err && <p className="error">⚠️ {err}</p>}
         <p className="hint">
           PDF는 인쇄 대화상자에서 <b>대상을 PDF로 저장</b>으로 고르시면 됩니다.<br />
-          한글 파일에는 <b>글자와 표만</b> 들어갑니다. 사진·그래프·서식 그림은 PDF를 쓰세요.
+          한글 파일에도 <b>표·사진·쪽 나눔</b>이 들어갑니다. 다만 서식 그림 위에 글을 얹은 안내문과 그래프는 글과 표로 바뀌므로, 모양 그대로가 필요하면 PDF를 쓰세요.
         </p>
       </div>
 
