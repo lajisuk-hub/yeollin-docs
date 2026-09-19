@@ -702,7 +702,7 @@ export default function CommitteeWizard({ onBack }) {
             {err && <p className="error">⚠️ {err}</p>}
             <p className="hint">
               PDF는 인쇄 대화상자에서 <b>대상을 PDF로 저장</b>으로 고르시면 됩니다.<br />
-              한글 파일에도 <b>표와 사진</b>이 들어갑니다. 모양이 조금 다르면 PDF를 쓰세요.
+              한글 파일에는 <b>글은 고칠 수 있는 글자로</b>, 표·서식·그래프·사진은 <b>PDF와 같은 모양의 그림</b>으로 들어갑니다. 표 안의 글을 고치려면 여기서 고친 뒤 다시 저장하세요.
             </p>
             <div className="wiz-nav">
               <button className="ghost" onClick={() => go({ v: 'pick' })}>← 차수 목록으로</button>

@@ -290,7 +290,7 @@ export default function LinkTidy({ onBack, onNextArea }) {
       const { buildDocHwpx, downloadBlob } = await import('../lib/hwpx');
       const blob = await buildDocHwpx({ blocks: toHwpxBlocks(blocks), onProgress: setSaveMsg });
       downloadBlob(blob, `${center || '어린이집'}_${year}_연계협력활동.hwpx`);
-      setSaveMsg('한글 파일을 내려받았습니다. (사진은 PDF로 저장해 주세요)');
+      setSaveMsg('한글 파일을 내려받았습니다. (표·사진은 PDF와 같은 모양의 그림으로 들어갑니다)');
     } catch (e) {
       setErr(e.message || '한글 파일을 만들지 못했습니다');
       setSaveMsg('');

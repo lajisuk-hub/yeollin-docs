@@ -1299,3 +1299,6 @@ button.ghost:disabled { color: #b7c4c0; border-color: #d6ddda; cursor: not-allow
 .must-keep .mk-title { display: block; font-weight: 800; color: #a8560b; margin-bottom: 4px; font-size: 15.5px; }
 .must-keep b { color: #8c3b00; border-bottom: 2px solid #f0b866; padding-bottom: 1px; }
 @media print { .must-keep { display: none !important; } }
+
+/* 한글 저장용 임시 요소는 인쇄에 나오지 않게 */
+@media print { .hwpx-save-toast, .hwpx-snap-host { display: none !important; } }

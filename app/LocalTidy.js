@@ -180,7 +180,7 @@ export default function LocalTidy({ onBack, onNextArea, storeKey = 'local-tidy',
       const { buildDocHwpx, downloadBlob } = await import('../lib/hwpx');
       const blob = await buildDocHwpx({ blocks: toHwpxBlocks(blocks), onProgress: setSaveMsg });
       downloadBlob(blob, `${center || '어린이집'}_${year}_지자체자체기준.hwpx`);
-      setSaveMsg('한글 파일을 내려받았습니다. (증빙 사진은 PDF로 저장해 주세요)');
+      setSaveMsg('한글 파일을 내려받았습니다. (표·증빙 자료는 PDF와 같은 모양의 그림으로 들어갑니다)');
     } catch (e) {
       setErr(e.message || '한글 파일을 만들지 못했습니다');
       setSaveMsg('');

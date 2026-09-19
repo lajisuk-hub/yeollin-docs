@@ -652,7 +652,7 @@ export default function SurveyTidy({ onBack }) {
               <button className="ghost" onClick={saveHwpx} disabled={!!busy}>📄 한글(hwpx)로 저장</button>
             </div>
             {saveMsg && <p className="hint">{saveMsg}</p>}
-            <p className="hint">한글 파일에는 <b>글자만</b> 들어갑니다. 그래프는 PDF로 저장해 주세요.</p>
+            <p className="hint">한글 파일에는 <b>글은 고칠 수 있는 글자로</b>, 표·그래프는 <b>PDF와 같은 모양의 그림</b>으로 들어갑니다.</p>
           </div>
 
           <div className="card wiz-card">

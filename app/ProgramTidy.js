@@ -917,7 +917,7 @@ export default function ProgramTidy({ onBack }) {
               <button className="ghost" onClick={() => saveHwpx()} disabled={!!busy}>📄 한글(hwpx)로 저장</button>
             </div>
             {saveMsg && <p className="hint">{saveMsg}</p>}
-            <p className="hint">한글 파일에도 <b>표와 사진</b>이 들어갑니다. 서식 그림 위에 글을 얹은 공지문은 글과 표로 바뀌니, 그 모양 그대로가 필요하면 PDF를 쓰세요.</p>
+            <p className="hint">한글 파일에는 <b>글은 고칠 수 있는 글자로</b>, 표·서식·그래프·사진은 <b>PDF와 같은 모양의 그림</b>으로 들어갑니다. 표 안의 글을 고치려면 여기서 고친 뒤 다시 저장하세요.</p>
           </div>
 
           {/* 아래 문서를 읽고 고칠 부분 요청 */}
