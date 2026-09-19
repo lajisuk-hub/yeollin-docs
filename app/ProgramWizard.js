@@ -101,6 +101,25 @@ export default function ProgramWizard({ onBack }) {
     ...d,
     months: { ...d.months, [mi.key]: { ...emptyMonth(), ...(d.months?.[mi.key] || {}), ...patch } },
   }));
+
+  // 잘못 만든 달 처리 (원장님 요청 2026-09-19) — ① 문서에서만 빼기(자료는 남음) ② 아예 지우기
+  const toggleSkip = (key) => setData((d) => {
+    const cur = d.months?.[key];
+    if (!cur) return d;
+    return {
+      ...d,
+      months: { ...d.months, [key]: { ...cur, skip: !cur.skip } },
+      picked: cur.skip ? (d.picked || []) : (d.picked || []).filter((k) => k !== key),
+    };
+  });
+  const removeMonth = (x) => {
+    if (!window.confirm(x.label + ' 자료를 지울까요?\n\n이 달에 만든 내용과 사진이 모두 지워지고 되돌릴 수 없습니다.\n(문서에서만 빼려면 「빼기」를 누르세요.)')) return;
+    setData((d) => {
+      const next = { ...(d.months || {}) };
+      delete next[x.key];
+      return { ...d, months: next, picked: (d.picked || []).filter((k) => k !== x.key) };
+    });
+  };
   const setPlanRow = (m, patch) => setData((d) => ({
     ...d,
     plan: (d.plan || []).map((p) => (p.m === m ? { ...p, ...patch } : p)),
@@ -487,18 +506,28 @@ export default function ProgramWizard({ onBack }) {
                 const some = monthHasContent(m);
                 const p = planOf(data, x.m);
                 return (
-                  <button key={x.key} className={`q-card ${done ? 'done' : ''}`} onClick={() => go({ v: 'step', q: i, s: 'notice' })}>
+                  <div key={x.key} className={`q-cardwrap ${m?.skip ? 'skipped' : ''}`}>
+                  <button className={`q-card ${done && !m?.skip ? 'done' : ''}`} onClick={() => go({ v: 'step', q: i, s: 'notice' })}>
                     <div className="q-top">
                       <b>{x.label}</b>
-                      <span className={`q-chip ${done ? 'ok' : ''}`}>{done ? '완성' : some ? '작성 중' : '아직'}</span>
+                      <span className={`q-chip ${done && !m?.skip ? 'ok' : ''}`}>{m?.skip ? '문서에서 뺌' : done ? '완성' : some ? '작성 중' : '아직'}</span>
                     </div>
                     <div className="q-when">{p.theme || '주제 미정'}</div>
                     {m?.date && <div className="q-date">{whenText(m)}</div>}
                   </button>
+                    {some && (
+                      <div className="q-ctrl">
+                        <button type="button" className={`q-skip ${m?.skip ? 'off' : ''}`} onClick={() => toggleSkip(x.key)}>
+                          {m?.skip ? '☐ 문서에서 뺌 · 다시 넣기' : '☑ 문서에 넣는 중 · 빼기'}
+                        </button>
+                        <button type="button" className="q-del" onClick={() => removeMonth(x)}>🗑 지우기</button>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
-            <p className="hint">{doneCount}/12 달을 작성했습니다.</p>
+            <p className="hint">{doneCount}/12 달을 작성했습니다. 잘못 만든 달은 카드 아래의 <b>「빼기」</b>(자료는 두고 문서에만 안 넣기)나 <b>「지우기」</b>로 정리하세요.</p>
             <button className="next-doc" onClick={() => go({ v: 'finish' })}>
               ✅ 이만하면 됐어요 · 문서 정리하기 →
             </button>
@@ -854,7 +883,7 @@ export default function ProgramWizard({ onBack }) {
                     <div className="pick-q-months">
                       {qq.months.map((m) => {
                         const x = months.find((y) => y.m === m);
-                        const has = monthHasContent(data.months?.[x.key]);
+                        const has = monthHasContent(data.months?.[x.key]) && !data.months?.[x.key]?.skip;
                         const on = (data.picked || []).includes(x.key);
                         return (
                           <button key={x.key} className={`pick-m ${on ? 'on' : ''} ${has ? 'has' : ''}`}
