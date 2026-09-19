@@ -18,6 +18,7 @@ import {
   emptyTidyData, emptyTidyMonth, tidyMonthOf, themeOf,
   monthTidyHasContent, monthTidyDone, photosShort,
   chosenTidyMonths, rangeTidyMonths,
+  YEAR_OPTIONS, switchTidyYear, tidyYearsWithContent, tidyYearCount,
   buildOneMonthTidy, buildProgramTidyDoc,
   RANGES, rangeInfo, rangeTitle, monthList, monthLabel, whenText, flowList, attendText,
   toHwpxBlocks,
@@ -115,14 +116,27 @@ export default function ProgramTidy({ onBack }) {
   const doneCount = months.filter((x) => monthTidyDone(data.months?.[x.key])).length;
   const startedCount = chosenTidyMonths(data).length;
 
-  // 학년도를 바꾸면 달 열쇠(2026-03 …)도 함께 바뀌므로 이미 올린 자료를 새 열쇠로 옮겨 준다
+  // 학년도 바꾸기 — 해마다 자료를 따로 보관한다 (작년 자료를 만든 뒤 올해 자료를 이어서 만들 수 있게. 2026-09-19)
+  // 지금 해의 자료는 그대로 남고, 고른 해의 자료(없으면 빈 화면)가 나온다. 전체 문서에는 자료가 있는 해가 모두 들어간다.
   function changeYear(y) {
+    setData((d) => switchTidyYear(d, y));
+  }
+
+  // 학년도를 잘못 골랐을 때 — 지금 해의 자료를 통째로 다른(비어 있는) 해로 옮긴다
+  function moveYear(y) {
+    if (!window.confirm(`지금 ${year}학년도에 올린 자료를 모두 ${y}학년도로 옮길까요?
+
+(학년도를 잘못 골랐을 때만 쓰세요. 자료는 지워지지 않고 해만 바뀝니다.)`)) return;
     setData((d) => {
       const before = monthList(d.year || '2026');
       const after = monthList(y);
-      const next = {};
-      before.forEach((x, i) => { if (d.months?.[x.key]) next[after[i].key] = d.months[x.key]; });
-      return { ...d, year: y, months: next };
+      const next = { ...(d.months || {}) };
+      before.forEach((x, i) => {
+        if (d.months?.[x.key]) { next[after[i].key] = d.months[x.key]; delete next[x.key]; }
+      });
+      const archive = { ...(d.archive || {}) };
+      delete archive[y];
+      return { ...d, year: y, months: next, archive };
     });
   }
 
@@ -230,9 +244,12 @@ export default function ProgramTidy({ onBack }) {
       .sort((a, b) => MONTH_SEQ.indexOf(a.m) - MONTH_SEQ.indexOf(b.m));
     setData((d) => ({
       ...d,
-      year: /^\d{4}$/.test(String(r.year || '')) ? String(r.year) : d.year,
       plan: rows.length ? rows : d.plan,
-      planMissing: Array.isArray(r.missing) ? r.missing : [],
+      planMissing: [
+        ...(/^\d{4}$/.test(String(r.year || '')) && String(r.year) !== (d.year || '2026')
+          ? [`올린 계획서는 ${r.year}년도 것으로 보입니다. 지금 고른 학년도는 ${d.year || '2026'}년도입니다 — 목록 화면의 학년도를 확인해 주세요.`] : []),
+        ...(Array.isArray(r.missing) ? r.missing : []),
+      ],
       planAnalyzed: true,
       planFeedback: '',
     }));
@@ -439,9 +456,31 @@ export default function ProgramTidy({ onBack }) {
             </div>
             <div className="field">
               <label>학년도 (3월에 시작하는 해)</label>
-              <select value={year} onChange={(e) => changeYear(e.target.value)}>
-                {['2024', '2025', '2026'].map((y) => <option key={y} value={y}>{y}년 3월 ~ {Number(y) + 1}년 2월</option>)}
-              </select>
+              <div className="year-tabs">
+                {YEAR_OPTIONS.map((y) => {
+                  const n = tidyYearCount(data, y);
+                  const has = tidyYearsWithContent(data).includes(y);
+                  return (
+                    <button key={y} type="button" className={`year-tab ${y === year ? 'on' : ''}`} onClick={() => changeYear(y)}>
+                      <b>{y}학년도</b>
+                      <small>{y}년 3월 ~ {Number(y) + 1}년 2월</small>
+                      <em>{n ? `자료 ${n}달` : (has ? '연간계획만' : '아직 없음')}</em>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="hint">
+                💡 <b>작년 자료를 먼저 만들고, 학년도를 바꿔 올해 자료를 이어서 만드세요.</b> 해마다 따로 보관되며, 학년도를 바꿔도 앞서 만든 자료는 지워지지 않습니다.
+                「전체 문서 만들기」에는 <b>자료가 있는 학년도가 모두</b> 앞선 해부터 차례로 들어갑니다.
+              </p>
+              {startedCount > 0 && YEAR_OPTIONS.some((y) => y !== year && !tidyYearsWithContent(data).includes(y)) && (
+                <p className="hint">
+                  학년도를 잘못 골랐다면:{' '}
+                  {YEAR_OPTIONS.filter((y) => y !== year && !tidyYearsWithContent(data).includes(y)).map((y) => (
+                    <button key={y} type="button" className="linkish" onClick={() => moveYear(y)}>지금 자료를 {y}학년도로 옮기기</button>
+                  ))}
+                </p>
+              )}
             </div>
 
             <div className="wiz-nav">
@@ -901,7 +940,11 @@ export default function ProgramTidy({ onBack }) {
                 })}
               </div>
               <p className="hint">
-                지금 고른 것 : <b>{rangeInfo(range).months ? rangeTitle(data, range) : '전체 (지금까지 올린 달 모두)'}</b> · 문서에 <b>{picks.length}개 달</b>이 들어갑니다.
+                지금 고른 것 : <b>{rangeInfo(range).months ? rangeTitle(data, range) : '전체 (지금까지 올린 달 모두)'}</b> · 문서에{' '}
+                <b>{rangeInfo(range).months ? picks.length : tidyYearsWithContent(data).reduce((n, y) => n + tidyYearCount(data, y), 0)}개 달</b>이 들어갑니다.
+                {!rangeInfo(range).months && tidyYearsWithContent(data).length > 1 && (
+                  <> (<b>{tidyYearsWithContent(data).map((y) => `${y}학년도`).join(' + ')}</b> 자료가 앞선 해부터 차례로 함께 들어갑니다. 분기별로 뽑을 때는 지금 고른 {year}학년도만 들어갑니다.)</>
+                )}
               </p>
               {!data.plan?.length && (
                 <p className="hint" style={{ color: '#b3620a' }}>
