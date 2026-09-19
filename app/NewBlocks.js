@@ -593,7 +593,7 @@ export default function Block({ b }) {
     const items = (Array.isArray(b.items) ? b.items : []).filter(Boolean);
     if (!items.length) return <p className="doc-img-empty">{b.emptyText || '첨부된 자료가 없습니다.'}</p>;
     return (
-      <div className={`doc-pages ${b.big ? 'big' : ''} ${b.large ? 'large' : ''}`}>
+      <div className={`doc-pages ${b.big ? 'big' : ''} ${b.large ? 'large' : ''} ${b.large && items.length >= 2 ? 'duo' : ''}`}>
         {b.title && <div className="doc-pages-title">{b.title}</div>}
         {items.map((src, i) => <figure key={i} className="doc-figure"><img src={src} alt="" /></figure>)}
       </div>
