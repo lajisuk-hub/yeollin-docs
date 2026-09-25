@@ -291,6 +291,12 @@ button.linkish {
 .save-band b { color: #1f5f4f; }
 .save-band-reset { flex: 0 0 auto; background: #fff; border: 1px solid #c6d5d0; color: #6a7571; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
 .save-band-reset:hover { border-color: #e0a49b; color: #c62d16; }
+.save-band .save-count, .save-band .save-tip, .save-band .save-warn { flex: 1 1 100%; order: 3; }
+.save-band .save-tip { font-size: 12.5px; color: #5b6f68; }
+.save-band .save-warn { background: #fff4e5; border: 1px solid #f0c98a; border-radius: 8px; padding: 8px 10px; color: #7a4a00; }
+.save-band .save-warn b { color: #8a4b00; }
+.load-fail-band { position: sticky; top: 0; z-index: 50; background: #fdecea; border-bottom: 2px solid #e6a39a; color: #7a2418; font-size: 14px; line-height: 1.7; padding: 10px 16px; text-align: center; }
+.load-fail-band button { margin-left: 8px; background: #c62d16; color: #fff; border: 0; border-radius: 7px; padding: 5px 12px; font-family: inherit; font-size: 13px; cursor: pointer; }
 
 /* ── 서류 새로 만들기: 목록·작성 ── */
 .newbase { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #eef3f7; border: 1px solid #d4e2ee; border-radius: 12px; padding: 11px 15px; margin: 14px 0; font-size: 13.5px; color: #3c4a47; }

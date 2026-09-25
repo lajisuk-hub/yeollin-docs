@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AREAS, getDoc } from '../lib/docs';
-import { saveLocal, loadLocal, clearAll } from '../lib/store';
+import { saveLocal, loadLocal, clearAll, countForms } from '../lib/store';
 import DocForm from './DocForm';
 import StepPage from './StepPage';
 import HomeGuide from './HomeGuide';
@@ -34,6 +34,18 @@ export default function Home() {
   // 참여성에 처음 들어갈 때 한 번 '서류 만드는 방식'을 고르게 한다
   const [pathChosen, setPathChosen] = useState(false);
   const [ready, setReady] = useState(false);
+  // 이 브라우저에 저장된 서류 수 (null = 아직 모름)
+  const [savedCount, setSavedCount] = useState(null);
+  // 카카오톡·밴드 등 앱 안에서 열린 창인지 (저장이 쉽게 사라짐)
+  const [inApp, setInApp] = useState(false);
+
+  useEffect(() => {
+    try { setInApp(/KAKAOTALK|NAVER\(inapp|; ?BAND\/|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|; wv\)/i.test(navigator.userAgent)); } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    if (view.type === 'home') countForms().then(setSavedCount);
+  }, [view.type]);
 
   // ── 마지막으로 보던 화면을 그대로 이어서 (같은 브라우저) ──
   useEffect(() => {
@@ -256,6 +268,17 @@ export default function Home() {
 
       <div className="save-band">
         <p>💾 <b>작성한 내용은 이 컴퓨터(브라우저)에 자동으로 저장됩니다.</b> 새로고침하거나 창을 닫았다 열어도 <b>마지막에 보던 화면과 입력한 내용·사진이 그대로</b> 이어집니다.</p>
+        {savedCount !== null && (
+          <p className="save-count">
+            {savedCount > 0
+              ? <>📂 이 브라우저에 <b>저장된 서류 {savedCount}건</b>이 있어요.</>
+              : <>📂 이 브라우저에는 <b>아직 저장된 서류가 없어요.</b> 전에 만든 자료가 안 보이면, <b>그때 쓰던 컴퓨터·브라우저(크롬/엣지 등)</b>로 들어오셨는지 확인해 주세요.</>}
+          </p>
+        )}
+        <p className="save-tip">※ 저장은 <b>그 컴퓨터의 그 브라우저</b>에만 됩니다. 다른 컴퓨터·휴대폰, 다른 브라우저, 시크릿 창에서는 보이지 않아요. 완성한 서류는 <b>PDF·한글 파일로 꼭 저장</b>해 두세요.</p>
+        {inApp && (
+          <p className="save-warn">⚠️ 지금 <b>카카오톡·밴드 같은 앱 안의 창</b>에서 열려 있어요. 이 창에서 쓴 내용은 <b>쉽게 사라질 수 있어요.</b> 오른쪽 위 ⋮(또는 ···) 단추 → <b>「다른 브라우저로 열기」</b>를 눌러 크롬이나 사파리에서 써 주세요.</p>
+        )}
         <button className="save-band-reset" onClick={resetEverything}>저장된 내용 전체 지우기</button>
       </div>
 
