@@ -8,7 +8,7 @@
 // 회의 사진은 넣지 않는다.
 
 import { useState, useEffect, useRef } from 'react';
-import { saveForm, loadForm, clearForm } from '../lib/store';
+import { saveForm, loadForm, clearForm, setDocState } from '../lib/store';
 import { extractTextFromFile } from '../lib/extract';
 import {
   MEETINGS, MEMBER_ROLES, emptyData, emptyMeeting, suggestMembers,
@@ -22,6 +22,7 @@ import PrintSheet from './PrintSheet';
 import QuarterPicker from './QuarterPicker';
 
 const KEY = 'committee-tidy';
+const DOC_ID = 'committee-tidy'; // 문서 목록 카드의 진행 상태(작성중·작성완료) 표시용
 
 const STEPS = ['upload', 'analyze', 'check', 'done'];
 const STEP_TITLE = {
@@ -74,6 +75,7 @@ export default function CommitteeTidy({ onBack }) {
   const [busy, setBusy] = useState('');
   const [err, setErr] = useState('');
   const [saveMsg, setSaveMsg] = useState('');
+  const [done, setDone] = useState(false); // 원장님이 '작성 완료'로 표시했는지
   const loadedRef = useRef(false);
   const timer = useRef(null);
 
@@ -90,6 +92,7 @@ export default function CommitteeTidy({ onBack }) {
           meetings: makeMeetings(saved.picks).map((_, i) => ({ ...freshMeeting(), ...(saved.meetings[i] || {}) })),
         });
         if (saved.view) setView(saved.view);
+        if (saved.done) setDone(true);
       } else {
         setData({ ...freshData(), members: initMembers(b, yearsOf({ picks: DEFAULT_PICKS })) });
       }
@@ -101,9 +104,16 @@ export default function CommitteeTidy({ onBack }) {
   useEffect(() => {
     if (!loadedRef.current) return;
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => { saveForm(KEY, { ...data, view }); }, 600);
+    timer.current = setTimeout(() => {
+      saveForm(KEY, { ...data, view, done });
+      // 자료를 하나라도 올렸거나 분석 내용이 있으면 '작성중', 완료 표시를 눌렀으면 '작성 완료'
+      const some = (data.meetings || []).some((m) => meetingHasContent(m)
+        || SRC_KINDS.some(({ k }) => m?.src?.[k] || fileList(m?.files?.[k]).length))
+        || Object.values(data.rulesSrc || {}).some(Boolean);
+      setDocState(DOC_ID, done ? 'done' : (some ? 'writing' : null));
+    }, 600);
     return () => clearTimeout(timer.current);
-  }, [data, view]);
+  }, [data, view, done]);
 
   const center = basic?.centerName?.trim() || '';
 
@@ -150,6 +160,8 @@ export default function CommitteeTidy({ onBack }) {
   function restart() {
     if (!window.confirm('올린 자료와 정리한 내용을 모두 지우고 처음부터 다시 할까요?\n\n지우면 되돌릴 수 없습니다.')) return;
     clearForm(KEY);
+    setDocState(DOC_ID, null);
+    setDone(false);
     setData(freshData());
     go({ v: 'pick' });
   }
@@ -807,6 +819,9 @@ export default function CommitteeTidy({ onBack }) {
               <button className="ghost" onClick={() => saveHwpx()} disabled={!!busy}>📄 한글(hwpx)로 저장</button>
             </div>
             {saveMsg && <p className="hint">{saveMsg}</p>}
+            <button type="button" className={`done-btn ${done ? 'on' : ''}`} style={{ marginTop: 14 }} onClick={() => setDone((v) => !v)}>
+              {done ? '✅ 작성 완료로 표시했습니다 (누르면 취소)' : '✅ 이 서류 작성 완료로 표시하기'}
+            </button>
             <div className="wiz-nav">
               <button className="ghost" onClick={() => go({ v: 'pick' })}>← 차수 목록으로</button>
               <button className="ghost" onClick={onBack}>문서 목록으로</button>
