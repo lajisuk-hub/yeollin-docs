@@ -1,6 +1,8 @@
 import './globals.css';
 import AskFab from './AskFab';
 import LoadGuard from './LoadGuard';
+import Boot from './Boot';
+import SyncBadge from './SyncBadge';
 
 export const metadata = {
   title: '열린어린이집 문서 도우미',
@@ -20,7 +22,8 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <LoadGuard />
-        {children}
+        <Boot>{children}</Boot>
+        <SyncBadge />
         <AskFab />
       </body>
     </html>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AREAS, getDoc } from '../lib/docs';
 import { saveLocal, loadLocal, clearAll, countForms } from '../lib/store';
+import { getMe, clearMe, unskipLogin, maskPhone, maskName } from '../lib/sync';
 import DocForm from './DocForm';
 import StepPage from './StepPage';
 import HomeGuide from './HomeGuide';
@@ -38,6 +39,9 @@ export default function Home() {
   const [savedCount, setSavedCount] = useState(null);
   // 카카오톡·밴드 등 앱 안에서 열린 창인지 (저장이 쉽게 사라짐)
   const [inApp, setInApp] = useState(false);
+  // 서버 저장에 연결된 전화번호·이름 (없으면 이 브라우저에만 저장)
+  const [me, setMe] = useState(null);
+  useEffect(() => { setMe(getMe()); }, []);
 
   useEffect(() => {
     try { setInApp(/KAKAOTALK|NAVER\(inapp|; ?BAND\/|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|; wv\)/i.test(navigator.userAgent)); } catch { /* ignore */ }
@@ -78,10 +82,23 @@ export default function Home() {
 
   // 테스트하거나 처음부터 다시 할 때: 이 브라우저에 저장된 내용 전부 삭제
   const resetEverything = async () => {
-    if (!window.confirm('이 브라우저에 저장된 작성 내용(문서 입력값·첨부한 사진·기본사항·체크 표시)을 모두 지울까요?\n\n지우면 되돌릴 수 없습니다.')) return;
-    await clearAll();
+    const msg = me
+      ? '저장된 작성 내용(문서 입력값·첨부한 사진·기본사항·체크 표시)을 이 브라우저와 서버 보관함에서 모두 지울까요?\n\n다른 컴퓨터에서도 더는 볼 수 없게 됩니다. (서버에는 예전 것이 한동안 백업으로 남아 문의하시면 되살릴 수 있어요)'
+      : '이 브라우저에 저장된 작성 내용(문서 입력값·첨부한 사진·기본사항·체크 표시)을 모두 지울까요?\n\n지우면 되돌릴 수 없습니다.';
+    if (!window.confirm(msg)) return;
+    await clearAll({ server: !!me });
     window.location.reload();
   };
+
+  // 다른 번호로 바꾸기: 서버 자료는 그대로 두고, 이 브라우저만 비운 뒤 연결 화면으로
+  const switchAccount = async () => {
+    if (!window.confirm('다른 전화번호로 바꿀까요?\n\n지금 번호의 자료는 서버에 그대로 남고, 이 브라우저에서만 비워집니다. 다음 화면에서 번호와 이름을 다시 넣게 됩니다.')) return;
+    await clearAll({ server: false });
+    clearMe();
+    unskipLogin();
+    window.location.reload();
+  };
+  const connectAccount = () => { unskipLogin(); window.location.reload(); };
 
   const go = (next) => { setView(next); window.scrollTo(0, 0); };
   const goHome = () => go({ type: 'home' });
@@ -275,7 +292,18 @@ export default function Home() {
               : <>📂 이 브라우저에는 <b>아직 저장된 서류가 없어요.</b> 전에 만든 자료가 안 보이면, <b>그때 쓰던 컴퓨터·브라우저(크롬/엣지 등)</b>로 들어오셨는지 확인해 주세요.</>}
           </p>
         )}
-        <p className="save-tip">※ 저장은 <b>그 컴퓨터의 그 브라우저</b>에만 됩니다. 다른 컴퓨터·휴대폰, 다른 브라우저, 시크릿 창에서는 보이지 않아요. 완성한 서류는 <b>PDF·한글 파일로 꼭 저장</b>해 두세요.</p>
+        {me ? (
+          <p className="save-account">
+            <span>☁ <b>{maskPhone(me.phone)} ({maskName(me.name)})</b>로 <b>서버에도 함께 저장</b>됩니다. 다른 컴퓨터·휴대폰에서 같은 번호·이름으로 들어오면 그대로 이어져요.</span>
+            <button type="button" onClick={switchAccount}>다른 번호로 바꾸기</button>
+          </p>
+        ) : (
+          <p className="save-account">
+            <span>⚠️ 지금은 <b>이 브라우저에만</b> 저장되고 있어요. 다른 컴퓨터·휴대폰, 다른 브라우저, 시크릿 창에서는 보이지 않아요.</span>
+            <button type="button" onClick={connectAccount}>전화번호로 서버 저장 연결하기</button>
+          </p>
+        )}
+        <p className="save-tip">※ 완성한 서류는 <b>PDF·한글 파일로도 꼭 저장</b>해 두세요.</p>
         {inApp && (
           <p className="save-warn">⚠️ 지금 <b>카카오톡·밴드 같은 앱 안의 창</b>에서 열려 있어요. 이 창에서 쓴 내용은 <b>쉽게 사라질 수 있어요.</b> 오른쪽 위 ⋮(또는 ···) 단추 → <b>「다른 브라우저로 열기」</b>를 눌러 크롬이나 사파리에서 써 주세요.</p>
         )}
